@@ -1,0 +1,10 @@
+
+=== batch_decode summary (NVIDIA B300 SXM6 AC) ===
+239 row-groups, mean 4.18 MB, total 1000.0 MB decoded (929292 batches)
+sequential 412.9 GB/s | streams(8) 900.7 GB/s | graph 527.9 GB/s | multidict 890.3 GB/s (2.16x over sequential)
+byte-exact: seq=YES streams=YES graph=YES multidict=YES
+
+=== batch_decode summary (NVIDIA B300 SXM6 AC) ===
+239 row-groups, mean 4.18 MB, total 1000.0 MB decoded (1001208 batches)
+sequential 452.6 GB/s | streams(8) 916.2 GB/s | graph 538.8 GB/s | multidict 876.0 GB/s (1.94x over sequential)
+byte-exact: seq=YES streams=YES graph=YES multidict=YES

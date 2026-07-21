@@ -1,0 +1,9 @@
+label=intel-granite
+instance_type=m8i.4xlarge
+ddr=DDR5
+region=us-east-1
+bench_mb=256
+pin_cores=8
+threads=1,4,8
+bits=12,16
+job=onpair-cpu

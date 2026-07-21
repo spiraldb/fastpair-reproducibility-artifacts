@@ -1,0 +1,441 @@
+==PROF== Connected to process 20449 (/home/ubuntu/work/target/release/onpair-chunk-bench)
+2026-06-25T15:53:49.214663Z  INFO vortex_cuda: vortex-cuda/src/lib.rs:111: Registering CUDA kernels
+==WARNING== Unable to access the following 6 metrics: ctc__rx_bytes_data_user.sum, ctc__rx_bytes_data_user.sum.pct_of_peak_sustained_elapsed, ctc__rx_bytes_data_user.sum.per_second, ctc__tx_bytes_data_user.sum, ctc__tx_bytes_data_user.sum.pct_of_peak_sustained_elapsed, ctc__tx_bytes_data_user.sum.per_second.
+
+
+==PROF== Profiling "onpair_u64" - 0 (1/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 1 (2/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 2 (3/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 3 (4/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 4 (5/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 5 (6/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 6 (7/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 7 (8/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 8 (9/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 9 (10/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 10 (11/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 11 (12/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 12 (13/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 13 (14/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 14 (15/16): 0%....50%....100% - 40 passes
+==PROF== Profiling "onpair_u64" - 15 (16/16): 0%....50%....100% - 40 passes
+{
+  "files": [
+    "/home/ubuntu/work/vortex-bench/data/onpair-bench/tpch-sf10/l_shipinstruct/bits16_chunk1000mb_thr0.20/part_0000.vortex"
+  ],
+  "column": "l_shipinstruct",
+  "rows": 59986052,
+  "in_memory_bytes": 64498913,
+  "dict_bytes": 435,
+  "gpu": {
+    "iterations": 30,
+    "decoded_bytes": 719788494,
+    "chunks": 1,
+    "auto_kernel": "onpair_shmem_4tpt_b128o12",
+    "frac_le8": 0.40003875,
+    "dict_mean_len": 1.4155406,
+    "dict_max_len": 16,
+    "dict_entries_max": 296,
+    "small_dict": true,
+    "distinct_codes": 5,
+    "access_top4096_frac": 1.0,
+    "compressed_bytes": 149962073,
+    "h2d_gib_s": 9.885187501248005,
+    "whole_decompress_gib_s": 45.82963476651229,
+    "best_kernel": "onpair_shmem_4tpt_ablate_noscan",
+    "auto_decode_ms": 0.49859413333333336,
+    "best_decode_ms": 0.22069226666666666,
+    "validated": false,
+    "auto_decode_gib_s": 1344.4908966919477,
+    "best_decode_gib_s": 3037.511388757367,
+    "kernels": [
+      {
+        "kernel": "onpair",
+        "decode_ms": 1758.5119118666667,
+        "decode_gib_s": 0.38120598950000484,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem",
+        "decode_ms": 0.6837088,
+        "decode_gib_s": 980.4689853497247,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_2tpt",
+        "decode_ms": 0.5437792,
+        "decode_gib_s": 1232.771083209284,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt",
+        "decode_ms": 0.5726304,
+        "decode_gib_s": 1170.6595972038472,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_wpb8",
+        "decode_ms": 0.5248533333333333,
+        "decode_gib_s": 1277.223999232823,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_wpb8_occ",
+        "decode_ms": 0.5130645333333334,
+        "decode_gib_s": 1306.5710643755494,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b128",
+        "decode_ms": 0.5138368,
+        "decode_gib_s": 1304.6073644602293,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_o6",
+        "decode_ms": 0.5199413333333334,
+        "decode_gib_s": 1289.29021494222,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b512o3",
+        "decode_ms": 0.4964266666666666,
+        "decode_gib_s": 1350.3611276805127,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b128o12",
+        "decode_ms": 0.49859413333333336,
+        "decode_gib_s": 1344.4908966919477,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b64",
+        "decode_ms": 0.5065056,
+        "decode_gib_s": 1323.4903491899754,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b64o24",
+        "decode_ms": 0.47835093333333334,
+        "decode_gib_s": 1401.3880327135237,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8read_b128o12",
+        "decode_ms": 0.4998570666666666,
+        "decode_gib_s": 1341.093920870202,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8read_occ",
+        "decode_ms": 0.5018090666666667,
+        "decode_gib_s": 1335.8771651209925,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8",
+        "decode_ms": 0.6187775999999999,
+        "decode_gib_s": 1083.3541379175297,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8_wpb8",
+        "decode_ms": 0.6057056000000001,
+        "decode_gib_s": 1106.7344819177465,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8_wpb8_occ",
+        "decode_ms": 0.5919690666666667,
+        "decode_gib_s": 1132.4160520504865,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_pdict",
+        "decode_ms": 0.6717098666666667,
+        "decode_gib_s": 997.983365552287,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vdict",
+        "decode_ms": 0.9574698666666667,
+        "decode_gib_s": 700.1319798652788,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8read",
+        "decode_ms": 0.5307669333333334,
+        "decode_gib_s": 1262.9936631521089,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ldcs",
+        "decode_ms": 0.5350058666666667,
+        "decode_gib_s": 1252.986771130755,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_lenbucket",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_lenbucket_b128",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_regcache",
+        "decode_ms": 0.6096256,
+        "decode_gib_s": 1099.617984236026,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split4read",
+        "decode_ms": 0.5563584,
+        "decode_gib_s": 1204.8982695519253,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split4read_b128o12",
+        "decode_ms": 0.5161984,
+        "decode_gib_s": 1298.6388051777726,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_cluster_dsmem",
+        "decode_ms": 1.7046378666666666,
+        "decode_gib_s": 393.2537734372426,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_8tpt",
+        "decode_ms": 0.5092,
+        "decode_gib_s": 1316.4871826604044,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_8tpt_b128",
+        "decode_ms": 0.5083978666666666,
+        "decode_gib_s": 1318.5642925803215,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth",
+        "decode_ms": 0.8265589333333333,
+        "decode_gib_s": 811.0193313225473,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth_b128",
+        "decode_ms": 1.0529802666666666,
+        "decode_gib_s": 636.626625048508,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth4",
+        "decode_ms": 0.6653354666666667,
+        "decode_gib_s": 1007.5447755237827,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth4_b128",
+        "decode_ms": 0.5028149333333334,
+        "decode_gib_s": 1333.2047816612405,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_shdict8",
+        "decode_ms": 0.8542698666666666,
+        "decode_gib_s": 784.7113653047163,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate",
+        "decode_ms": 0.5129173333333333,
+        "decode_gib_s": 1306.9460317400294,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_nogather",
+        "decode_ms": 0.4541909333333333,
+        "decode_gib_s": 1475.9327503323373,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_noemit",
+        "decode_ms": 0.2333184,
+        "decode_gib_s": 2873.135052403402,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_nodrain",
+        "decode_ms": 0.4577717333333334,
+        "decode_gib_s": 1464.3876513068765,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_noscan",
+        "decode_ms": 0.22069226666666666,
+        "decode_gib_s": 3037.511388757367,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_cfree",
+        "decode_ms": 0.39979946666666666,
+        "decode_gib_s": 1676.728783556851,
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_s8",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s8_2tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s8_4tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s8_8tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_2tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_4tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_8tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_16tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_32tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_const1",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "not every dictionary entry is exactly 1 byte"
+      },
+      {
+        "kernel": "onpair_shmem_const2",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "not every dictionary entry is exactly 2 bytes"
+      }
+    ],
+    "nvcomp_zstd_hw": {
+      "supported": false,
+      "error": "failed to prepare nvCOMP zstd hardware decode: Other error: nvcomp get_decompress_temp_size failed: nvcomp: invalid value",
+      "iterations": 30,
+      "backend": "hardware",
+      "zstd_level": -10,
+      "values_per_frame": 2048,
+      "raw_bytes": 719788494,
+      "compressed_bytes": 0,
+      "frames": 0,
+      "compression_ratio": 0.0,
+      "decode_ms": 0.0,
+      "decode_gib_s": 0.0,
+      "compressed_gib_s": 0.0
+    },
+    "nvcomp_zstd": [
+      {
+        "supported": true,
+        "iterations": 30,
+        "backend": "default",
+        "zstd_level": -10,
+        "values_per_frame": 2048,
+        "raw_bytes": 719788494,
+        "compressed_bytes": 69355433,
+        "frames": 29291,
+        "compression_ratio": 10.378256797848843,
+        "decode_ms": 7.385664049784342,
+        "decode_gib_s": 90.76438745277778,
+        "compressed_gib_s": 8.745629369239639
+      },
+      {
+        "supported": true,
+        "iterations": 30,
+        "backend": "default",
+        "zstd_level": 1,
+        "values_per_frame": 2048,
+        "raw_bytes": 719788494,
+        "compressed_bytes": 66765829,
+        "frames": 29291,
+        "compression_ratio": 10.780791683122814,
+        "decode_ms": 7.48954029083252,
+        "decode_gib_s": 89.50553002982281,
+        "compressed_gib_s": 8.302315141655368
+      },
+      {
+        "supported": true,
+        "iterations": 30,
+        "backend": "default",
+        "zstd_level": 3,
+        "values_per_frame": 2048,
+        "raw_bytes": 719788494,
+        "compressed_bytes": 66773029,
+        "frames": 29291,
+        "compression_ratio": 10.779629212267725,
+        "decode_ms": 7.474703979492188,
+        "decode_gib_s": 89.68318681915483,
+        "compressed_gib_s": 8.319691248479227
+      }
+    ]
+  }
+}
+==PROF== Disconnected from process 20449
+==PROF== Report: /home/ubuntu/work/ncu_costsurface_tpch-sf10_l_shipinstruct_b16.ncu-rep

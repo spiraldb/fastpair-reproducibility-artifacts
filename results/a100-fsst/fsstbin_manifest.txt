@@ -1,0 +1,7 @@
+# FST1 blob manifest (2026-07-07T01:37:21Z)
+-rw-rw-r-- 1 ubuntu ubuntu 1499242225 Jul  7 01:37 tpch.l_comment.fsstbin
+-rw-rw-r-- 1 ubuntu ubuntu 1079743142 Jul  7 01:36 tpch.l_shipinstruct.fsstbin
+ed41bee4b21100af342087650789900b51e01bd04a66c4ddd36a93c4873c5ac2  tpch.l_comment.fsstbin
+e32960c547c6aefc08231c60bb35a3434958a5263873a2beb772860469d103fb  tpch.l_shipinstruct.fsstbin
+
+# dbtext blobs

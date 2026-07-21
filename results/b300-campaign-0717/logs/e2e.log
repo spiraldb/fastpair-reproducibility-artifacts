@@ -1,0 +1,65 @@
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=1000.0 MB  ratio=5.05x  decode=904.3 GB/s  scan=3896.5 GB/s  e2e=732.9 GB/s (+23.4% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 13.2x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=2 gpu=2 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=987.9 MB  ratio=6.14x  decode=1005.4 GB/s  scan=3866.4 GB/s  e2e=796.7 GB/s (+26.2% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 14.3x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=468 gpu=468 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=6.2 MB  ratio=4.52x  decode=455.8 GB/s  scan=699.2 GB/s  e2e=311.6 GB/s (+46.3% over decode)
+PCIe decompressed H2D=53.9 GB/s -> moving the decompressed column alone is 5.1x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=719.8 MB  ratio=4.65x  decode=1566.2 GB/s  scan=419.2 GB/s  e2e=331.0 GB/s (+373.1% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 5.9x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=234569 gpu=234569 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=923.6 MB  ratio=5.48x  decode=1526.3 GB/s  scan=1180.5 GB/s  e2e=666.7 GB/s (+128.9% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 11.9x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=999256 gpu=999256 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=2.1 MB  ratio=1.89x  decode=199.3 GB/s  scan=276.8 GB/s  e2e=131.3 GB/s (+51.8% over decode)
+PCIe decompressed H2D=50.3 GB/s -> moving the decompressed column alone is 2.3x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=0.8 MB  ratio=1.05x  decode=89.5 GB/s  scan=85.5 GB/s  e2e=53.7 GB/s (+66.8% over decode)
+PCIe decompressed H2D=42.7 GB/s -> moving the decompressed column alone is 1.0x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=2.6 MB  ratio=3.55x  decode=249.8 GB/s  scan=338.9 GB/s  e2e=159.6 GB/s (+56.5% over decode)
+PCIe decompressed H2D=51.5 GB/s -> moving the decompressed column alone is 2.8x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=2.5 MB  ratio=4.41x  decode=273.9 GB/s  scan=319.1 GB/s  e2e=169.0 GB/s (+62.1% over decode)
+PCIe decompressed H2D=50.9 GB/s -> moving the decompressed column alone is 2.9x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=1.8 MB  ratio=1.58x  decode=173.5 GB/s  scan=197.6 GB/s  e2e=112.6 GB/s (+54.1% over decode)
+PCIe decompressed H2D=49.7 GB/s -> moving the decompressed column alone is 1.9x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=1000.0 MB  ratio=4.15x  decode=1009.5 GB/s  scan=4686.6 GB/s  e2e=828.3 GB/s (+21.9% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 14.9x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=1000.0 MB  ratio=2.80x  decode=631.1 GB/s  scan=4681.6 GB/s  e2e=555.1 GB/s (+13.7% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 10.0x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)
+
+=== e2e_scan summary (NVIDIA B300 SXM6 AC) ===
+decoded=703.1 MB  ratio=2.73x  decode=629.1 GB/s  scan=4636.1 GB/s  e2e=552.4 GB/s (+13.9% over decode)
+PCIe decompressed H2D=55.8 GB/s -> moving the decompressed column alone is 9.9x the GPU decode+scan time
+decode_ok=YES scan_ok=YES (cpu=1 gpu=1 matches)

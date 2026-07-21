@@ -1,0 +1,540 @@
+2026-07-07T01:26:24.783158Z  INFO vortex_cuda: vortex-cuda/src/lib.rs:111: Registering CUDA kernels
+ONPAIR_DUMP_E2E: wrote /home/ubuntu/work/clickbench_URL_b12.e2ebin ok=true tokens=213069107 dict=4096 max_token=16
+{
+  "files": [
+    "/home/ubuntu/work/vortex-bench/data/onpair-bench/clickbench/URL/bits12_chunk1000mb_thr0.20/part_0000.vortex"
+  ],
+  "column": "URL",
+  "rows": 12254692,
+  "in_memory_bytes": 345745017,
+  "dict_bytes": 21556,
+  "gpu": {
+    "iterations": 3,
+    "decoded_bytes": 999999995,
+    "chunks": 1,
+    "auto_kernel": "onpair_shmem_4tpt_split8read_b128o12",
+    "frac_le8": 0.8119982,
+    "dict_mean_len": 4.693313,
+    "dict_max_len": 16,
+    "dict_entries_max": 4096,
+    "small_dict": true,
+    "distinct_codes": 4022,
+    "access_top4096_frac": 1.0,
+    "compressed_bytes": 426163882,
+    "h2d_gib_s": 9.910103272988005,
+    "whole_decompress_gib_s": 22.625122566831468,
+    "best_kernel": "onpair_shmem_4tpt_split8read_b128o12",
+    "auto_decode_ms": 1.113568,
+    "best_decode_ms": 1.113568,
+    "validated": false,
+    "auto_decode_gib_s": 836.3409957531698,
+    "best_decode_gib_s": 836.3409957531698,
+    "kernels": [
+      {
+        "kernel": "onpair_shmem",
+        "decode_ms": 1.652192,
+        "decode_gib_s": 563.689068800034,
+        "decode_ns_iters": [
+          1652192,
+          1664928,
+          1652320
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_2tpt",
+        "decode_ms": 1.223744,
+        "decode_gib_s": 761.0436251036701,
+        "decode_ns_iters": [
+          1224384,
+          1223744,
+          1224960
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt",
+        "decode_ms": 1.285856,
+        "decode_gib_s": 724.2821668669474,
+        "decode_ns_iters": [
+          1287360,
+          1285856,
+          1286784
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_wpb8",
+        "decode_ms": 1.250464,
+        "decode_gib_s": 744.7815930397562,
+        "decode_ns_iters": [
+          1252320,
+          1250464,
+          1252224
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_wpb8_occ",
+        "decode_ms": 1.187104,
+        "decode_gib_s": 784.5332590563806,
+        "decode_ns_iters": [
+          1192608,
+          1187104,
+          1192544
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b128",
+        "decode_ms": 1.17712,
+        "decode_gib_s": 791.1874489931915,
+        "decode_ns_iters": [
+          1177120,
+          1177952,
+          1177600
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_o6",
+        "decode_ms": 1.170112,
+        "decode_gib_s": 795.9260053386903,
+        "decode_ns_iters": [
+          1170112,
+          1170560,
+          1170432
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b512o3",
+        "decode_ms": 1.167968,
+        "decode_gib_s": 797.3870602267064,
+        "decode_ns_iters": [
+          1170784,
+          1167968,
+          1168256
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b128o12",
+        "decode_ms": 1.17376,
+        "decode_gib_s": 793.4522985609203,
+        "decode_ns_iters": [
+          1174304,
+          1174784,
+          1173760
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b64",
+        "decode_ms": 1.181728,
+        "decode_gib_s": 788.1023128493746,
+        "decode_ns_iters": [
+          1182304,
+          1183488,
+          1181728
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_b64o24",
+        "decode_ms": 1.178144,
+        "decode_gib_s": 790.4997775814039,
+        "decode_ns_iters": [
+          1178656,
+          1180576,
+          1178144
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8read_b128o12",
+        "decode_ms": 1.113568,
+        "decode_gib_s": 836.3409957531698,
+        "decode_ns_iters": [
+          1114432,
+          1113760,
+          1113568
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8read_occ",
+        "decode_ms": 1.215008,
+        "decode_gib_s": 766.5155866947918,
+        "decode_ns_iters": [
+          1215232,
+          1215072,
+          1215008
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8",
+        "decode_ms": 1.39936,
+        "decode_gib_s": 665.5346515256015,
+        "decode_ns_iters": [
+          1399360,
+          1399520,
+          1400064
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8_wpb8",
+        "decode_ms": 1.413984,
+        "decode_gib_s": 658.6514203547323,
+        "decode_ns_iters": [
+          1413984,
+          1415520,
+          1414400
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8_wpb8_occ",
+        "decode_ms": 1.354464,
+        "decode_gib_s": 687.5949231274259,
+        "decode_ns_iters": [
+          1354464,
+          1355104,
+          1354944
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_pdict",
+        "decode_ms": 1.5808,
+        "decode_gib_s": 589.1463625751933,
+        "decode_ns_iters": [
+          1590688,
+          1580800,
+          1589888
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vdict",
+        "decode_ms": 2.347616,
+        "decode_gib_s": 396.709926137352,
+        "decode_ns_iters": [
+          2350752,
+          2349824,
+          2347616
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split8read",
+        "decode_ms": 1.30256,
+        "decode_gib_s": 714.993988729015,
+        "decode_ns_iters": [
+          1306048,
+          1302560,
+          1305536
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ldcs",
+        "decode_ms": 1.282592,
+        "decode_gib_s": 726.1253539386381,
+        "decode_ns_iters": [
+          1283584,
+          1283584,
+          1282592
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_lenbucket",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_lenbucket_b128",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_regcache",
+        "decode_ms": 1.37024,
+        "decode_gib_s": 679.6784285664304,
+        "decode_ns_iters": [
+          1370240,
+          1370656,
+          1370880
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split4read",
+        "decode_ms": 1.341888,
+        "decode_gib_s": 694.0389734157139,
+        "decode_ns_iters": [
+          1341888,
+          1343808,
+          1342368
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_split4read_b128o12",
+        "decode_ms": 1.206272,
+        "decode_gib_s": 772.0668057941042,
+        "decode_ns_iters": [
+          1206944,
+          1207168,
+          1206272
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_cluster_dsmem",
+        "decode_ms": 4.881568,
+        "decode_gib_s": 190.78348800198333,
+        "decode_ns_iters": [
+          4900704,
+          4889056,
+          4881568
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_8tpt",
+        "decode_ms": 1.186208,
+        "decode_gib_s": 785.125854790109,
+        "decode_ns_iters": [
+          1188128,
+          1187168,
+          1186208
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_8tpt_b128",
+        "decode_ms": 1.18864,
+        "decode_gib_s": 783.5194591792854,
+        "decode_ns_iters": [
+          1188640,
+          1190528,
+          1199840
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth",
+        "decode_ms": 3.843744,
+        "decode_gib_s": 242.29568097117436,
+        "decode_ns_iters": [
+          3844288,
+          3844032,
+          3843744
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth_b128",
+        "decode_ms": 4.760288,
+        "decode_gib_s": 195.64416479819408,
+        "decode_ns_iters": [
+          4760960,
+          4760288,
+          4761408
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth4",
+        "decode_ms": 1.51392,
+        "decode_gib_s": 615.1729087130533,
+        "decode_ns_iters": [
+          1514144,
+          1514208,
+          1513920
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_vwidth4_b128",
+        "decode_ms": 1.133472,
+        "decode_gib_s": 821.6546769208818,
+        "decode_ns_iters": [
+          1133472,
+          1134144,
+          1133728
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_shdict8",
+        "decode_ms": 2.050048,
+        "decode_gib_s": 454.2930555571702,
+        "decode_ns_iters": [
+          2052288,
+          2050048,
+          2051808
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate",
+        "decode_ms": 1.173888,
+        "decode_gib_s": 793.3657810275474,
+        "decode_ns_iters": [
+          1173888,
+          1174016,
+          1174816
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_nogather",
+        "decode_ms": 0.868384,
+        "decode_gib_s": 1072.4778093088605,
+        "decode_ns_iters": [
+          868864,
+          868704,
+          868384
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_noemit",
+        "decode_ms": 0.391872,
+        "decode_gib_s": 2376.5989148468525,
+        "decode_ns_iters": [
+          392768,
+          391872,
+          392192
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_nodrain",
+        "decode_ms": 1.054944,
+        "decode_gib_s": 882.8170689239101,
+        "decode_ns_iters": [
+          1068160,
+          1054944,
+          1055712
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_noscan",
+        "decode_ms": 0.725376,
+        "decode_gib_s": 1283.9169892012771,
+        "decode_ns_iters": [
+          725792,
+          725376,
+          725376
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_4tpt_ablate_cfree",
+        "decode_ms": 1.084256,
+        "decode_gib_s": 858.9508104717572,
+        "decode_ns_iters": [
+          1084256,
+          1084640,
+          1085888
+        ],
+        "applicable": true
+      },
+      {
+        "kernel": "onpair_shmem_s8",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s8_2tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s8_4tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s8_8tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 8 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_2tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_4tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_8tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_16tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_s4l1_32tpt",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "dictionary entry longer than 4 bytes"
+      },
+      {
+        "kernel": "onpair_shmem_const1",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "not every dictionary entry is exactly 1 byte"
+      },
+      {
+        "kernel": "onpair_shmem_const2",
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "applicable": false,
+        "reason": "not every dictionary entry is exactly 2 bytes"
+      }
+    ]
+  }
+}

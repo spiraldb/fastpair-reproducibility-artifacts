@@ -1,0 +1,6 @@
+### toolchain versions
+Build cuda_12.8.r12.8/compiler.35583870_0
+Build cuda_13.0.r13.0/compiler.36424714_0
+### does 12.8 accept the device arch (compute_103)?
+nvcc fatal   : Unsupported gpu architecture 'compute_103'
+12.8 compute_103: REJECTED (comparison done at compute_100)

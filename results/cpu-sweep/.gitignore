@@ -1,0 +1,2 @@
+# operational logs from the harness run (public IPs, SSH/build noise) — not paper data
+*.log

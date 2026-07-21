@@ -1,0 +1,29 @@
+# IAA aggregate decode run environment
+date_utc:    2026-06-27
+box:         GCP c3-standard-192-metal (us-central1-a)
+cpu:         Intel(R) Xeon(R) Platinum 8481C, Sapphire Rapids, 192 vCPU (2 sockets)
+accelerator: Intel IAA (In-memory Analytics Accelerator), 8 IAA engine devices (iax*)
+iommu:       intel_iommu=on,sm_on  iommu=pt  (scalable mode; required for shared-WQ SVA)
+driver:      idxd (from linux-modules-extra-$(uname -r); NOT in the -gcp base image)
+qpl:         Intel QPL built from source (hardware path), --recurse-submodules
+
+## bench
+source:      iaa_bench_mt.cpp (committed: experiments/bench/iaa/)
+method:      T worker threads pinned across both NUMA nodes, each owns its own hardware
+             qpl_job, pulls 256 KB blocks off a shared atomic counter and decodes on the
+             IAA hardware-Deflate path. Blocks are software-compressed once (QPL software,
+             dynamic Huffman) so the decoded bytes are identical to what OnPair sees.
+wq config:   one shared user WQ per IAA device, size 128, block_on_fault=1, all engines of
+             the device grouped (8x128 across the box). RUN AS ROOT (the original per-engine
+             data was collected as root; the 503 = QPL_STS_INIT_WORK_QUEUES_NOT_AVAILABLE was
+             the single small WQ filling under load, cured by more/bigger WQs -- NOT a
+             privilege issue). mlock'd compressed + output buffers (no descriptor page faults).
+reduction:   min decode time over >=3 timed passes (~0.7s budget); GB/s = decoded_bytes/min/1e9
+             (decimal GB, matches the GPU/DE numbers). cretry=0 on every cell (no WQ-busy).
+verify:      every cell byte-exact vs the software-decoded reference (VERIFY OK throughout).
+sweep:       9 columns x threads {1,2,4,8,16,32,64,96}.
+
+## provenance
+The single-WQ per-engine run (1.45x FastPair-CPU-1T over one IAA engine) was an earlier
+pass; this is the all-engines aggregate (the accelerator block's ceiling). FastPair-CPU
+Sapphire comparison baseline: onpair_cpu_sapphire.json (same box).

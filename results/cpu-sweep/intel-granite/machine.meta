@@ -1,0 +1,5 @@
+label=intel-granite
+instance_type=m8i.2xlarge
+ddr=DDR5
+region=us-east-1
+bench_mb=256

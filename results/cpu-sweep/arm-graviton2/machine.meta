@@ -1,0 +1,5 @@
+label=arm-graviton2
+instance_type=m6g.2xlarge
+ddr=DDR4
+region=us-east-1
+bench_mb=256

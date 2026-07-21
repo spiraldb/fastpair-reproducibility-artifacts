@@ -1,0 +1,6 @@
+/home/ubuntu/work/benchmarks/onpair-bench/e2e_scan.cu(339): warning #177-D: variable "time_min" was declared but never referenced
+    auto time_min = [&](auto &&fn) -> double {
+         ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+

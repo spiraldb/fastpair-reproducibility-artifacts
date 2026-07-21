@@ -1,0 +1,9 @@
+label=amd-rome
+instance_type=c5a.4xlarge
+ddr=DDR4
+region=us-east-1
+bench_mb=256
+pin_cores=8
+threads=1,4,8
+bits=12,16
+job=onpair-cpu

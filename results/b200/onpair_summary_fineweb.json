@@ -1,0 +1,956 @@
+[
+  {
+    "dataset_id": "fineweb",
+    "column": "text",
+    "bits": 12,
+    "threshold": 0.2,
+    "chunk_bytes": 1048576000,
+    "rows": 324253,
+    "unique_count": 324232,
+    "sample_bytes": 999998604,
+    "n_chunks": 1,
+    "in_memory_bytes": 443406048,
+    "dict_bytes": 17559,
+    "on_disk_bytes": 443411472,
+    "n_files": 1,
+    "encode_ms": 35187.637701,
+    "decode_ms": 562.065606,
+    "encode_gib_s": 0.02646728610777691,
+    "decode_gib_s": 1.6569618645001458,
+    "gpu": {
+      "iterations": 100,
+      "decoded_bytes": 999998604,
+      "chunks": 1,
+      "auto_kernel": "onpair_shmem_4tpt_split8read_b128o12",
+      "frac_le8": 0.9849535,
+      "dict_mean_len": 4.282959,
+      "dict_max_len": 12,
+      "dict_entries_max": 4096,
+      "small_dict": true,
+      "distinct_codes": 4042,
+      "access_top4096_frac": 1.0,
+      "compressed_bytes": 589610485,
+      "h2d_gib_s": 12.513602598865031,
+      "whole_decompress_gib_s": 20.681387061763036,
+      "best_kernel": "onpair_shmem_4tpt_split8read_b128o12",
+      "auto_decode_ms": 1.15020544,
+      "best_decode_ms": 1.15020544,
+      "validated": true,
+      "verified": false,
+      "auto_decode_gib_s": 809.6999388988844,
+      "best_decode_gib_s": 809.6999388988844,
+      "kernels": [
+        {
+          "kernel": "onpair",
+          "decode_ms": 295.81292659999997,
+          "decode_gib_s": 3.148345426258206,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem",
+          "decode_ms": 2.25690112,
+          "decode_gib_s": 412.654886045324,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_2tpt",
+          "decode_ms": 1.55188352,
+          "decode_gib_s": 600.1231809518567,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt",
+          "decode_ms": 1.67244032,
+          "decode_gib_s": 556.8636819812886,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_wpb8",
+          "decode_ms": 1.57281824,
+          "decode_gib_s": 592.1353471137037,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_wpb8_occ",
+          "decode_ms": 1.49141312,
+          "decode_gib_s": 624.4555998603287,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b128",
+          "decode_ms": 1.44925824,
+          "decode_gib_s": 642.6192715586453,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_o6",
+          "decode_ms": 1.44168768,
+          "decode_gib_s": 645.9937803513479,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b512o3",
+          "decode_ms": 1.44384928,
+          "decode_gib_s": 645.0266571377618,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b128o12",
+          "decode_ms": 1.44608736,
+          "decode_gib_s": 644.0283624975219,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b64",
+          "decode_ms": 1.4526687999999999,
+          "decode_gib_s": 641.1105370261718,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b64o24",
+          "decode_ms": 1.44880928,
+          "decode_gib_s": 642.8184077404338,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8read_b128o12",
+          "decode_ms": 1.15020544,
+          "decode_gib_s": 809.6999388988844,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8read_occ",
+          "decode_ms": 1.41722624,
+          "decode_gib_s": 657.1436854634898,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8",
+          "decode_ms": 1.6000304,
+          "decode_gib_s": 582.0647373257185,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8_wpb8",
+          "decode_ms": 1.54382432,
+          "decode_gib_s": 603.2559938485516,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8_wpb8_occ",
+          "decode_ms": 1.46734624,
+          "decode_gib_s": 634.6976937693754,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_pdict",
+          "decode_ms": 2.07465696,
+          "decode_gib_s": 448.90374285740444,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vdict",
+          "decode_ms": 2.58578464,
+          "decode_gib_s": 360.16969862160073,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8read",
+          "decode_ms": 1.54417216,
+          "decode_gib_s": 603.1201044896214,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ldcs",
+          "decode_ms": 1.6675152,
+          "decode_gib_s": 558.5084168882925,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_lenbucket",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_lenbucket_b128",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_regcache",
+          "decode_ms": 1.78699616,
+          "decode_gib_s": 521.1657950564171,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split4read",
+          "decode_ms": 1.7472985600000002,
+          "decode_gib_s": 533.006376705973,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split4read_b128o12",
+          "decode_ms": 1.49440384,
+          "decode_gib_s": 623.2058895734398,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_cluster_dsmem",
+          "decode_ms": 6.7923363199999995,
+          "decode_gib_s": 137.11353952643563,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_8tpt",
+          "decode_ms": 1.5026156800000001,
+          "decode_gib_s": 619.8000505952156,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_8tpt_b128",
+          "decode_ms": 1.50499456,
+          "decode_gib_s": 618.8203593833351,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth",
+          "decode_ms": 5.72848128,
+          "decode_gib_s": 162.57734449455413,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth_b128",
+          "decode_ms": 6.99785792,
+          "decode_gib_s": 133.08662238303407,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth4",
+          "decode_ms": 1.90925408,
+          "decode_gib_s": 487.79326138151526,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth4_b128",
+          "decode_ms": 1.37317344,
+          "decode_gib_s": 678.2255229821255,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_shdict8",
+          "decode_ms": 2.7191392000000003,
+          "decode_gib_s": 342.5059204358366,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate",
+          "decode_ms": 1.4438630399999999,
+          "decode_gib_s": 645.0205100403182,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_nogather",
+          "decode_ms": 1.04000512,
+          "decode_gib_s": 895.4968168706365,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_nogather chunk 0 output mismatch at byte 0: gpu=Some(194) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_noemit",
+          "decode_ms": 0.5178537599999999,
+          "decode_gib_s": 1798.4252436231502,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_noemit chunk 0 output mismatch at byte 0: gpu=Some(0) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_nodrain",
+          "decode_ms": 1.3253696,
+          "decode_gib_s": 702.6879705775389,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_nodrain chunk 0 output mismatch at byte 0: gpu=Some(175) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_noscan",
+          "decode_ms": 1.02348,
+          "decode_gib_s": 909.9555189052686,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_noscan chunk 0 output mismatch at byte 1: gpu=Some(115) cpu=Some(86)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_cfree",
+          "decode_ms": 1.42877856,
+          "decode_gib_s": 651.8303819516751,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_cfree chunk 0 output mismatch at byte 0: gpu=Some(83) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_s8",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s8_2tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s8_4tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s8_8tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_2tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_4tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_8tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_16tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_32tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_const1",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "not every dictionary entry is exactly 1 byte"
+        },
+        {
+          "kernel": "onpair_shmem_const2",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "not every dictionary entry is exactly 2 bytes"
+        }
+      ],
+      "nvcomp_zstd_hw": {
+        "supported": false,
+        "error": "failed to prepare nvCOMP zstd hardware decode: Other error: nvcomp get_decompress_temp_size failed: nvcomp: invalid value",
+        "iterations": 100,
+        "backend": "hardware",
+        "zstd_level": -10,
+        "values_per_frame": 2048,
+        "raw_bytes": 999998604,
+        "compressed_bytes": 0,
+        "frames": 0,
+        "compression_ratio": 0.0,
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "compressed_gib_s": 0.0
+      },
+      "nvcomp_zstd": [
+        {
+          "supported": true,
+          "iterations": 100,
+          "backend": "default",
+          "zstd_level": -10,
+          "values_per_frame": 2048,
+          "raw_bytes": 999998604,
+          "compressed_bytes": 797640407,
+          "frames": 159,
+          "compression_ratio": 1.2536960204424548,
+          "decode_ms": 49.87231460571289,
+          "decode_gib_s": 18.674113721252496,
+          "compressed_gib_s": 14.89524846275098
+        },
+        {
+          "supported": true,
+          "iterations": 100,
+          "backend": "default",
+          "zstd_level": 1,
+          "values_per_frame": 2048,
+          "raw_bytes": 999998604,
+          "compressed_bytes": 440195533,
+          "frames": 159,
+          "compression_ratio": 2.2717145655360387,
+          "decode_ms": 77.9818611907959,
+          "decode_gib_s": 11.942793622359543,
+          "compressed_gib_s": 5.257171743115313
+        },
+        {
+          "supported": true,
+          "iterations": 100,
+          "backend": "default",
+          "zstd_level": 3,
+          "values_per_frame": 2048,
+          "raw_bytes": 999998604,
+          "compressed_bytes": 389169897,
+          "frames": 159,
+          "compression_ratio": 2.5695682315325636,
+          "decode_ms": 112.62362297058105,
+          "decode_gib_s": 8.269324409253281,
+          "compressed_gib_s": 3.218176621183248
+        }
+      ]
+    },
+    "mem_ratio": 2.255266044544345,
+    "disk_ratio": 2.255238457159268,
+    "verified": true,
+    "onpair_only": true,
+    "out_dir": "/home/ubuntu/work/vortex-bench/data/onpair-bench/fineweb/text/bits12_chunk1000mb_thr0.20"
+  },
+  {
+    "dataset_id": "fineweb",
+    "column": "text",
+    "bits": 16,
+    "threshold": 0.2,
+    "chunk_bytes": 1048576000,
+    "rows": 324253,
+    "unique_count": 324232,
+    "sample_bytes": 999998604,
+    "n_chunks": 1,
+    "in_memory_bytes": 349164305,
+    "dict_bytes": 473927,
+    "on_disk_bytes": 349169736,
+    "n_files": 1,
+    "encode_ms": 36990.458558,
+    "decode_ms": 656.118607,
+    "encode_gib_s": 0.02517733790806834,
+    "decode_gib_s": 1.4194404251808763,
+    "gpu": {
+      "iterations": 100,
+      "decoded_bytes": 999998604,
+      "chunks": 1,
+      "auto_kernel": "onpair_shmem_4tpt_b128o12",
+      "frac_le8": 0.81819606,
+      "dict_mean_len": 7.231308,
+      "dict_max_len": 16,
+      "dict_entries_max": 65536,
+      "small_dict": false,
+      "distinct_codes": 65459,
+      "access_top4096_frac": 0.4578219,
+      "compressed_bytes": 348029107,
+      "h2d_gib_s": 12.150210328645935,
+      "whole_decompress_gib_s": 33.1065635851961,
+      "best_kernel": "onpair_shmem_4tpt_b128",
+      "auto_decode_ms": 1.45432864,
+      "best_decode_ms": 1.45276096,
+      "validated": true,
+      "verified": false,
+      "auto_decode_gib_s": 640.3788310798612,
+      "best_decode_gib_s": 641.0698663661531,
+      "kernels": [
+        {
+          "kernel": "onpair",
+          "decode_ms": 246.53534097,
+          "decode_gib_s": 3.777638008509675,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem",
+          "decode_ms": 1.76492256,
+          "decode_gib_s": 527.6839310667343,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_2tpt",
+          "decode_ms": 1.5331104,
+          "decode_gib_s": 607.4717609959233,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt",
+          "decode_ms": 1.5904867200000001,
+          "decode_gib_s": 585.5574037670458,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_wpb8",
+          "decode_ms": 1.5548240000000002,
+          "decode_gib_s": 598.9882292073985,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_wpb8_occ",
+          "decode_ms": 1.48215904,
+          "decode_gib_s": 628.3544811015453,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b128",
+          "decode_ms": 1.45276096,
+          "decode_gib_s": 641.0698663661531,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_o6",
+          "decode_ms": 1.46786208,
+          "decode_gib_s": 634.4746466160938,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b512o3",
+          "decode_ms": 1.4969532799999998,
+          "decode_gib_s": 622.1445164201547,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b128o12",
+          "decode_ms": 1.45432864,
+          "decode_gib_s": 640.3788310798612,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b64",
+          "decode_ms": 1.45710016,
+          "decode_gib_s": 639.1607797841189,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_b64o24",
+          "decode_ms": 1.4579248,
+          "decode_gib_s": 638.7992539047037,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8read_b128o12",
+          "decode_ms": 1.46398208,
+          "decode_gib_s": 636.1561983662835,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8read_occ",
+          "decode_ms": 1.5728867199999998,
+          "decode_gib_s": 592.1095668537175,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8",
+          "decode_ms": 1.67812416,
+          "decode_gib_s": 554.977573583807,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8_wpb8",
+          "decode_ms": 1.6901244800000002,
+          "decode_gib_s": 551.0370895812149,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8_wpb8_occ",
+          "decode_ms": 1.6094988799999999,
+          "decode_gib_s": 578.6405234958377,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_pdict",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "padded dict needs 1130752 B shared, over 102400 B cap"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vdict",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "packed dict needs 490592 B shared, over 102400 B cap"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split8read",
+          "decode_ms": 1.6482067200000001,
+          "decode_gib_s": 565.0512543045355,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ldcs",
+          "decode_ms": 1.587312,
+          "decode_gib_s": 586.7285539888594,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_lenbucket",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_lenbucket_b128",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "length-bucket dict not built (set ONPAIR_DICT_REORDER=lenbucket)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_regcache",
+          "decode_ms": 1.6095961600000002,
+          "decode_gib_s": 578.6055518976661,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split4read",
+          "decode_ms": 1.9019027199999998,
+          "decode_gib_s": 489.67871211055655,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_split4read_b128o12",
+          "decode_ms": 1.9159267199999999,
+          "decode_gib_s": 486.09441309381833,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_cluster_dsmem",
+          "decode_ms": 6.93538528,
+          "decode_gib_s": 134.28544152764997,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_8tpt",
+          "decode_ms": 1.52276032,
+          "decode_gib_s": 611.6006979280655,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_8tpt_b128",
+          "decode_ms": 1.49952192,
+          "decode_gib_s": 621.0787998945453,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth",
+          "decode_ms": 4.75519232,
+          "decode_gib_s": 195.8535453071148,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth_b128",
+          "decode_ms": 5.714144,
+          "decode_gib_s": 162.9852650701775,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth4",
+          "decode_ms": 1.82996128,
+          "decode_gib_s": 508.92949739852656,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_vwidth4_b128",
+          "decode_ms": 1.6056911999999999,
+          "decode_gib_s": 580.0126914123739,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_shdict8",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dict_s8 + staging needs 606464 B shared, over 229376 B cap"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate",
+          "decode_ms": 1.4546553599999998,
+          "decode_gib_s": 640.2350000546965,
+          "applicable": true,
+          "verified": true
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_nogather",
+          "decode_ms": 0.84072352,
+          "decode_gib_s": 1107.7616509279585,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_nogather chunk 0 output mismatch at byte 0: gpu=Some(46) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_noemit",
+          "decode_ms": 0.38132544,
+          "decode_gib_s": 2442.3266239177865,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_noemit chunk 0 output mismatch at byte 0: gpu=Some(0) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_nodrain",
+          "decode_ms": 1.34501856,
+          "decode_gib_s": 692.4226194240504,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_nodrain chunk 0 output mismatch at byte 0: gpu=Some(113) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_noscan",
+          "decode_ms": 1.3190624,
+          "decode_gib_s": 706.0479280503822,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_noscan chunk 0 output mismatch at byte 1: gpu=Some(97) cpu=Some(86)"
+        },
+        {
+          "kernel": "onpair_shmem_4tpt_ablate_cfree",
+          "decode_ms": 1.3426083199999999,
+          "decode_gib_s": 693.6656511179407,
+          "applicable": true,
+          "verified": false,
+          "validation_error": "onpair_shmem_4tpt_ablate_cfree chunk 0 output mismatch at byte 0: gpu=Some(101) cpu=Some(124)"
+        },
+        {
+          "kernel": "onpair_shmem_s8",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s8_2tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s8_4tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s8_8tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 8 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_2tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_4tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_8tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_16tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_s4l1_32tpt",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "dictionary entry longer than 4 bytes"
+        },
+        {
+          "kernel": "onpair_shmem_const1",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "not every dictionary entry is exactly 1 byte"
+        },
+        {
+          "kernel": "onpair_shmem_const2",
+          "decode_ms": 0.0,
+          "decode_gib_s": 0.0,
+          "applicable": false,
+          "reason": "not every dictionary entry is exactly 2 bytes"
+        }
+      ],
+      "nvcomp_zstd_hw": {
+        "supported": false,
+        "error": "failed to prepare nvCOMP zstd hardware decode: Other error: nvcomp get_decompress_temp_size failed: nvcomp: invalid value",
+        "iterations": 100,
+        "backend": "hardware",
+        "zstd_level": -10,
+        "values_per_frame": 2048,
+        "raw_bytes": 999998604,
+        "compressed_bytes": 0,
+        "frames": 0,
+        "compression_ratio": 0.0,
+        "decode_ms": 0.0,
+        "decode_gib_s": 0.0,
+        "compressed_gib_s": 0.0
+      },
+      "nvcomp_zstd": [
+        {
+          "supported": true,
+          "iterations": 100,
+          "backend": "default",
+          "zstd_level": -10,
+          "values_per_frame": 2048,
+          "raw_bytes": 999998604,
+          "compressed_bytes": 797640407,
+          "frames": 159,
+          "compression_ratio": 1.2536960204424548,
+          "decode_ms": 49.877149772644046,
+          "decode_gib_s": 18.672303424201736,
+          "compressed_gib_s": 14.893804494658841
+        },
+        {
+          "supported": true,
+          "iterations": 100,
+          "backend": "default",
+          "zstd_level": 1,
+          "values_per_frame": 2048,
+          "raw_bytes": 999998604,
+          "compressed_bytes": 440195533,
+          "frames": 159,
+          "compression_ratio": 2.2717145655360387,
+          "decode_ms": 77.82803039550781,
+          "decode_gib_s": 11.966399120681327,
+          "compressed_gib_s": 5.267562792536707
+        },
+        {
+          "supported": true,
+          "iterations": 100,
+          "backend": "default",
+          "zstd_level": 3,
+          "values_per_frame": 2048,
+          "raw_bytes": 999998604,
+          "compressed_bytes": 389169897,
+          "frames": 159,
+          "compression_ratio": 2.5695682315325636,
+          "decode_ms": 113.00507316589355,
+          "decode_gib_s": 8.241411189761077,
+          "compressed_gib_s": 3.2073136212637814
+        }
+      ]
+    },
+    "mem_ratio": 2.863977186900591,
+    "disk_ratio": 2.8639326404851992,
+    "verified": true,
+    "onpair_only": true,
+    "out_dir": "/home/ubuntu/work/vortex-bench/data/onpair-bench/fineweb/text/bits16_chunk1000mb_thr0.20"
+  }
+]

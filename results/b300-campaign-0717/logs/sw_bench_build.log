@@ -1,0 +1,16 @@
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_sw_bench.cu(262): warning #1650-D: result of call is not used
+      std::vector<unsigned char> host(sz); fread(host.data(),1,sz,f); fclose(f);
+                                           ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_sw_bench.cu(262): warning #1650-D: result of call is not used
+      std::vector<unsigned char> host(sz); fread(host.data(),1,sz,f); fclose(f);
+                                           ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_sw_bench.cu: In function ‘int main(int, char**)’:
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_sw_bench.cu:262:45: warning: ignoring return value of ‘size_t fread(void*, size_t, size_t, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+  262 |     std::vector<unsigned char> host(sz); fread(host.data(),1,sz,f); fclose(f);
+      |                                        ~~~~~^~~~~~~~~~~~~~~~~~~~~~~

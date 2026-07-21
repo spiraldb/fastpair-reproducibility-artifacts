@@ -1,0 +1,940 @@
+{
+  "sweep": "onpair-cpu decode: fat vs entries vs naive, cross-generational CPU matrix",
+  "bench_mb": 256,
+  "region": "us-east-1",
+  "pinned_physical_cores": null,
+  "thread_counts": null,
+  "columns": [
+    "synthetic_url",
+    "tpch_comment",
+    "fineweb_text"
+  ],
+  "metric": "GiB/s of decoded output (byte-identical across all three layouts)",
+  "layouts": {
+    "fat": "data + code*16: independent fixed-stride load + 16-byte over-copy (this work; FSST's fixed-stride decode at OnPair's dict scale)",
+    "entries": "variable-stride (offset->bytes dependent load) + 16-byte over-copy = the PUBLISHED OnPair decode (Gargiulo & Venturini, arXiv:2508.02280)",
+    "naive": "variable-stride + inlined exact per-token copy; a non-over-copying baseline, NOT a real codec"
+  },
+  "machines": [
+    {
+      "label": "amd-rome",
+      "instance_type": "c5a.2xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "AMD EPYC 7R32",
+      "cores_per_socket": "4",
+      "threads_per_core": "2",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 4.09,
+          "entries_gibs": 3.8,
+          "naive_gibs": 2.29,
+          "fat_over_naive": 1.789,
+          "fat_over_entries": 1.078
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 11.7,
+          "entries_gibs": 11.51,
+          "naive_gibs": 7.82,
+          "fat_over_naive": 1.495,
+          "fat_over_entries": 1.017
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 13.34,
+          "entries_gibs": 13.13,
+          "naive_gibs": 9.58,
+          "fat_over_naive": 1.392,
+          "fat_over_entries": 1.016
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 5.12,
+          "entries_gibs": 5.01,
+          "naive_gibs": 1.87,
+          "fat_over_naive": 2.745,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 13.04,
+          "entries_gibs": 11.98,
+          "naive_gibs": 6.58,
+          "fat_over_naive": 1.982,
+          "fat_over_entries": 1.089
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 14.45,
+          "entries_gibs": 14.34,
+          "naive_gibs": 8.76,
+          "fat_over_naive": 1.648,
+          "fat_over_entries": 1.008
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 1.8,
+          "entries_gibs": 1.73,
+          "naive_gibs": 0.47,
+          "fat_over_naive": 3.859,
+          "fat_over_entries": 1.042
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 6.45,
+          "entries_gibs": 6.19,
+          "naive_gibs": 1.79,
+          "fat_over_naive": 3.595,
+          "fat_over_entries": 1.042
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 7.59,
+          "entries_gibs": 7.1,
+          "naive_gibs": 2.75,
+          "fat_over_naive": 2.759,
+          "fat_over_entries": 1.068
+        }
+      ]
+    },
+    {
+      "label": "amd-milan",
+      "instance_type": "m6a.2xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "AMD EPYC 7R13 Processor",
+      "cores_per_socket": "4",
+      "threads_per_core": "2",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 4.16,
+          "entries_gibs": 4.06,
+          "naive_gibs": 2.34,
+          "fat_over_naive": 1.777,
+          "fat_over_entries": 1.025
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 12.35,
+          "entries_gibs": 12.31,
+          "naive_gibs": 8.47,
+          "fat_over_naive": 1.459,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 14.19,
+          "entries_gibs": 14.09,
+          "naive_gibs": 10.54,
+          "fat_over_naive": 1.347,
+          "fat_over_entries": 1.008
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 5.45,
+          "entries_gibs": 5.21,
+          "naive_gibs": 2.2,
+          "fat_over_naive": 2.481,
+          "fat_over_entries": 1.046
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 13.56,
+          "entries_gibs": 13.4,
+          "naive_gibs": 7.99,
+          "fat_over_naive": 1.697,
+          "fat_over_entries": 1.012
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 15.04,
+          "entries_gibs": 15.14,
+          "naive_gibs": 10.65,
+          "fat_over_naive": 1.411,
+          "fat_over_entries": 0.993
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 1.56,
+          "entries_gibs": 1.5,
+          "naive_gibs": 0.58,
+          "fat_over_naive": 2.691,
+          "fat_over_entries": 1.039
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 5.65,
+          "entries_gibs": 5.5,
+          "naive_gibs": 2.23,
+          "fat_over_naive": 2.538,
+          "fat_over_entries": 1.028
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 8.21,
+          "entries_gibs": 7.02,
+          "naive_gibs": 3.18,
+          "fat_over_naive": 2.582,
+          "fat_over_entries": 1.17
+        }
+      ]
+    },
+    {
+      "label": "amd-genoa",
+      "instance_type": "m7a.2xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "AMD EPYC 9R14",
+      "cores_per_socket": "8",
+      "threads_per_core": "1",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 5.58,
+          "entries_gibs": 4.93,
+          "naive_gibs": 2.57,
+          "fat_over_naive": 2.172,
+          "fat_over_entries": 1.131
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 15.92,
+          "entries_gibs": 15.61,
+          "naive_gibs": 9.97,
+          "fat_over_naive": 1.597,
+          "fat_over_entries": 1.02
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 19.17,
+          "entries_gibs": 19.23,
+          "naive_gibs": 15.49,
+          "fat_over_naive": 1.238,
+          "fat_over_entries": 0.997
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 6.11,
+          "entries_gibs": 5.67,
+          "naive_gibs": 2.28,
+          "fat_over_naive": 2.677,
+          "fat_over_entries": 1.078
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 16.4,
+          "entries_gibs": 16.16,
+          "naive_gibs": 8.55,
+          "fat_over_naive": 1.919,
+          "fat_over_entries": 1.015
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 19.54,
+          "entries_gibs": 19.3,
+          "naive_gibs": 14.99,
+          "fat_over_naive": 1.304,
+          "fat_over_entries": 1.013
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 2.86,
+          "entries_gibs": 2.28,
+          "naive_gibs": 0.61,
+          "fat_over_naive": 4.67,
+          "fat_over_entries": 1.252
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 10.5,
+          "entries_gibs": 8.45,
+          "naive_gibs": 2.36,
+          "fat_over_naive": 4.445,
+          "fat_over_entries": 1.242
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 16.85,
+          "entries_gibs": 14.67,
+          "naive_gibs": 4.52,
+          "fat_over_naive": 3.73,
+          "fat_over_entries": 1.149
+        }
+      ]
+    },
+    {
+      "label": "amd-turin",
+      "instance_type": "m8a.2xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "AMD EPYC 9R45",
+      "cores_per_socket": "8",
+      "threads_per_core": "1",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 15.31,
+          "entries_gibs": 13.42,
+          "naive_gibs": 4.08,
+          "fat_over_naive": 3.751,
+          "fat_over_entries": 1.14
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 28.67,
+          "entries_gibs": 28.51,
+          "naive_gibs": 15.72,
+          "fat_over_naive": 1.824,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 29.76,
+          "entries_gibs": 29.72,
+          "naive_gibs": 26.99,
+          "fat_over_naive": 1.102,
+          "fat_over_entries": 1.001
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 21.34,
+          "entries_gibs": 18.43,
+          "naive_gibs": 3.64,
+          "fat_over_naive": 5.869,
+          "fat_over_entries": 1.158
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 29.21,
+          "entries_gibs": 28.98,
+          "naive_gibs": 14.22,
+          "fat_over_naive": 2.054,
+          "fat_over_entries": 1.008
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 30.05,
+          "entries_gibs": 29.75,
+          "naive_gibs": 26.78,
+          "fat_over_naive": 1.122,
+          "fat_over_entries": 1.01
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 5.53,
+          "entries_gibs": 4.95,
+          "naive_gibs": 0.74,
+          "fat_over_naive": 7.447,
+          "fat_over_entries": 1.118
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 20.85,
+          "entries_gibs": 19.02,
+          "naive_gibs": 2.91,
+          "fat_over_naive": 7.159,
+          "fat_over_entries": 1.096
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 27.32,
+          "entries_gibs": 27.56,
+          "naive_gibs": 5.65,
+          "fat_over_naive": 4.839,
+          "fat_over_entries": 0.991
+        }
+      ]
+    },
+    {
+      "label": "intel-icelake",
+      "instance_type": "m6i.2xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8375C CPU @ 2.90GHz",
+      "cores_per_socket": "4",
+      "threads_per_core": "2",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 5.67,
+          "entries_gibs": 5.29,
+          "naive_gibs": 1.9,
+          "fat_over_naive": 2.992,
+          "fat_over_entries": 1.072
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 18.96,
+          "entries_gibs": 18.28,
+          "naive_gibs": 7.58,
+          "fat_over_naive": 2.503,
+          "fat_over_entries": 1.038
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 25.28,
+          "entries_gibs": 24.24,
+          "naive_gibs": 10.22,
+          "fat_over_naive": 2.474,
+          "fat_over_entries": 1.043
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 6.72,
+          "entries_gibs": 6.48,
+          "naive_gibs": 2.23,
+          "fat_over_naive": 3.019,
+          "fat_over_entries": 1.037
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 21.82,
+          "entries_gibs": 21.22,
+          "naive_gibs": 8.53,
+          "fat_over_naive": 2.557,
+          "fat_over_entries": 1.028
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 28.13,
+          "entries_gibs": 27.98,
+          "naive_gibs": 12.14,
+          "fat_over_naive": 2.318,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 2.86,
+          "entries_gibs": 2.55,
+          "naive_gibs": 0.54,
+          "fat_over_naive": 5.271,
+          "fat_over_entries": 1.122
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 10.61,
+          "entries_gibs": 9.66,
+          "naive_gibs": 2.13,
+          "fat_over_naive": 4.973,
+          "fat_over_entries": 1.099
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 12.85,
+          "entries_gibs": 11.53,
+          "naive_gibs": 3.06,
+          "fat_over_naive": 4.201,
+          "fat_over_entries": 1.114
+        }
+      ]
+    },
+    {
+      "label": "intel-sapphire",
+      "instance_type": "m7i.2xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "cores_per_socket": "4",
+      "threads_per_core": "2",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 6.61,
+          "entries_gibs": 6.47,
+          "naive_gibs": 2.39,
+          "fat_over_naive": 2.771,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 23.84,
+          "entries_gibs": 22.91,
+          "naive_gibs": 9.12,
+          "fat_over_naive": 2.613,
+          "fat_over_entries": 1.041
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 28.83,
+          "entries_gibs": 28.31,
+          "naive_gibs": 11.93,
+          "fat_over_naive": 2.417,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 7.43,
+          "entries_gibs": 7.32,
+          "naive_gibs": 2.09,
+          "fat_over_naive": 3.553,
+          "fat_over_entries": 1.014
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 26.33,
+          "entries_gibs": 25.84,
+          "naive_gibs": 7.92,
+          "fat_over_naive": 3.325,
+          "fat_over_entries": 1.019
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 31.86,
+          "entries_gibs": 31.04,
+          "naive_gibs": 10.92,
+          "fat_over_naive": 2.918,
+          "fat_over_entries": 1.026
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 3.54,
+          "entries_gibs": 2.88,
+          "naive_gibs": 0.52,
+          "fat_over_naive": 6.843,
+          "fat_over_entries": 1.23
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 12.49,
+          "entries_gibs": 10.89,
+          "naive_gibs": 2.05,
+          "fat_over_naive": 6.103,
+          "fat_over_entries": 1.146
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 13.87,
+          "entries_gibs": 14.04,
+          "naive_gibs": 3.0,
+          "fat_over_naive": 4.618,
+          "fat_over_entries": 0.988
+        }
+      ]
+    },
+    {
+      "label": "intel-granite",
+      "instance_type": "m8i.2xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+      "cores_per_socket": "4",
+      "threads_per_core": "2",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 6.95,
+          "entries_gibs": 6.89,
+          "naive_gibs": 2.73,
+          "fat_over_naive": 2.542,
+          "fat_over_entries": 1.009
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 24.74,
+          "entries_gibs": 24.58,
+          "naive_gibs": 10.41,
+          "fat_over_naive": 2.377,
+          "fat_over_entries": 1.007
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 31.95,
+          "entries_gibs": 31.82,
+          "naive_gibs": 13.95,
+          "fat_over_naive": 2.29,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 7.79,
+          "entries_gibs": 7.59,
+          "naive_gibs": 2.41,
+          "fat_over_naive": 3.225,
+          "fat_over_entries": 1.026
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 26.77,
+          "entries_gibs": 25.98,
+          "naive_gibs": 9.3,
+          "fat_over_naive": 2.879,
+          "fat_over_entries": 1.03
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 34.19,
+          "entries_gibs": 33.57,
+          "naive_gibs": 13.83,
+          "fat_over_naive": 2.473,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 3.58,
+          "entries_gibs": 3.06,
+          "naive_gibs": 0.62,
+          "fat_over_naive": 5.77,
+          "fat_over_entries": 1.169
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 13.61,
+          "entries_gibs": 12.41,
+          "naive_gibs": 2.43,
+          "fat_over_naive": 5.597,
+          "fat_over_entries": 1.097
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 17.04,
+          "entries_gibs": 16.75,
+          "naive_gibs": 3.71,
+          "fat_over_naive": 4.597,
+          "fat_over_entries": 1.017
+        }
+      ]
+    },
+    {
+      "label": "arm-graviton2",
+      "instance_type": "m6g.2xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "Neoverse-N1",
+      "cores_per_socket": "8",
+      "threads_per_core": "1",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 3.46,
+          "entries_gibs": 3.03,
+          "naive_gibs": 1.46,
+          "fat_over_naive": 2.373,
+          "fat_over_entries": 1.141
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 12.44,
+          "entries_gibs": 10.9,
+          "naive_gibs": 5.46,
+          "fat_over_naive": 2.278,
+          "fat_over_entries": 1.141
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 20.68,
+          "entries_gibs": 19.11,
+          "naive_gibs": 10.1,
+          "fat_over_naive": 2.047,
+          "fat_over_entries": 1.082
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 4.5,
+          "entries_gibs": 4.19,
+          "naive_gibs": 1.65,
+          "fat_over_naive": 2.73,
+          "fat_over_entries": 1.074
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 15.62,
+          "entries_gibs": 14.79,
+          "naive_gibs": 6.13,
+          "fat_over_naive": 2.548,
+          "fat_over_entries": 1.056
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 26.31,
+          "entries_gibs": 25.4,
+          "naive_gibs": 11.24,
+          "fat_over_naive": 2.34,
+          "fat_over_entries": 1.036
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 1.66,
+          "entries_gibs": 1.44,
+          "naive_gibs": 0.42,
+          "fat_over_naive": 3.981,
+          "fat_over_entries": 1.151
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 6.15,
+          "entries_gibs": 5.46,
+          "naive_gibs": 1.63,
+          "fat_over_naive": 3.772,
+          "fat_over_entries": 1.126
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 11.29,
+          "entries_gibs": 10.2,
+          "naive_gibs": 3.17,
+          "fat_over_naive": 3.564,
+          "fat_over_entries": 1.108
+        }
+      ]
+    },
+    {
+      "label": "arm-graviton3",
+      "instance_type": "m7g.2xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Neoverse-V1",
+      "cores_per_socket": "8",
+      "threads_per_core": "1",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 6.33,
+          "entries_gibs": 5.73,
+          "naive_gibs": 2.62,
+          "fat_over_naive": 2.41,
+          "fat_over_entries": 1.104
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 21.37,
+          "entries_gibs": 20.95,
+          "naive_gibs": 9.53,
+          "fat_over_naive": 2.242,
+          "fat_over_entries": 1.02
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 36.67,
+          "entries_gibs": 34.71,
+          "naive_gibs": 16.95,
+          "fat_over_naive": 2.163,
+          "fat_over_entries": 1.057
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 8.44,
+          "entries_gibs": 7.86,
+          "naive_gibs": 2.44,
+          "fat_over_naive": 3.461,
+          "fat_over_entries": 1.074
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 28.17,
+          "entries_gibs": 26.26,
+          "naive_gibs": 8.93,
+          "fat_over_naive": 3.153,
+          "fat_over_entries": 1.073
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 45.87,
+          "entries_gibs": 43.28,
+          "naive_gibs": 15.88,
+          "fat_over_naive": 2.889,
+          "fat_over_entries": 1.06
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 2.15,
+          "entries_gibs": 2.14,
+          "naive_gibs": 0.52,
+          "fat_over_naive": 4.123,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 8.04,
+          "entries_gibs": 7.78,
+          "naive_gibs": 2.04,
+          "fat_over_naive": 3.946,
+          "fat_over_entries": 1.032
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 14.57,
+          "entries_gibs": 13.79,
+          "naive_gibs": 3.92,
+          "fat_over_naive": 3.713,
+          "fat_over_entries": 1.056
+        }
+      ]
+    },
+    {
+      "label": "arm-graviton4",
+      "instance_type": "m8g.2xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Neoverse-V2",
+      "cores_per_socket": "8",
+      "threads_per_core": "1",
+      "pinned_cores": null,
+      "results": [
+        {
+          "column": "synthetic_url",
+          "threads": 1,
+          "fat_gibs": 8.23,
+          "entries_gibs": 6.96,
+          "naive_gibs": 3.11,
+          "fat_over_naive": 2.648,
+          "fat_over_entries": 1.181
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 4,
+          "fat_gibs": 27.34,
+          "entries_gibs": 23.07,
+          "naive_gibs": 11.39,
+          "fat_over_naive": 2.4,
+          "fat_over_entries": 1.185
+        },
+        {
+          "column": "synthetic_url",
+          "threads": 8,
+          "fat_gibs": 46.03,
+          "entries_gibs": 39.69,
+          "naive_gibs": 20.57,
+          "fat_over_naive": 2.238,
+          "fat_over_entries": 1.16
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 1,
+          "fat_gibs": 10.45,
+          "entries_gibs": 9.3,
+          "naive_gibs": 2.99,
+          "fat_over_naive": 3.497,
+          "fat_over_entries": 1.124
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 4,
+          "fat_gibs": 34.45,
+          "entries_gibs": 31.01,
+          "naive_gibs": 10.95,
+          "fat_over_naive": 3.146,
+          "fat_over_entries": 1.111
+        },
+        {
+          "column": "tpch_comment",
+          "threads": 8,
+          "fat_gibs": 57.39,
+          "entries_gibs": 51.46,
+          "naive_gibs": 19.74,
+          "fat_over_naive": 2.907,
+          "fat_over_entries": 1.115
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 1,
+          "fat_gibs": 2.9,
+          "entries_gibs": 2.44,
+          "naive_gibs": 0.66,
+          "fat_over_naive": 4.424,
+          "fat_over_entries": 1.188
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 4,
+          "fat_gibs": 10.39,
+          "entries_gibs": 8.67,
+          "naive_gibs": 2.55,
+          "fat_over_naive": 4.071,
+          "fat_over_entries": 1.198
+        },
+        {
+          "column": "fineweb_text",
+          "threads": 8,
+          "fat_gibs": 17.75,
+          "entries_gibs": 15.61,
+          "naive_gibs": 4.89,
+          "fat_over_naive": 3.632,
+          "fat_over_entries": 1.137
+        }
+      ]
+    }
+  ]
+}

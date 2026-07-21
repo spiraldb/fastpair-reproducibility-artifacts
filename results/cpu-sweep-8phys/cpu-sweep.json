@@ -1,0 +1,4330 @@
+{
+  "sweep": "onpair-cpu decode: fat vs entries vs naive, cross-generational CPU matrix",
+  "bench_mb": 256,
+  "region": "us-east-1",
+  "pinned_physical_cores": "8",
+  "thread_counts": "1,4,8",
+  "columns": [
+    "synthetic_url",
+    "tpch_comment",
+    "fineweb_text"
+  ],
+  "metric": "GiB/s of decoded output (byte-identical across all three layouts)",
+  "layouts": {
+    "fat": "data + code*16: independent fixed-stride load + 16-byte over-copy (this work; FSST's fixed-stride decode at OnPair's dict scale)",
+    "entries": "variable-stride (offset->bytes dependent load) + 16-byte over-copy = the PUBLISHED OnPair decode (Gargiulo & Venturini, arXiv:2508.02280)",
+    "naive": "variable-stride + inlined exact per-token copy; a non-over-copying baseline, NOT a real codec"
+  },
+  "machines": [
+    {
+      "label": "amd-rome",
+      "instance_type": "c5a.4xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "AMD EPYC 7R32",
+      "cores_per_socket": "8",
+      "threads_per_core": "2",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.14,
+          "entries_gibs": 3.87,
+          "naive_gibs": 2.04,
+          "fat_over_naive": 2.029,
+          "fat_over_entries": 1.069
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 11.6,
+          "entries_gibs": 10.97,
+          "naive_gibs": 7.11,
+          "fat_over_naive": 1.631,
+          "fat_over_entries": 1.058
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 14.05,
+          "entries_gibs": 13.87,
+          "naive_gibs": 11.66,
+          "fat_over_naive": 1.205,
+          "fat_over_entries": 1.013
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.38,
+          "entries_gibs": 4.19,
+          "naive_gibs": 1.93,
+          "fat_over_naive": 2.265,
+          "fat_over_entries": 1.045
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.69,
+          "entries_gibs": 11.49,
+          "naive_gibs": 6.87,
+          "fat_over_naive": 1.702,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 13.93,
+          "entries_gibs": 13.86,
+          "naive_gibs": 11.5,
+          "fat_over_naive": 1.211,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.21,
+          "entries_gibs": 5.06,
+          "naive_gibs": 1.87,
+          "fat_over_naive": 2.792,
+          "fat_over_entries": 1.03
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.75,
+          "entries_gibs": 11.73,
+          "naive_gibs": 6.59,
+          "fat_over_naive": 1.935,
+          "fat_over_entries": 1.087
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 14.92,
+          "entries_gibs": 14.88,
+          "naive_gibs": 11.24,
+          "fat_over_naive": 1.327,
+          "fat_over_entries": 1.002
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.14,
+          "entries_gibs": 4.87,
+          "naive_gibs": 1.83,
+          "fat_over_naive": 2.815,
+          "fat_over_entries": 1.057
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.99,
+          "entries_gibs": 11.87,
+          "naive_gibs": 6.42,
+          "fat_over_naive": 2.022,
+          "fat_over_entries": 1.094
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 14.91,
+          "entries_gibs": 13.86,
+          "naive_gibs": 11.04,
+          "fat_over_naive": 1.35,
+          "fat_over_entries": 1.075
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 1.81,
+          "entries_gibs": 1.74,
+          "naive_gibs": 0.47,
+          "fat_over_naive": 3.827,
+          "fat_over_entries": 1.037
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 6.45,
+          "entries_gibs": 6.18,
+          "naive_gibs": 1.81,
+          "fat_over_naive": 3.557,
+          "fat_over_entries": 1.043
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 10.97,
+          "entries_gibs": 10.65,
+          "naive_gibs": 3.4,
+          "fat_over_naive": 3.223,
+          "fat_over_entries": 1.029
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.44,
+          "entries_gibs": 2.0,
+          "naive_gibs": 0.82,
+          "fat_over_naive": 2.974,
+          "fat_over_entries": 1.218
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 8.42,
+          "entries_gibs": 6.94,
+          "naive_gibs": 3.09,
+          "fat_over_naive": 2.723,
+          "fat_over_entries": 1.213
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 12.17,
+          "entries_gibs": 11.64,
+          "naive_gibs": 5.65,
+          "fat_over_naive": 2.156,
+          "fat_over_entries": 1.046
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.97,
+          "entries_gibs": 2.62,
+          "naive_gibs": 0.68,
+          "fat_over_naive": 4.367,
+          "fat_over_entries": 1.132
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 10.05,
+          "entries_gibs": 8.78,
+          "naive_gibs": 2.55,
+          "fat_over_naive": 3.948,
+          "fat_over_entries": 1.144
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 13.25,
+          "entries_gibs": 12.09,
+          "naive_gibs": 4.72,
+          "fat_over_naive": 2.809,
+          "fat_over_entries": 1.096
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.45,
+          "entries_gibs": 2.98,
+          "naive_gibs": 0.99,
+          "fat_over_naive": 3.479,
+          "fat_over_entries": 1.159
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 10.77,
+          "entries_gibs": 9.87,
+          "naive_gibs": 3.67,
+          "fat_over_naive": 2.932,
+          "fat_over_entries": 1.091
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 13.67,
+          "entries_gibs": 13.39,
+          "naive_gibs": 6.61,
+          "fat_over_naive": 2.067,
+          "fat_over_entries": 1.021
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.55,
+          "entries_gibs": 3.16,
+          "naive_gibs": 0.84,
+          "fat_over_naive": 4.228,
+          "fat_over_entries": 1.122
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 10.99,
+          "entries_gibs": 10.63,
+          "naive_gibs": 3.11,
+          "fat_over_naive": 3.538,
+          "fat_over_entries": 1.033
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 13.75,
+          "entries_gibs": 13.46,
+          "naive_gibs": 5.58,
+          "fat_over_naive": 2.464,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.92,
+          "entries_gibs": 2.35,
+          "naive_gibs": 1.0,
+          "fat_over_naive": 2.933,
+          "fat_over_entries": 1.243
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 10.01,
+          "entries_gibs": 7.97,
+          "naive_gibs": 3.7,
+          "fat_over_naive": 2.705,
+          "fat_over_entries": 1.256
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 13.65,
+          "entries_gibs": 12.19,
+          "naive_gibs": 6.64,
+          "fat_over_naive": 2.054,
+          "fat_over_entries": 1.12
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.28,
+          "entries_gibs": 4.08,
+          "naive_gibs": 1.21,
+          "fat_over_naive": 3.551,
+          "fat_over_entries": 1.05
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.47,
+          "entries_gibs": 11.33,
+          "naive_gibs": 4.33,
+          "fat_over_naive": 2.88,
+          "fat_over_entries": 1.101
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 13.9,
+          "entries_gibs": 13.63,
+          "naive_gibs": 7.54,
+          "fat_over_naive": 1.843,
+          "fat_over_entries": 1.02
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.27,
+          "entries_gibs": 4.12,
+          "naive_gibs": 1.21,
+          "fat_over_naive": 3.517,
+          "fat_over_entries": 1.036
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.29,
+          "entries_gibs": 11.47,
+          "naive_gibs": 4.34,
+          "fat_over_naive": 2.833,
+          "fat_over_entries": 1.071
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 13.85,
+          "entries_gibs": 13.79,
+          "naive_gibs": 7.53,
+          "fat_over_naive": 1.838,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.25,
+          "entries_gibs": 2.11,
+          "naive_gibs": 0.5,
+          "fat_over_naive": 4.482,
+          "fat_over_entries": 1.065
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 7.74,
+          "entries_gibs": 7.29,
+          "naive_gibs": 1.91,
+          "fat_over_naive": 4.057,
+          "fat_over_entries": 1.062
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 11.96,
+          "entries_gibs": 11.51,
+          "naive_gibs": 3.58,
+          "fat_over_naive": 3.345,
+          "fat_over_entries": 1.039
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.15,
+          "entries_gibs": 1.78,
+          "naive_gibs": 0.67,
+          "fat_over_naive": 3.194,
+          "fat_over_entries": 1.206
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 7.55,
+          "entries_gibs": 6.34,
+          "naive_gibs": 2.56,
+          "fat_over_naive": 2.946,
+          "fat_over_entries": 1.191
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 12.04,
+          "entries_gibs": 10.89,
+          "naive_gibs": 4.76,
+          "fat_over_naive": 2.529,
+          "fat_over_entries": 1.106
+        }
+      ]
+    },
+    {
+      "label": "amd-milan",
+      "instance_type": "m6a.4xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "AMD EPYC 7R13 Processor",
+      "cores_per_socket": "8",
+      "threads_per_core": "2",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.16,
+          "entries_gibs": 3.99,
+          "naive_gibs": 2.08,
+          "fat_over_naive": 1.997,
+          "fat_over_entries": 1.042
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.48,
+          "entries_gibs": 12.21,
+          "naive_gibs": 7.56,
+          "fat_over_naive": 1.651,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 15.12,
+          "entries_gibs": 14.92,
+          "naive_gibs": 12.95,
+          "fat_over_naive": 1.167,
+          "fat_over_entries": 1.013
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.75,
+          "entries_gibs": 4.54,
+          "naive_gibs": 2.72,
+          "fat_over_naive": 1.748,
+          "fat_over_entries": 1.046
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.46,
+          "entries_gibs": 12.6,
+          "naive_gibs": 9.58,
+          "fat_over_naive": 1.3,
+          "fat_over_entries": 0.989
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 15.09,
+          "entries_gibs": 15.2,
+          "naive_gibs": 13.45,
+          "fat_over_naive": 1.122,
+          "fat_over_entries": 0.993
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.42,
+          "entries_gibs": 5.26,
+          "naive_gibs": 2.25,
+          "fat_over_naive": 2.413,
+          "fat_over_entries": 1.031
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 13.69,
+          "entries_gibs": 13.52,
+          "naive_gibs": 8.21,
+          "fat_over_naive": 1.668,
+          "fat_over_entries": 1.013
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 15.92,
+          "entries_gibs": 15.95,
+          "naive_gibs": 13.27,
+          "fat_over_naive": 1.2,
+          "fat_over_entries": 0.998
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.48,
+          "entries_gibs": 5.19,
+          "naive_gibs": 2.26,
+          "fat_over_naive": 2.422,
+          "fat_over_entries": 1.057
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 13.88,
+          "entries_gibs": 13.63,
+          "naive_gibs": 8.17,
+          "fat_over_naive": 1.699,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 15.98,
+          "entries_gibs": 15.97,
+          "naive_gibs": 13.06,
+          "fat_over_naive": 1.224,
+          "fat_over_entries": 1.001
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 1.55,
+          "entries_gibs": 1.52,
+          "naive_gibs": 0.57,
+          "fat_over_naive": 2.719,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 5.63,
+          "entries_gibs": 5.5,
+          "naive_gibs": 2.2,
+          "fat_over_naive": 2.562,
+          "fat_over_entries": 1.023
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 9.92,
+          "entries_gibs": 9.86,
+          "naive_gibs": 4.16,
+          "fat_over_naive": 2.384,
+          "fat_over_entries": 1.006
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.58,
+          "entries_gibs": 3.52,
+          "naive_gibs": 1.13,
+          "fat_over_naive": 3.181,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.59,
+          "entries_gibs": 11.58,
+          "naive_gibs": 4.18,
+          "fat_over_naive": 2.775,
+          "fat_over_entries": 1.001
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 14.75,
+          "entries_gibs": 14.77,
+          "naive_gibs": 7.61,
+          "fat_over_naive": 1.937,
+          "fat_over_entries": 0.999
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.67,
+          "entries_gibs": 2.64,
+          "naive_gibs": 0.88,
+          "fat_over_naive": 3.042,
+          "fat_over_entries": 1.01
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 9.53,
+          "entries_gibs": 9.27,
+          "naive_gibs": 3.32,
+          "fat_over_naive": 2.866,
+          "fat_over_entries": 1.027
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 13.42,
+          "entries_gibs": 13.42,
+          "naive_gibs": 6.16,
+          "fat_over_naive": 2.179,
+          "fat_over_entries": 1.0
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.89,
+          "entries_gibs": 3.33,
+          "naive_gibs": 1.25,
+          "fat_over_naive": 3.117,
+          "fat_over_entries": 1.169
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.86,
+          "entries_gibs": 11.04,
+          "naive_gibs": 4.62,
+          "fat_over_naive": 2.569,
+          "fat_over_entries": 1.074
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 14.68,
+          "entries_gibs": 14.77,
+          "naive_gibs": 8.4,
+          "fat_over_naive": 1.749,
+          "fat_over_entries": 0.994
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.79,
+          "entries_gibs": 3.66,
+          "naive_gibs": 1.01,
+          "fat_over_naive": 3.769,
+          "fat_over_entries": 1.035
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.0,
+          "entries_gibs": 11.67,
+          "naive_gibs": 3.78,
+          "fat_over_naive": 3.176,
+          "fat_over_entries": 1.028
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 14.76,
+          "entries_gibs": 14.6,
+          "naive_gibs": 6.9,
+          "fat_over_naive": 2.139,
+          "fat_over_entries": 1.011
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.39,
+          "entries_gibs": 3.04,
+          "naive_gibs": 1.16,
+          "fat_over_naive": 2.929,
+          "fat_over_entries": 1.116
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.27,
+          "entries_gibs": 10.32,
+          "naive_gibs": 4.32,
+          "fat_over_naive": 2.608,
+          "fat_over_entries": 1.092
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 14.7,
+          "entries_gibs": 14.5,
+          "naive_gibs": 7.92,
+          "fat_over_naive": 1.856,
+          "fat_over_entries": 1.014
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.39,
+          "entries_gibs": 4.28,
+          "naive_gibs": 1.43,
+          "fat_over_naive": 3.072,
+          "fat_over_entries": 1.027
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.46,
+          "entries_gibs": 12.41,
+          "naive_gibs": 5.24,
+          "fat_over_naive": 2.379,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 15.13,
+          "entries_gibs": 15.25,
+          "naive_gibs": 9.3,
+          "fat_over_naive": 1.627,
+          "fat_over_entries": 0.992
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.34,
+          "entries_gibs": 4.12,
+          "naive_gibs": 1.42,
+          "fat_over_naive": 3.058,
+          "fat_over_entries": 1.053
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.49,
+          "entries_gibs": 12.47,
+          "naive_gibs": 5.21,
+          "fat_over_naive": 2.397,
+          "fat_over_entries": 1.001
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 15.25,
+          "entries_gibs": 14.98,
+          "naive_gibs": 9.27,
+          "fat_over_naive": 1.644,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.14,
+          "entries_gibs": 2.08,
+          "naive_gibs": 0.61,
+          "fat_over_naive": 3.536,
+          "fat_over_entries": 1.031
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 7.76,
+          "entries_gibs": 7.55,
+          "naive_gibs": 2.33,
+          "fat_over_naive": 3.333,
+          "fat_over_entries": 1.027
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 12.74,
+          "entries_gibs": 12.58,
+          "naive_gibs": 4.41,
+          "fat_over_naive": 2.888,
+          "fat_over_entries": 1.013
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.61,
+          "entries_gibs": 2.22,
+          "naive_gibs": 0.8,
+          "fat_over_naive": 3.243,
+          "fat_over_entries": 1.175
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 8.99,
+          "entries_gibs": 7.99,
+          "naive_gibs": 3.05,
+          "fat_over_naive": 2.944,
+          "fat_over_entries": 1.125
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 13.46,
+          "entries_gibs": 12.74,
+          "naive_gibs": 5.75,
+          "fat_over_naive": 2.341,
+          "fat_over_entries": 1.056
+        }
+      ]
+    },
+    {
+      "label": "amd-genoa",
+      "instance_type": "m7a.4xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "AMD EPYC 9R14",
+      "cores_per_socket": "16",
+      "threads_per_core": "1",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.52,
+          "entries_gibs": 4.83,
+          "naive_gibs": 2.56,
+          "fat_over_naive": 2.16,
+          "fat_over_entries": 1.143
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 15.94,
+          "entries_gibs": 15.44,
+          "naive_gibs": 9.98,
+          "fat_over_naive": 1.598,
+          "fat_over_entries": 1.032
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.32,
+          "entries_gibs": 19.08,
+          "naive_gibs": 15.42,
+          "fat_over_naive": 1.253,
+          "fat_over_entries": 1.013
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.59,
+          "entries_gibs": 5.16,
+          "naive_gibs": 2.4,
+          "fat_over_naive": 2.331,
+          "fat_over_entries": 1.085
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 15.83,
+          "entries_gibs": 15.29,
+          "naive_gibs": 8.85,
+          "fat_over_naive": 1.789,
+          "fat_over_entries": 1.035
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 19.03,
+          "entries_gibs": 18.82,
+          "naive_gibs": 15.03,
+          "fat_over_naive": 1.267,
+          "fat_over_entries": 1.011
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.27,
+          "entries_gibs": 5.46,
+          "naive_gibs": 2.33,
+          "fat_over_naive": 2.695,
+          "fat_over_entries": 1.15
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 16.42,
+          "entries_gibs": 16.13,
+          "naive_gibs": 8.49,
+          "fat_over_naive": 1.934,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.51,
+          "entries_gibs": 19.19,
+          "naive_gibs": 14.98,
+          "fat_over_naive": 1.303,
+          "fat_over_entries": 1.017
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.05,
+          "entries_gibs": 5.55,
+          "naive_gibs": 2.3,
+          "fat_over_naive": 2.625,
+          "fat_over_entries": 1.09
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 16.49,
+          "entries_gibs": 16.06,
+          "naive_gibs": 8.51,
+          "fat_over_naive": 1.937,
+          "fat_over_entries": 1.027
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 19.51,
+          "entries_gibs": 19.17,
+          "naive_gibs": 14.84,
+          "fat_over_naive": 1.314,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.67,
+          "entries_gibs": 2.27,
+          "naive_gibs": 0.58,
+          "fat_over_naive": 4.621,
+          "fat_over_entries": 1.175
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 10.48,
+          "entries_gibs": 8.41,
+          "naive_gibs": 2.24,
+          "fat_over_naive": 4.673,
+          "fat_over_entries": 1.246
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 16.78,
+          "entries_gibs": 14.56,
+          "naive_gibs": 4.28,
+          "fat_over_naive": 3.922,
+          "fat_over_entries": 1.152
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.81,
+          "entries_gibs": 3.53,
+          "naive_gibs": 1.13,
+          "fat_over_naive": 3.363,
+          "fat_over_entries": 1.08
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 13.5,
+          "entries_gibs": 12.37,
+          "naive_gibs": 4.32,
+          "fat_over_naive": 3.124,
+          "fat_over_entries": 1.092
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 17.82,
+          "entries_gibs": 17.67,
+          "naive_gibs": 7.91,
+          "fat_over_naive": 2.252,
+          "fat_over_entries": 1.008
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.03,
+          "entries_gibs": 3.53,
+          "naive_gibs": 0.92,
+          "fat_over_naive": 4.402,
+          "fat_over_entries": 1.141
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 13.57,
+          "entries_gibs": 12.67,
+          "naive_gibs": 3.48,
+          "fat_over_naive": 3.902,
+          "fat_over_entries": 1.071
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 17.84,
+          "entries_gibs": 17.57,
+          "naive_gibs": 6.49,
+          "fat_over_naive": 2.748,
+          "fat_over_entries": 1.016
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.3,
+          "entries_gibs": 3.85,
+          "naive_gibs": 1.31,
+          "fat_over_naive": 3.293,
+          "fat_over_entries": 1.117
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 13.94,
+          "entries_gibs": 13.42,
+          "naive_gibs": 4.91,
+          "fat_over_naive": 2.836,
+          "fat_over_entries": 1.038
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 18.18,
+          "entries_gibs": 17.66,
+          "naive_gibs": 8.94,
+          "fat_over_naive": 2.033,
+          "fat_over_entries": 1.03
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.77,
+          "entries_gibs": 3.96,
+          "naive_gibs": 1.05,
+          "fat_over_naive": 4.525,
+          "fat_over_entries": 1.205
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 15.31,
+          "entries_gibs": 13.75,
+          "naive_gibs": 3.96,
+          "fat_over_naive": 3.864,
+          "fat_over_entries": 1.113
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.11,
+          "entries_gibs": 17.72,
+          "naive_gibs": 7.35,
+          "fat_over_naive": 2.6,
+          "fat_over_entries": 1.078
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.7,
+          "entries_gibs": 3.48,
+          "naive_gibs": 1.25,
+          "fat_over_naive": 2.966,
+          "fat_over_entries": 1.064
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.91,
+          "entries_gibs": 12.36,
+          "naive_gibs": 4.72,
+          "fat_over_naive": 2.737,
+          "fat_over_entries": 1.045
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 17.63,
+          "entries_gibs": 17.33,
+          "naive_gibs": 8.63,
+          "fat_over_naive": 2.044,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.78,
+          "entries_gibs": 6.15,
+          "naive_gibs": 1.49,
+          "fat_over_naive": 4.548,
+          "fat_over_entries": 1.103
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 16.24,
+          "entries_gibs": 16.2,
+          "naive_gibs": 5.94,
+          "fat_over_naive": 2.735,
+          "fat_over_entries": 1.002
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.53,
+          "entries_gibs": 19.45,
+          "naive_gibs": 9.94,
+          "fat_over_naive": 1.965,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.63,
+          "entries_gibs": 6.24,
+          "naive_gibs": 1.48,
+          "fat_over_naive": 4.472,
+          "fat_over_entries": 1.064
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 16.2,
+          "entries_gibs": 16.25,
+          "naive_gibs": 5.97,
+          "fat_over_naive": 2.715,
+          "fat_over_entries": 0.997
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 19.71,
+          "entries_gibs": 19.36,
+          "naive_gibs": 9.91,
+          "fat_over_naive": 1.988,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.4,
+          "entries_gibs": 2.88,
+          "naive_gibs": 0.64,
+          "fat_over_naive": 5.321,
+          "fat_over_entries": 1.18
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.15,
+          "entries_gibs": 10.65,
+          "naive_gibs": 2.47,
+          "fat_over_naive": 4.915,
+          "fat_over_entries": 1.141
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 17.45,
+          "entries_gibs": 16.88,
+          "naive_gibs": 4.71,
+          "fat_over_naive": 3.702,
+          "fat_over_entries": 1.034
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.17,
+          "entries_gibs": 2.86,
+          "naive_gibs": 0.86,
+          "fat_over_naive": 3.666,
+          "fat_over_entries": 1.108
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.33,
+          "entries_gibs": 9.6,
+          "naive_gibs": 3.3,
+          "fat_over_naive": 3.431,
+          "fat_over_entries": 1.18
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 17.12,
+          "entries_gibs": 16.93,
+          "naive_gibs": 6.24,
+          "fat_over_naive": 2.745,
+          "fat_over_entries": 1.012
+        }
+      ]
+    },
+    {
+      "label": "amd-turin",
+      "instance_type": "m8a.4xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "AMD EPYC 9R45",
+      "cores_per_socket": "16",
+      "threads_per_core": "1",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 15.71,
+          "entries_gibs": 13.51,
+          "naive_gibs": 4.63,
+          "fat_over_naive": 3.397,
+          "fat_over_entries": 1.163
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 28.92,
+          "entries_gibs": 28.84,
+          "naive_gibs": 17.81,
+          "fat_over_naive": 1.624,
+          "fat_over_entries": 1.003
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 30.12,
+          "entries_gibs": 29.83,
+          "naive_gibs": 27.98,
+          "fat_over_naive": 1.077,
+          "fat_over_entries": 1.01
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 15.62,
+          "entries_gibs": 13.31,
+          "naive_gibs": 4.53,
+          "fat_over_naive": 3.452,
+          "fat_over_entries": 1.173
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 29.24,
+          "entries_gibs": 28.74,
+          "naive_gibs": 17.63,
+          "fat_over_naive": 1.659,
+          "fat_over_entries": 1.017
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 30.55,
+          "entries_gibs": 30.41,
+          "naive_gibs": 27.37,
+          "fat_over_naive": 1.116,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 21.56,
+          "entries_gibs": 18.74,
+          "naive_gibs": 3.84,
+          "fat_over_naive": 5.617,
+          "fat_over_entries": 1.15
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 29.38,
+          "entries_gibs": 29.26,
+          "naive_gibs": 14.72,
+          "fat_over_naive": 1.995,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 30.08,
+          "entries_gibs": 29.96,
+          "naive_gibs": 27.25,
+          "fat_over_naive": 1.104,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 21.95,
+          "entries_gibs": 18.83,
+          "naive_gibs": 3.81,
+          "fat_over_naive": 5.768,
+          "fat_over_entries": 1.166
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 29.4,
+          "entries_gibs": 29.19,
+          "naive_gibs": 14.65,
+          "fat_over_naive": 2.007,
+          "fat_over_entries": 1.007
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 30.1,
+          "entries_gibs": 30.02,
+          "naive_gibs": 27.19,
+          "fat_over_naive": 1.107,
+          "fat_over_entries": 1.002
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.49,
+          "entries_gibs": 4.97,
+          "naive_gibs": 0.73,
+          "fat_over_naive": 7.546,
+          "fat_over_entries": 1.105
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 20.84,
+          "entries_gibs": 18.76,
+          "naive_gibs": 2.87,
+          "fat_over_naive": 7.256,
+          "fat_over_entries": 1.111
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 27.58,
+          "entries_gibs": 27.42,
+          "naive_gibs": 5.64,
+          "fat_over_naive": 4.887,
+          "fat_over_entries": 1.006
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 10.14,
+          "entries_gibs": 9.13,
+          "naive_gibs": 1.6,
+          "fat_over_naive": 6.353,
+          "fat_over_entries": 1.111
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 27.58,
+          "entries_gibs": 26.98,
+          "naive_gibs": 6.2,
+          "fat_over_naive": 4.448,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 30.11,
+          "entries_gibs": 29.96,
+          "naive_gibs": 11.95,
+          "fat_over_naive": 2.52,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 9.37,
+          "entries_gibs": 8.43,
+          "naive_gibs": 1.08,
+          "fat_over_naive": 8.657,
+          "fat_over_entries": 1.112
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 26.74,
+          "entries_gibs": 26.47,
+          "naive_gibs": 4.24,
+          "fat_over_naive": 6.313,
+          "fat_over_entries": 1.01
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 29.39,
+          "entries_gibs": 29.04,
+          "naive_gibs": 8.2,
+          "fat_over_naive": 3.584,
+          "fat_over_entries": 1.012
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 11.42,
+          "entries_gibs": 10.96,
+          "naive_gibs": 1.88,
+          "fat_over_naive": 6.077,
+          "fat_over_entries": 1.043
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 27.82,
+          "entries_gibs": 27.49,
+          "naive_gibs": 7.29,
+          "fat_over_naive": 3.817,
+          "fat_over_entries": 1.012
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 30.33,
+          "entries_gibs": 30.12,
+          "naive_gibs": 14.11,
+          "fat_over_naive": 2.15,
+          "fat_over_entries": 1.007
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 10.84,
+          "entries_gibs": 9.87,
+          "naive_gibs": 1.4,
+          "fat_over_naive": 7.724,
+          "fat_over_entries": 1.098
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 27.98,
+          "entries_gibs": 27.84,
+          "naive_gibs": 5.48,
+          "fat_over_naive": 5.108,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 29.9,
+          "entries_gibs": 29.81,
+          "naive_gibs": 10.64,
+          "fat_over_naive": 2.811,
+          "fat_over_entries": 1.003
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 9.61,
+          "entries_gibs": 9.29,
+          "naive_gibs": 1.89,
+          "fat_over_naive": 5.076,
+          "fat_over_entries": 1.034
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 27.0,
+          "entries_gibs": 26.09,
+          "naive_gibs": 7.39,
+          "fat_over_naive": 3.652,
+          "fat_over_entries": 1.035
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 29.83,
+          "entries_gibs": 29.63,
+          "naive_gibs": 14.29,
+          "fat_over_naive": 2.088,
+          "fat_over_entries": 1.007
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 18.58,
+          "entries_gibs": 15.46,
+          "naive_gibs": 2.14,
+          "fat_over_naive": 8.695,
+          "fat_over_entries": 1.201
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 28.93,
+          "entries_gibs": 28.76,
+          "naive_gibs": 8.37,
+          "fat_over_naive": 3.456,
+          "fat_over_entries": 1.006
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 29.31,
+          "entries_gibs": 29.25,
+          "naive_gibs": 16.16,
+          "fat_over_naive": 1.813,
+          "fat_over_entries": 1.002
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 18.61,
+          "entries_gibs": 15.62,
+          "naive_gibs": 2.17,
+          "fat_over_naive": 8.59,
+          "fat_over_entries": 1.191
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 28.91,
+          "entries_gibs": 28.82,
+          "naive_gibs": 8.37,
+          "fat_over_naive": 3.452,
+          "fat_over_entries": 1.003
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 29.34,
+          "entries_gibs": 29.18,
+          "naive_gibs": 16.19,
+          "fat_over_naive": 1.813,
+          "fat_over_entries": 1.006
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.82,
+          "entries_gibs": 6.48,
+          "naive_gibs": 0.75,
+          "fat_over_naive": 9.127,
+          "fat_over_entries": 1.053
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 24.17,
+          "entries_gibs": 24.43,
+          "naive_gibs": 2.94,
+          "fat_over_naive": 8.218,
+          "fat_over_entries": 0.99
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 28.24,
+          "entries_gibs": 28.29,
+          "naive_gibs": 5.74,
+          "fat_over_naive": 4.921,
+          "fat_over_entries": 0.998
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 7.93,
+          "entries_gibs": 7.51,
+          "naive_gibs": 1.16,
+          "fat_over_naive": 6.821,
+          "fat_over_entries": 1.055
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 26.18,
+          "entries_gibs": 24.55,
+          "naive_gibs": 4.52,
+          "fat_over_naive": 5.789,
+          "fat_over_entries": 1.066
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 29.2,
+          "entries_gibs": 29.18,
+          "naive_gibs": 8.76,
+          "fat_over_naive": 3.335,
+          "fat_over_entries": 1.001
+        }
+      ]
+    },
+    {
+      "label": "intel-icelake",
+      "instance_type": "m6i.4xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8375C CPU @ 2.90GHz",
+      "cores_per_socket": "8",
+      "threads_per_core": "2",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.46,
+          "entries_gibs": 5.17,
+          "naive_gibs": 2.12,
+          "fat_over_naive": 2.574,
+          "fat_over_entries": 1.056
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 18.33,
+          "entries_gibs": 17.8,
+          "naive_gibs": 8.03,
+          "fat_over_naive": 2.283,
+          "fat_over_entries": 1.03
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 29.64,
+          "entries_gibs": 29.56,
+          "naive_gibs": 14.93,
+          "fat_over_naive": 1.985,
+          "fat_over_entries": 1.003
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.79,
+          "entries_gibs": 5.32,
+          "naive_gibs": 2.07,
+          "fat_over_naive": 2.801,
+          "fat_over_entries": 1.088
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 18.71,
+          "entries_gibs": 18.09,
+          "naive_gibs": 7.89,
+          "fat_over_naive": 2.373,
+          "fat_over_entries": 1.035
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 30.29,
+          "entries_gibs": 29.88,
+          "naive_gibs": 14.69,
+          "fat_over_naive": 2.061,
+          "fat_over_entries": 1.014
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.7,
+          "entries_gibs": 6.47,
+          "naive_gibs": 2.09,
+          "fat_over_naive": 3.206,
+          "fat_over_entries": 1.036
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 21.32,
+          "entries_gibs": 20.78,
+          "naive_gibs": 7.81,
+          "fat_over_naive": 2.731,
+          "fat_over_entries": 1.026
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 30.95,
+          "entries_gibs": 29.99,
+          "naive_gibs": 14.49,
+          "fat_over_naive": 2.136,
+          "fat_over_entries": 1.032
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.08,
+          "entries_gibs": 5.68,
+          "naive_gibs": 2.02,
+          "fat_over_naive": 3.008,
+          "fat_over_entries": 1.072
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 19.35,
+          "entries_gibs": 18.54,
+          "naive_gibs": 7.77,
+          "fat_over_naive": 2.491,
+          "fat_over_entries": 1.044
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 29.54,
+          "entries_gibs": 28.92,
+          "naive_gibs": 14.35,
+          "fat_over_naive": 2.059,
+          "fat_over_entries": 1.022
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.75,
+          "entries_gibs": 2.48,
+          "naive_gibs": 0.52,
+          "fat_over_naive": 5.334,
+          "fat_over_entries": 1.108
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 10.3,
+          "entries_gibs": 9.43,
+          "naive_gibs": 2.04,
+          "fat_over_naive": 5.06,
+          "fat_over_entries": 1.092
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 18.91,
+          "entries_gibs": 17.62,
+          "naive_gibs": 3.99,
+          "fat_over_naive": 4.743,
+          "fat_over_entries": 1.073
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.72,
+          "entries_gibs": 3.95,
+          "naive_gibs": 0.96,
+          "fat_over_naive": 4.919,
+          "fat_over_entries": 1.195
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 16.6,
+          "entries_gibs": 14.48,
+          "naive_gibs": 3.73,
+          "fat_over_naive": 4.45,
+          "fat_over_entries": 1.147
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 27.5,
+          "entries_gibs": 25.36,
+          "naive_gibs": 7.16,
+          "fat_over_naive": 3.843,
+          "fat_over_entries": 1.084
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.35,
+          "entries_gibs": 3.77,
+          "naive_gibs": 0.76,
+          "fat_over_naive": 5.736,
+          "fat_over_entries": 1.153
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 14.99,
+          "entries_gibs": 13.22,
+          "naive_gibs": 2.95,
+          "fat_over_naive": 5.081,
+          "fat_over_entries": 1.134
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 23.79,
+          "entries_gibs": 22.56,
+          "naive_gibs": 5.69,
+          "fat_over_naive": 4.184,
+          "fat_over_entries": 1.055
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.07,
+          "entries_gibs": 4.28,
+          "naive_gibs": 1.11,
+          "fat_over_naive": 3.676,
+          "fat_over_entries": 0.951
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 13.71,
+          "entries_gibs": 14.51,
+          "naive_gibs": 4.28,
+          "fat_over_naive": 3.203,
+          "fat_over_entries": 0.945
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 23.27,
+          "entries_gibs": 25.91,
+          "naive_gibs": 8.18,
+          "fat_over_naive": 2.845,
+          "fat_over_entries": 0.898
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.79,
+          "entries_gibs": 4.46,
+          "naive_gibs": 0.88,
+          "fat_over_naive": 5.429,
+          "fat_over_entries": 1.075
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 16.18,
+          "entries_gibs": 15.87,
+          "naive_gibs": 3.3,
+          "fat_over_naive": 4.897,
+          "fat_over_entries": 1.02
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 26.62,
+          "entries_gibs": 25.75,
+          "naive_gibs": 6.61,
+          "fat_over_naive": 4.024,
+          "fat_over_entries": 1.034
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.65,
+          "entries_gibs": 3.69,
+          "naive_gibs": 1.09,
+          "fat_over_naive": 3.348,
+          "fat_over_entries": 0.99
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.98,
+          "entries_gibs": 13.22,
+          "naive_gibs": 4.19,
+          "fat_over_naive": 3.101,
+          "fat_over_entries": 0.982
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 22.47,
+          "entries_gibs": 23.79,
+          "naive_gibs": 8.04,
+          "fat_over_naive": 2.795,
+          "fat_over_entries": 0.945
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.89,
+          "entries_gibs": 5.5,
+          "naive_gibs": 1.26,
+          "fat_over_naive": 4.673,
+          "fat_over_entries": 1.071
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 18.01,
+          "entries_gibs": 18.2,
+          "naive_gibs": 4.8,
+          "fat_over_naive": 3.75,
+          "fat_over_entries": 0.989
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 29.53,
+          "entries_gibs": 29.47,
+          "naive_gibs": 9.13,
+          "fat_over_naive": 3.233,
+          "fat_over_entries": 1.002
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.88,
+          "entries_gibs": 5.62,
+          "naive_gibs": 1.25,
+          "fat_over_naive": 4.704,
+          "fat_over_entries": 1.047
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 19.54,
+          "entries_gibs": 18.65,
+          "naive_gibs": 4.83,
+          "fat_over_naive": 4.043,
+          "fat_over_entries": 1.048
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 31.51,
+          "entries_gibs": 30.03,
+          "naive_gibs": 9.16,
+          "fat_over_naive": 3.439,
+          "fat_over_entries": 1.05
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.49,
+          "entries_gibs": 3.19,
+          "naive_gibs": 0.54,
+          "fat_over_naive": 6.452,
+          "fat_over_entries": 1.095
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.84,
+          "entries_gibs": 11.68,
+          "naive_gibs": 2.12,
+          "fat_over_naive": 6.047,
+          "fat_over_entries": 1.099
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 22.69,
+          "entries_gibs": 21.23,
+          "naive_gibs": 4.14,
+          "fat_over_naive": 5.48,
+          "fat_over_entries": 1.069
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.12,
+          "entries_gibs": 2.94,
+          "naive_gibs": 0.73,
+          "fat_over_naive": 4.249,
+          "fat_over_entries": 1.06
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.55,
+          "entries_gibs": 10.98,
+          "naive_gibs": 2.87,
+          "fat_over_naive": 4.027,
+          "fat_over_entries": 1.052
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 20.75,
+          "entries_gibs": 20.12,
+          "naive_gibs": 5.55,
+          "fat_over_naive": 3.738,
+          "fat_over_entries": 1.031
+        }
+      ]
+    },
+    {
+      "label": "intel-sapphire",
+      "instance_type": "m7i.4xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "cores_per_socket": "8",
+      "threads_per_core": "2",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 7.48,
+          "entries_gibs": 7.16,
+          "naive_gibs": 2.69,
+          "fat_over_naive": 2.785,
+          "fat_over_entries": 1.044
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 27.03,
+          "entries_gibs": 26.07,
+          "naive_gibs": 10.35,
+          "fat_over_naive": 2.611,
+          "fat_over_entries": 1.037
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 44.86,
+          "entries_gibs": 43.31,
+          "naive_gibs": 19.25,
+          "fat_over_naive": 2.331,
+          "fat_over_entries": 1.036
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.48,
+          "entries_gibs": 6.9,
+          "naive_gibs": 2.85,
+          "fat_over_naive": 2.273,
+          "fat_over_entries": 0.939
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 24.15,
+          "entries_gibs": 25.05,
+          "naive_gibs": 10.96,
+          "fat_over_naive": 2.204,
+          "fat_over_entries": 0.964
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 40.54,
+          "entries_gibs": 42.21,
+          "naive_gibs": 20.34,
+          "fat_over_naive": 1.993,
+          "fat_over_entries": 0.96
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 8.3,
+          "entries_gibs": 7.8,
+          "naive_gibs": 2.51,
+          "fat_over_naive": 3.3,
+          "fat_over_entries": 1.064
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 29.78,
+          "entries_gibs": 27.85,
+          "naive_gibs": 9.69,
+          "fat_over_naive": 3.072,
+          "fat_over_entries": 1.069
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 48.12,
+          "entries_gibs": 45.51,
+          "naive_gibs": 18.13,
+          "fat_over_naive": 2.654,
+          "fat_over_entries": 1.057
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 8.29,
+          "entries_gibs": 7.8,
+          "naive_gibs": 2.51,
+          "fat_over_naive": 3.298,
+          "fat_over_entries": 1.063
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 29.51,
+          "entries_gibs": 27.77,
+          "naive_gibs": 9.71,
+          "fat_over_naive": 3.04,
+          "fat_over_entries": 1.063
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 47.75,
+          "entries_gibs": 45.08,
+          "naive_gibs": 18.15,
+          "fat_over_naive": 2.632,
+          "fat_over_entries": 1.059
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.97,
+          "entries_gibs": 3.37,
+          "naive_gibs": 0.58,
+          "fat_over_naive": 6.789,
+          "fat_over_entries": 1.175
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 14.83,
+          "entries_gibs": 12.88,
+          "naive_gibs": 2.32,
+          "fat_over_naive": 6.381,
+          "fat_over_entries": 1.151
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 26.98,
+          "entries_gibs": 23.85,
+          "naive_gibs": 4.47,
+          "fat_over_naive": 6.036,
+          "fat_over_entries": 1.131
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.03,
+          "entries_gibs": 5.24,
+          "naive_gibs": 1.12,
+          "fat_over_naive": 5.368,
+          "fat_over_entries": 1.152
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 21.77,
+          "entries_gibs": 19.4,
+          "naive_gibs": 4.37,
+          "fat_over_naive": 4.978,
+          "fat_over_entries": 1.122
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 37.83,
+          "entries_gibs": 34.51,
+          "naive_gibs": 8.24,
+          "fat_over_naive": 4.589,
+          "fat_over_entries": 1.096
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.02,
+          "entries_gibs": 5.45,
+          "naive_gibs": 0.87,
+          "fat_over_naive": 6.96,
+          "fat_over_entries": 1.104
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 23.2,
+          "entries_gibs": 20.2,
+          "naive_gibs": 3.39,
+          "fat_over_naive": 6.842,
+          "fat_over_entries": 1.149
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 36.57,
+          "entries_gibs": 35.7,
+          "naive_gibs": 6.45,
+          "fat_over_naive": 5.669,
+          "fat_over_entries": 1.024
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.78,
+          "entries_gibs": 6.05,
+          "naive_gibs": 1.29,
+          "fat_over_naive": 4.472,
+          "fat_over_entries": 0.956
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 21.38,
+          "entries_gibs": 22.11,
+          "naive_gibs": 5.0,
+          "fat_over_naive": 4.272,
+          "fat_over_entries": 0.967
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 36.7,
+          "entries_gibs": 38.11,
+          "naive_gibs": 9.38,
+          "fat_over_naive": 3.912,
+          "fat_over_entries": 0.963
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.86,
+          "entries_gibs": 6.29,
+          "naive_gibs": 1.02,
+          "fat_over_naive": 6.702,
+          "fat_over_entries": 1.091
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 24.91,
+          "entries_gibs": 22.79,
+          "naive_gibs": 3.99,
+          "fat_over_naive": 6.248,
+          "fat_over_entries": 1.093
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 42.22,
+          "entries_gibs": 38.89,
+          "naive_gibs": 7.57,
+          "fat_over_naive": 5.577,
+          "fat_over_entries": 1.086
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.84,
+          "entries_gibs": 5.31,
+          "naive_gibs": 1.27,
+          "fat_over_naive": 4.59,
+          "fat_over_entries": 1.1
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 21.26,
+          "entries_gibs": 19.42,
+          "naive_gibs": 4.93,
+          "fat_over_naive": 4.313,
+          "fat_over_entries": 1.095
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 36.92,
+          "entries_gibs": 34.51,
+          "naive_gibs": 9.24,
+          "fat_over_naive": 3.994,
+          "fat_over_entries": 1.07
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 8.02,
+          "entries_gibs": 7.5,
+          "naive_gibs": 1.53,
+          "fat_over_naive": 5.24,
+          "fat_over_entries": 1.069
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 28.78,
+          "entries_gibs": 26.9,
+          "naive_gibs": 5.96,
+          "fat_over_naive": 4.832,
+          "fat_over_entries": 1.07
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 46.68,
+          "entries_gibs": 43.94,
+          "naive_gibs": 11.19,
+          "fat_over_naive": 4.172,
+          "fat_over_entries": 1.062
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 8.08,
+          "entries_gibs": 7.48,
+          "naive_gibs": 1.54,
+          "fat_over_naive": 5.263,
+          "fat_over_entries": 1.081
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 28.88,
+          "entries_gibs": 26.66,
+          "naive_gibs": 5.97,
+          "fat_over_naive": 4.836,
+          "fat_over_entries": 1.084
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 46.76,
+          "entries_gibs": 43.78,
+          "naive_gibs": 11.22,
+          "fat_over_naive": 4.169,
+          "fat_over_entries": 1.068
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.01,
+          "entries_gibs": 4.24,
+          "naive_gibs": 0.62,
+          "fat_over_naive": 8.13,
+          "fat_over_entries": 1.181
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 18.71,
+          "entries_gibs": 15.87,
+          "naive_gibs": 2.43,
+          "fat_over_naive": 7.685,
+          "fat_over_entries": 1.179
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 32.66,
+          "entries_gibs": 28.68,
+          "naive_gibs": 4.67,
+          "fat_over_naive": 6.991,
+          "fat_over_entries": 1.139
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.62,
+          "entries_gibs": 4.17,
+          "naive_gibs": 0.84,
+          "fat_over_naive": 5.495,
+          "fat_over_entries": 1.11
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 17.2,
+          "entries_gibs": 15.49,
+          "naive_gibs": 3.29,
+          "fat_over_naive": 5.222,
+          "fat_over_entries": 1.11
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 30.56,
+          "entries_gibs": 28.3,
+          "naive_gibs": 6.28,
+          "fat_over_naive": 4.866,
+          "fat_over_entries": 1.08
+        }
+      ]
+    },
+    {
+      "label": "intel-granite",
+      "instance_type": "m8i.4xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+      "cores_per_socket": "8",
+      "threads_per_core": "2",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 7.14,
+          "entries_gibs": 6.87,
+          "naive_gibs": 3.09,
+          "fat_over_naive": 2.31,
+          "fat_over_entries": 1.04
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 25.09,
+          "entries_gibs": 24.06,
+          "naive_gibs": 11.65,
+          "fat_over_naive": 2.154,
+          "fat_over_entries": 1.043
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 41.64,
+          "entries_gibs": 38.33,
+          "naive_gibs": 22.25,
+          "fat_over_naive": 1.871,
+          "fat_over_entries": 1.086
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 7.26,
+          "entries_gibs": 6.93,
+          "naive_gibs": 3.65,
+          "fat_over_naive": 1.993,
+          "fat_over_entries": 1.048
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 25.45,
+          "entries_gibs": 23.96,
+          "naive_gibs": 13.62,
+          "fat_over_naive": 1.868,
+          "fat_over_entries": 1.062
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 42.03,
+          "entries_gibs": 40.12,
+          "naive_gibs": 25.72,
+          "fat_over_naive": 1.634,
+          "fat_over_entries": 1.047
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 7.8,
+          "entries_gibs": 7.76,
+          "naive_gibs": 2.65,
+          "fat_over_naive": 2.944,
+          "fat_over_entries": 1.006
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 26.31,
+          "entries_gibs": 26.18,
+          "naive_gibs": 9.99,
+          "fat_over_naive": 2.633,
+          "fat_over_entries": 1.005
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 42.94,
+          "entries_gibs": 42.87,
+          "naive_gibs": 19.21,
+          "fat_over_naive": 2.235,
+          "fat_over_entries": 1.002
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 7.76,
+          "entries_gibs": 7.66,
+          "naive_gibs": 2.71,
+          "fat_over_naive": 2.868,
+          "fat_over_entries": 1.014
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 26.36,
+          "entries_gibs": 25.68,
+          "naive_gibs": 10.17,
+          "fat_over_naive": 2.593,
+          "fat_over_entries": 1.027
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 43.29,
+          "entries_gibs": 42.88,
+          "naive_gibs": 19.45,
+          "fat_over_naive": 2.225,
+          "fat_over_entries": 1.01
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.64,
+          "entries_gibs": 3.2,
+          "naive_gibs": 0.63,
+          "fat_over_naive": 5.764,
+          "fat_over_entries": 1.135
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 13.55,
+          "entries_gibs": 12.82,
+          "naive_gibs": 2.48,
+          "fat_over_naive": 5.469,
+          "fat_over_entries": 1.057
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 24.52,
+          "entries_gibs": 24.88,
+          "naive_gibs": 4.86,
+          "fat_over_naive": 5.044,
+          "fat_over_entries": 0.986
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.16,
+          "entries_gibs": 4.7,
+          "naive_gibs": 1.14,
+          "fat_over_naive": 4.505,
+          "fat_over_entries": 1.096
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 19.01,
+          "entries_gibs": 17.08,
+          "naive_gibs": 4.4,
+          "fat_over_naive": 4.32,
+          "fat_over_entries": 1.113
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 33.87,
+          "entries_gibs": 31.3,
+          "naive_gibs": 8.51,
+          "fat_over_naive": 3.982,
+          "fat_over_entries": 1.082
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.65,
+          "entries_gibs": 5.31,
+          "naive_gibs": 1.01,
+          "fat_over_naive": 5.571,
+          "fat_over_entries": 1.063
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 20.73,
+          "entries_gibs": 19.51,
+          "naive_gibs": 3.91,
+          "fat_over_naive": 5.305,
+          "fat_over_entries": 1.063
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 36.15,
+          "entries_gibs": 34.52,
+          "naive_gibs": 7.6,
+          "fat_over_naive": 4.755,
+          "fat_over_entries": 1.047
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.65,
+          "entries_gibs": 6.25,
+          "naive_gibs": 1.48,
+          "fat_over_naive": 3.825,
+          "fat_over_entries": 0.904
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 20.76,
+          "entries_gibs": 21.79,
+          "naive_gibs": 5.66,
+          "fat_over_naive": 3.667,
+          "fat_over_entries": 0.953
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 36.57,
+          "entries_gibs": 37.5,
+          "naive_gibs": 11.0,
+          "fat_over_naive": 3.326,
+          "fat_over_entries": 0.975
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.43,
+          "entries_gibs": 6.3,
+          "naive_gibs": 1.12,
+          "fat_over_naive": 5.735,
+          "fat_over_entries": 1.021
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 22.96,
+          "entries_gibs": 22.25,
+          "naive_gibs": 4.34,
+          "fat_over_naive": 5.291,
+          "fat_over_entries": 1.032
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 38.52,
+          "entries_gibs": 38.21,
+          "naive_gibs": 8.37,
+          "fat_over_naive": 4.604,
+          "fat_over_entries": 1.008
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.66,
+          "entries_gibs": 5.32,
+          "naive_gibs": 1.42,
+          "fat_over_naive": 3.985,
+          "fat_over_entries": 1.064
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 20.26,
+          "entries_gibs": 18.93,
+          "naive_gibs": 5.48,
+          "fat_over_naive": 3.701,
+          "fat_over_entries": 1.07
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 35.37,
+          "entries_gibs": 33.98,
+          "naive_gibs": 10.61,
+          "fat_over_naive": 3.335,
+          "fat_over_entries": 1.041
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 7.49,
+          "entries_gibs": 7.35,
+          "naive_gibs": 1.69,
+          "fat_over_naive": 4.437,
+          "fat_over_entries": 1.018
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 26.23,
+          "entries_gibs": 25.42,
+          "naive_gibs": 6.49,
+          "fat_over_naive": 4.042,
+          "fat_over_entries": 1.032
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 42.32,
+          "entries_gibs": 40.24,
+          "naive_gibs": 12.39,
+          "fat_over_naive": 3.415,
+          "fat_over_entries": 1.052
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 7.46,
+          "entries_gibs": 7.36,
+          "naive_gibs": 1.68,
+          "fat_over_naive": 4.432,
+          "fat_over_entries": 1.014
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 26.1,
+          "entries_gibs": 25.17,
+          "naive_gibs": 6.5,
+          "fat_over_naive": 4.015,
+          "fat_over_entries": 1.037
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 42.51,
+          "entries_gibs": 41.1,
+          "naive_gibs": 12.4,
+          "fat_over_naive": 3.428,
+          "fat_over_entries": 1.034
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.55,
+          "entries_gibs": 4.2,
+          "naive_gibs": 0.65,
+          "fat_over_naive": 6.943,
+          "fat_over_entries": 1.084
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 16.99,
+          "entries_gibs": 15.92,
+          "naive_gibs": 2.57,
+          "fat_over_naive": 6.604,
+          "fat_over_entries": 1.067
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 30.22,
+          "entries_gibs": 28.6,
+          "naive_gibs": 5.03,
+          "fat_over_naive": 6.007,
+          "fat_over_entries": 1.057
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.78,
+          "entries_gibs": 4.43,
+          "naive_gibs": 0.91,
+          "fat_over_naive": 5.241,
+          "fat_over_entries": 1.077
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 17.76,
+          "entries_gibs": 16.28,
+          "naive_gibs": 3.53,
+          "fat_over_naive": 5.037,
+          "fat_over_entries": 1.091
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 32.01,
+          "entries_gibs": 29.95,
+          "naive_gibs": 6.88,
+          "fat_over_naive": 4.656,
+          "fat_over_entries": 1.069
+        }
+      ]
+    },
+    {
+      "label": "arm-graviton2",
+      "instance_type": "m6g.4xlarge",
+      "ddr": "DDR4",
+      "cpu_model": "Neoverse-N1",
+      "cores_per_socket": "16",
+      "threads_per_core": "1",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.41,
+          "entries_gibs": 3.04,
+          "naive_gibs": 1.6,
+          "fat_over_naive": 2.133,
+          "fat_over_entries": 1.123
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.22,
+          "entries_gibs": 10.97,
+          "naive_gibs": 5.97,
+          "fat_over_naive": 2.048,
+          "fat_over_entries": 1.114
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 21.2,
+          "entries_gibs": 19.44,
+          "naive_gibs": 11.04,
+          "fat_over_naive": 1.92,
+          "fat_over_entries": 1.09
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.72,
+          "entries_gibs": 3.0,
+          "naive_gibs": 1.69,
+          "fat_over_naive": 2.199,
+          "fat_over_entries": 1.24
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 13.06,
+          "entries_gibs": 10.75,
+          "naive_gibs": 6.3,
+          "fat_over_naive": 2.071,
+          "fat_over_entries": 1.215
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 22.91,
+          "entries_gibs": 18.96,
+          "naive_gibs": 11.54,
+          "fat_over_naive": 1.986,
+          "fat_over_entries": 1.208
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.56,
+          "entries_gibs": 4.23,
+          "naive_gibs": 1.65,
+          "fat_over_naive": 2.763,
+          "fat_over_entries": 1.078
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 15.91,
+          "entries_gibs": 14.95,
+          "naive_gibs": 6.15,
+          "fat_over_naive": 2.587,
+          "fat_over_entries": 1.064
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 26.9,
+          "entries_gibs": 25.85,
+          "naive_gibs": 11.32,
+          "fat_over_naive": 2.376,
+          "fat_over_entries": 1.041
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.51,
+          "entries_gibs": 4.21,
+          "naive_gibs": 1.65,
+          "fat_over_naive": 2.728,
+          "fat_over_entries": 1.073
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 15.66,
+          "entries_gibs": 14.78,
+          "naive_gibs": 6.14,
+          "fat_over_naive": 2.551,
+          "fat_over_entries": 1.059
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 26.94,
+          "entries_gibs": 25.74,
+          "naive_gibs": 11.28,
+          "fat_over_naive": 2.388,
+          "fat_over_entries": 1.047
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 1.66,
+          "entries_gibs": 1.37,
+          "naive_gibs": 0.41,
+          "fat_over_naive": 3.995,
+          "fat_over_entries": 1.206
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 6.16,
+          "entries_gibs": 5.15,
+          "naive_gibs": 1.62,
+          "fat_over_naive": 3.795,
+          "fat_over_entries": 1.196
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 11.28,
+          "entries_gibs": 9.36,
+          "naive_gibs": 3.16,
+          "fat_over_naive": 3.573,
+          "fat_over_entries": 1.205
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.06,
+          "entries_gibs": 1.21,
+          "naive_gibs": 0.66,
+          "fat_over_naive": 3.142,
+          "fat_over_entries": 1.707
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 7.51,
+          "entries_gibs": 4.79,
+          "naive_gibs": 2.59,
+          "fat_over_naive": 2.895,
+          "fat_over_entries": 1.569
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 13.51,
+          "entries_gibs": 9.05,
+          "naive_gibs": 4.95,
+          "fat_over_naive": 2.729,
+          "fat_over_entries": 1.492
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.45,
+          "entries_gibs": 2.21,
+          "naive_gibs": 0.66,
+          "fat_over_naive": 3.704,
+          "fat_over_entries": 1.11
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 8.87,
+          "entries_gibs": 8.16,
+          "naive_gibs": 2.55,
+          "fat_over_naive": 3.479,
+          "fat_over_entries": 1.087
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 16.0,
+          "entries_gibs": 14.82,
+          "naive_gibs": 4.87,
+          "fat_over_naive": 3.285,
+          "fat_over_entries": 1.08
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.63,
+          "entries_gibs": 2.06,
+          "naive_gibs": 0.91,
+          "fat_over_naive": 2.9,
+          "fat_over_entries": 1.279
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 9.25,
+          "entries_gibs": 7.31,
+          "naive_gibs": 3.44,
+          "fat_over_naive": 2.69,
+          "fat_over_entries": 1.264
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 16.78,
+          "entries_gibs": 13.35,
+          "naive_gibs": 6.45,
+          "fat_over_naive": 2.603,
+          "fat_over_entries": 1.257
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.12,
+          "entries_gibs": 2.81,
+          "naive_gibs": 0.77,
+          "fat_over_naive": 4.031,
+          "fat_over_entries": 1.109
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 11.22,
+          "entries_gibs": 10.28,
+          "naive_gibs": 2.97,
+          "fat_over_naive": 3.772,
+          "fat_over_entries": 1.091
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.74,
+          "entries_gibs": 18.31,
+          "naive_gibs": 5.64,
+          "fat_over_naive": 3.501,
+          "fat_over_entries": 1.078
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 2.3,
+          "entries_gibs": 1.36,
+          "naive_gibs": 0.77,
+          "fat_over_naive": 2.994,
+          "fat_over_entries": 1.69
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 8.25,
+          "entries_gibs": 5.05,
+          "naive_gibs": 2.9,
+          "fat_over_naive": 2.841,
+          "fat_over_entries": 1.634
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 15.17,
+          "entries_gibs": 9.4,
+          "naive_gibs": 5.61,
+          "fat_over_naive": 2.703,
+          "fat_over_entries": 1.613
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.65,
+          "entries_gibs": 3.14,
+          "naive_gibs": 1.02,
+          "fat_over_naive": 3.594,
+          "fat_over_entries": 1.163
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 12.81,
+          "entries_gibs": 11.12,
+          "naive_gibs": 3.84,
+          "fat_over_naive": 3.335,
+          "fat_over_entries": 1.152
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 22.34,
+          "entries_gibs": 19.57,
+          "naive_gibs": 7.15,
+          "fat_over_naive": 3.124,
+          "fat_over_entries": 1.141
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.59,
+          "entries_gibs": 3.22,
+          "naive_gibs": 1.1,
+          "fat_over_naive": 3.252,
+          "fat_over_entries": 1.113
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 12.94,
+          "entries_gibs": 11.58,
+          "naive_gibs": 4.14,
+          "fat_over_naive": 3.129,
+          "fat_over_entries": 1.118
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 22.56,
+          "entries_gibs": 20.27,
+          "naive_gibs": 7.64,
+          "fat_over_naive": 2.952,
+          "fat_over_entries": 1.113
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.08,
+          "entries_gibs": 1.79,
+          "naive_gibs": 0.46,
+          "fat_over_naive": 4.563,
+          "fat_over_entries": 1.163
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 7.64,
+          "entries_gibs": 6.66,
+          "naive_gibs": 1.78,
+          "fat_over_naive": 4.287,
+          "fat_over_entries": 1.147
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 13.69,
+          "entries_gibs": 12.21,
+          "naive_gibs": 3.45,
+          "fat_over_naive": 3.969,
+          "fat_over_entries": 1.121
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 1.61,
+          "entries_gibs": 1.08,
+          "naive_gibs": 0.53,
+          "fat_over_naive": 3.062,
+          "fat_over_entries": 1.498
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 6.0,
+          "entries_gibs": 4.28,
+          "naive_gibs": 2.09,
+          "fat_over_naive": 2.866,
+          "fat_over_entries": 1.403
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 11.54,
+          "entries_gibs": 8.19,
+          "naive_gibs": 4.03,
+          "fat_over_naive": 2.863,
+          "fat_over_entries": 1.408
+        }
+      ]
+    },
+    {
+      "label": "arm-graviton3",
+      "instance_type": "m7g.4xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Neoverse-V1",
+      "cores_per_socket": "16",
+      "threads_per_core": "1",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.54,
+          "entries_gibs": 5.99,
+          "naive_gibs": 2.75,
+          "fat_over_naive": 2.384,
+          "fat_over_entries": 1.092
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 22.13,
+          "entries_gibs": 21.37,
+          "naive_gibs": 9.99,
+          "fat_over_naive": 2.215,
+          "fat_over_entries": 1.036
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 38.32,
+          "entries_gibs": 37.0,
+          "naive_gibs": 17.84,
+          "fat_over_naive": 2.148,
+          "fat_over_entries": 1.036
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 7.12,
+          "entries_gibs": 6.62,
+          "naive_gibs": 2.75,
+          "fat_over_naive": 2.591,
+          "fat_over_entries": 1.075
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 24.41,
+          "entries_gibs": 22.8,
+          "naive_gibs": 10.0,
+          "fat_over_naive": 2.44,
+          "fat_over_entries": 1.07
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 40.4,
+          "entries_gibs": 38.68,
+          "naive_gibs": 17.92,
+          "fat_over_naive": 2.254,
+          "fat_over_entries": 1.044
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 8.39,
+          "entries_gibs": 8.08,
+          "naive_gibs": 2.43,
+          "fat_over_naive": 3.453,
+          "fat_over_entries": 1.039
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 28.18,
+          "entries_gibs": 28.06,
+          "naive_gibs": 8.95,
+          "fat_over_naive": 3.149,
+          "fat_over_entries": 1.004
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 47.96,
+          "entries_gibs": 47.4,
+          "naive_gibs": 16.24,
+          "fat_over_naive": 2.952,
+          "fat_over_entries": 1.012
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 8.3,
+          "entries_gibs": 8.22,
+          "naive_gibs": 2.45,
+          "fat_over_naive": 3.39,
+          "fat_over_entries": 1.01
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 28.49,
+          "entries_gibs": 26.61,
+          "naive_gibs": 8.94,
+          "fat_over_naive": 3.186,
+          "fat_over_entries": 1.071
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 47.81,
+          "entries_gibs": 46.91,
+          "naive_gibs": 16.21,
+          "fat_over_naive": 2.95,
+          "fat_over_entries": 1.019
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.18,
+          "entries_gibs": 2.23,
+          "naive_gibs": 0.53,
+          "fat_over_naive": 4.086,
+          "fat_over_entries": 0.975
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 8.4,
+          "entries_gibs": 8.3,
+          "naive_gibs": 2.06,
+          "fat_over_naive": 4.071,
+          "fat_over_entries": 1.012
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 14.96,
+          "entries_gibs": 14.33,
+          "naive_gibs": 3.98,
+          "fat_over_naive": 3.76,
+          "fat_over_entries": 1.044
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.14,
+          "entries_gibs": 3.03,
+          "naive_gibs": 0.95,
+          "fat_over_naive": 4.352,
+          "fat_over_entries": 1.368
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 14.29,
+          "entries_gibs": 10.84,
+          "naive_gibs": 3.59,
+          "fat_over_naive": 3.986,
+          "fat_over_entries": 1.318
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 23.79,
+          "entries_gibs": 19.36,
+          "naive_gibs": 6.74,
+          "fat_over_naive": 3.531,
+          "fat_over_entries": 1.229
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.1,
+          "entries_gibs": 3.76,
+          "naive_gibs": 0.86,
+          "fat_over_naive": 4.74,
+          "fat_over_entries": 1.09
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 15.04,
+          "entries_gibs": 13.5,
+          "naive_gibs": 3.3,
+          "fat_over_naive": 4.564,
+          "fat_over_entries": 1.114
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 26.84,
+          "entries_gibs": 23.86,
+          "naive_gibs": 6.21,
+          "fat_over_naive": 4.32,
+          "fat_over_entries": 1.125
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.98,
+          "entries_gibs": 4.29,
+          "naive_gibs": 1.25,
+          "fat_over_naive": 3.979,
+          "fat_over_entries": 1.162
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 17.41,
+          "entries_gibs": 15.22,
+          "naive_gibs": 4.68,
+          "fat_over_naive": 3.718,
+          "fat_over_entries": 1.143
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 29.83,
+          "entries_gibs": 26.24,
+          "naive_gibs": 8.55,
+          "fat_over_naive": 3.489,
+          "fat_over_entries": 1.137
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.47,
+          "entries_gibs": 5.13,
+          "naive_gibs": 0.99,
+          "fat_over_naive": 5.534,
+          "fat_over_entries": 1.067
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 19.63,
+          "entries_gibs": 17.85,
+          "naive_gibs": 3.74,
+          "fat_over_naive": 5.254,
+          "fat_over_entries": 1.099
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 33.44,
+          "entries_gibs": 31.06,
+          "naive_gibs": 6.98,
+          "fat_over_naive": 4.788,
+          "fat_over_entries": 1.077
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.52,
+          "entries_gibs": 3.39,
+          "naive_gibs": 1.12,
+          "fat_over_naive": 4.021,
+          "fat_over_entries": 1.335
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 15.78,
+          "entries_gibs": 12.22,
+          "naive_gibs": 4.23,
+          "fat_over_naive": 3.725,
+          "fat_over_entries": 1.291
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 27.0,
+          "entries_gibs": 21.55,
+          "naive_gibs": 7.84,
+          "fat_over_naive": 3.445,
+          "fat_over_entries": 1.253
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 6.51,
+          "entries_gibs": 6.33,
+          "naive_gibs": 1.46,
+          "fat_over_naive": 4.459,
+          "fat_over_entries": 1.028
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 23.23,
+          "entries_gibs": 21.84,
+          "naive_gibs": 5.51,
+          "fat_over_naive": 4.219,
+          "fat_over_entries": 1.064
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 39.21,
+          "entries_gibs": 37.27,
+          "naive_gibs": 10.13,
+          "fat_over_naive": 3.87,
+          "fat_over_entries": 1.052
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.87,
+          "entries_gibs": 6.12,
+          "naive_gibs": 1.46,
+          "fat_over_naive": 4.719,
+          "fat_over_entries": 1.123
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 23.25,
+          "entries_gibs": 21.76,
+          "naive_gibs": 5.47,
+          "fat_over_naive": 4.25,
+          "fat_over_entries": 1.069
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 38.88,
+          "entries_gibs": 37.39,
+          "naive_gibs": 10.15,
+          "fat_over_naive": 3.83,
+          "fat_over_entries": 1.04
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 3.01,
+          "entries_gibs": 2.84,
+          "naive_gibs": 0.57,
+          "fat_over_naive": 5.319,
+          "fat_over_entries": 1.06
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 11.23,
+          "entries_gibs": 10.0,
+          "naive_gibs": 2.19,
+          "fat_over_naive": 5.124,
+          "fat_over_entries": 1.123
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.87,
+          "entries_gibs": 18.32,
+          "naive_gibs": 4.22,
+          "fat_over_naive": 4.707,
+          "fat_over_entries": 1.085
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 3.21,
+          "entries_gibs": 2.77,
+          "naive_gibs": 0.77,
+          "fat_over_naive": 4.166,
+          "fat_over_entries": 1.157
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 11.36,
+          "entries_gibs": 10.04,
+          "naive_gibs": 2.93,
+          "fat_over_naive": 3.873,
+          "fat_over_entries": 1.132
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 19.86,
+          "entries_gibs": 17.9,
+          "naive_gibs": 5.55,
+          "fat_over_naive": 3.576,
+          "fat_over_entries": 1.11
+        }
+      ]
+    },
+    {
+      "label": "arm-graviton4",
+      "instance_type": "m8g.4xlarge",
+      "ddr": "DDR5",
+      "cpu_model": "Neoverse-V2",
+      "cores_per_socket": "16",
+      "threads_per_core": "1",
+      "pinned_cores": "8",
+      "results": [
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 8.53,
+          "entries_gibs": 7.18,
+          "naive_gibs": 2.91,
+          "fat_over_naive": 2.928,
+          "fat_over_entries": 1.188
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 28.6,
+          "entries_gibs": 25.0,
+          "naive_gibs": 10.8,
+          "fat_over_naive": 2.648,
+          "fat_over_entries": 1.144
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 48.7,
+          "entries_gibs": 43.33,
+          "naive_gibs": 19.63,
+          "fat_over_naive": 2.481,
+          "fat_over_entries": 1.124
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 9.6,
+          "entries_gibs": 7.85,
+          "naive_gibs": 3.35,
+          "fat_over_naive": 2.869,
+          "fat_over_entries": 1.223
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 32.6,
+          "entries_gibs": 27.31,
+          "naive_gibs": 12.31,
+          "fat_over_naive": 2.649,
+          "fat_over_entries": 1.194
+        },
+        {
+          "column": "synthetic_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 53.03,
+          "entries_gibs": 44.77,
+          "naive_gibs": 22.09,
+          "fat_over_naive": 2.4,
+          "fat_over_entries": 1.185
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 10.76,
+          "entries_gibs": 9.42,
+          "naive_gibs": 2.99,
+          "fat_over_naive": 3.599,
+          "fat_over_entries": 1.141
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 36.26,
+          "entries_gibs": 32.58,
+          "naive_gibs": 11.09,
+          "fat_over_naive": 3.271,
+          "fat_over_entries": 1.113
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 60.1,
+          "entries_gibs": 54.2,
+          "naive_gibs": 19.98,
+          "fat_over_naive": 3.009,
+          "fat_over_entries": 1.109
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 10.64,
+          "entries_gibs": 9.32,
+          "naive_gibs": 2.98,
+          "fat_over_naive": 3.569,
+          "fat_over_entries": 1.142
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 35.51,
+          "entries_gibs": 32.28,
+          "naive_gibs": 10.99,
+          "fat_over_naive": 3.23,
+          "fat_over_entries": 1.1
+        },
+        {
+          "column": "tpch_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 59.82,
+          "entries_gibs": 53.31,
+          "naive_gibs": 20.05,
+          "fat_over_naive": 2.984,
+          "fat_over_entries": 1.122
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 2.83,
+          "entries_gibs": 2.59,
+          "naive_gibs": 0.62,
+          "fat_over_naive": 4.54,
+          "fat_over_entries": 1.093
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 11.3,
+          "entries_gibs": 9.65,
+          "naive_gibs": 2.41,
+          "fat_over_naive": 4.682,
+          "fat_over_entries": 1.17
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 19.57,
+          "entries_gibs": 16.99,
+          "naive_gibs": 4.64,
+          "fat_over_naive": 4.217,
+          "fat_over_entries": 1.152
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 5.71,
+          "entries_gibs": 3.85,
+          "naive_gibs": 1.23,
+          "fat_over_naive": 4.646,
+          "fat_over_entries": 1.485
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 20.72,
+          "entries_gibs": 13.98,
+          "naive_gibs": 4.64,
+          "fat_over_naive": 4.464,
+          "fat_over_entries": 1.482
+        },
+        {
+          "column": "fineweb_text",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 34.53,
+          "entries_gibs": 24.19,
+          "naive_gibs": 8.51,
+          "fat_over_naive": 4.058,
+          "fat_over_entries": 1.428
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 5.49,
+          "entries_gibs": 4.47,
+          "naive_gibs": 1.08,
+          "fat_over_naive": 5.09,
+          "fat_over_entries": 1.23
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 20.32,
+          "entries_gibs": 16.3,
+          "naive_gibs": 4.09,
+          "fat_over_naive": 4.967,
+          "fat_over_entries": 1.247
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 34.54,
+          "entries_gibs": 29.08,
+          "naive_gibs": 7.64,
+          "fat_over_naive": 4.521,
+          "fat_over_entries": 1.188
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 7.1,
+          "entries_gibs": 5.65,
+          "naive_gibs": 1.57,
+          "fat_over_naive": 4.511,
+          "fat_over_entries": 1.258
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 25.48,
+          "entries_gibs": 19.84,
+          "naive_gibs": 5.92,
+          "fat_over_naive": 4.308,
+          "fat_over_entries": 1.284
+        },
+        {
+          "column": "clickbench_url",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 42.04,
+          "entries_gibs": 34.12,
+          "naive_gibs": 10.96,
+          "fat_over_naive": 3.837,
+          "fat_over_entries": 1.232
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 7.99,
+          "entries_gibs": 6.26,
+          "naive_gibs": 1.23,
+          "fat_over_naive": 6.514,
+          "fat_over_entries": 1.278
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 27.12,
+          "entries_gibs": 23.13,
+          "naive_gibs": 4.6,
+          "fat_over_naive": 5.894,
+          "fat_over_entries": 1.172
+        },
+        {
+          "column": "l_comment",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 45.04,
+          "entries_gibs": 38.02,
+          "naive_gibs": 8.49,
+          "fat_over_naive": 5.307,
+          "fat_over_entries": 1.185
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 6.82,
+          "entries_gibs": 4.92,
+          "naive_gibs": 1.59,
+          "fat_over_naive": 4.279,
+          "fat_over_entries": 1.385
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 24.06,
+          "entries_gibs": 17.14,
+          "naive_gibs": 5.99,
+          "fat_over_naive": 4.02,
+          "fat_over_entries": 1.404
+        },
+        {
+          "column": "l_comment",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 40.34,
+          "entries_gibs": 30.33,
+          "naive_gibs": 11.06,
+          "fat_over_naive": 3.646,
+          "fat_over_entries": 1.33
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 8.06,
+          "entries_gibs": 7.89,
+          "naive_gibs": 1.9,
+          "fat_over_naive": 4.245,
+          "fat_over_entries": 1.021
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 29.64,
+          "entries_gibs": 27.88,
+          "naive_gibs": 7.11,
+          "fat_over_naive": 4.168,
+          "fat_over_entries": 1.063
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 50.34,
+          "entries_gibs": 46.59,
+          "naive_gibs": 13.11,
+          "fat_over_naive": 3.84,
+          "fat_over_entries": 1.081
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 8.91,
+          "entries_gibs": 7.51,
+          "naive_gibs": 1.9,
+          "fat_over_naive": 4.696,
+          "fat_over_entries": 1.186
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 28.89,
+          "entries_gibs": 27.95,
+          "naive_gibs": 7.15,
+          "fat_over_naive": 4.04,
+          "fat_over_entries": 1.033
+        },
+        {
+          "column": "l_shipinstruct",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 49.95,
+          "entries_gibs": 46.42,
+          "naive_gibs": 13.1,
+          "fat_over_naive": 3.812,
+          "fat_over_entries": 1.076
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 1,
+          "fat_gibs": 4.08,
+          "entries_gibs": 3.44,
+          "naive_gibs": 0.7,
+          "fat_over_naive": 5.844,
+          "fat_over_entries": 1.186
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 4,
+          "fat_gibs": 15.13,
+          "entries_gibs": 12.62,
+          "naive_gibs": 2.7,
+          "fat_over_naive": 5.597,
+          "fat_over_entries": 1.198
+        },
+        {
+          "column": "book_reviews",
+          "bits": 12,
+          "threads": 8,
+          "fat_gibs": 26.21,
+          "entries_gibs": 22.42,
+          "naive_gibs": 5.16,
+          "fat_over_naive": 5.077,
+          "fat_over_entries": 1.169
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 1,
+          "fat_gibs": 4.94,
+          "entries_gibs": 3.25,
+          "naive_gibs": 0.97,
+          "fat_over_naive": 5.084,
+          "fat_over_entries": 1.519
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 4,
+          "fat_gibs": 17.48,
+          "entries_gibs": 12.05,
+          "naive_gibs": 3.69,
+          "fat_over_naive": 4.736,
+          "fat_over_entries": 1.45
+        },
+        {
+          "column": "book_reviews",
+          "bits": 16,
+          "threads": 8,
+          "fat_gibs": 29.93,
+          "entries_gibs": 21.12,
+          "naive_gibs": 6.96,
+          "fat_over_naive": 4.302,
+          "fat_over_entries": 1.417
+        }
+      ]
+    }
+  ]
+}

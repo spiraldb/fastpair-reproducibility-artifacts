@@ -1,0 +1,366 @@
+[
+  {
+    "dataset_id": "tpch-sf10",
+    "column": "l_comment",
+    "raw_bytes": 1000000000,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 4.56,
+        "compress_gib_s": 0.4,
+        "decode_gib_s": 310.0
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.85,
+        "compress_gib_s": 63.1,
+        "decode_gib_s": 126.6
+      },
+      "LZ4": {
+        "ratio": 2.17,
+        "compress_gib_s": 13.0,
+        "decode_gib_s": 225.6
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 310.0,
+    "best_ratio": 4.56
+  },
+  {
+    "dataset_id": "tpch-sf10",
+    "column": "ps_comment",
+    "raw_bytes": 987934065,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 5.67,
+        "compress_gib_s": 0.5,
+        "decode_gib_s": 390.6
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.85,
+        "compress_gib_s": 62.9,
+        "decode_gib_s": 126.1
+      },
+      "LZ4": {
+        "ratio": 2.56,
+        "compress_gib_s": 15.4,
+        "decode_gib_s": 251.8
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 390.6,
+    "best_ratio": 5.67
+  },
+  {
+    "dataset_id": "tpch-sf10",
+    "column": "s_comment",
+    "raw_bytes": 6242126,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 5.31,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 141.9
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.85,
+        "compress_gib_s": 1.1,
+        "decode_gib_s": 64.8
+      },
+      "LZ4": {
+        "ratio": 2.43,
+        "compress_gib_s": 0.2,
+        "decode_gib_s": 108.4
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 141.9,
+    "best_ratio": 5.31
+  },
+  {
+    "dataset_id": "tpch-sf10",
+    "column": "l_shipinstruct",
+    "raw_bytes": 719788494,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 24.42,
+        "compress_gib_s": 0.5,
+        "decode_gib_s": 601.8
+      },
+      "DEFLATE-fast": {
+        "ratio": 2.05,
+        "compress_gib_s": 82.3,
+        "decode_gib_s": 125.1
+      },
+      "LZ4": {
+        "ratio": 4.96,
+        "compress_gib_s": 33.1,
+        "decode_gib_s": 404.9
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 601.8,
+    "best_ratio": 24.42
+  },
+  {
+    "dataset_id": "clickbench",
+    "column": "URL",
+    "raw_bytes": 1000000000,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 6.45,
+        "compress_gib_s": 0.4,
+        "decode_gib_s": 385.7
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.45,
+        "compress_gib_s": 61.8,
+        "decode_gib_s": 126.4
+      },
+      "LZ4": {
+        "ratio": 3.7,
+        "compress_gib_s": 23.2,
+        "decode_gib_s": 364.3
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 385.7,
+    "best_ratio": 6.45
+  },
+  {
+    "dataset_id": "fineweb",
+    "column": "text",
+    "raw_bytes": 1000000000,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 2.55,
+        "compress_gib_s": 0.5,
+        "decode_gib_s": 169.9
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.71,
+        "compress_gib_s": 62.4,
+        "decode_gib_s": 126.5
+      },
+      "LZ4": {
+        "ratio": 1.54,
+        "compress_gib_s": 10.4,
+        "decode_gib_s": 189.2
+      }
+    },
+    "best_codec": "LZ4",
+    "best_decode_gib_s": 189.2,
+    "best_ratio": 1.54
+  },
+  {
+    "dataset_id": "wikipedia",
+    "column": "text",
+    "raw_bytes": 703062420,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 2.7,
+        "compress_gib_s": 0.5,
+        "decode_gib_s": 178.5
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.67,
+        "compress_gib_s": 79.5,
+        "decode_gib_s": 125.4
+      },
+      "LZ4": {
+        "ratio": 1.64,
+        "compress_gib_s": 8.6,
+        "decode_gib_s": 198.9
+      }
+    },
+    "best_codec": "LZ4",
+    "best_decode_gib_s": 198.9,
+    "best_ratio": 1.64
+  },
+  {
+    "dataset_id": "dbtext",
+    "column": "email",
+    "raw_bytes": 2117251,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 2.35,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 25.7
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.72,
+        "compress_gib_s": 0.4,
+        "decode_gib_s": 22.3
+      },
+      "LZ4": {
+        "ratio": 1.57,
+        "compress_gib_s": 0.1,
+        "decode_gib_s": 36.8
+      }
+    },
+    "best_codec": "LZ4",
+    "best_decode_gib_s": 36.8,
+    "best_ratio": 1.57
+  },
+  {
+    "dataset_id": "dbtext",
+    "column": "hex",
+    "raw_bytes": 793322,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 1.82,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 7.3
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.97,
+        "compress_gib_s": 0.1,
+        "decode_gib_s": 8.3
+      },
+      "LZ4": {
+        "ratio": 1.09,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 11.7
+      }
+    },
+    "best_codec": "LZ4",
+    "best_decode_gib_s": 11.7,
+    "best_ratio": 1.09
+  },
+  {
+    "dataset_id": "dbtext",
+    "column": "l_comment",
+    "raw_bytes": 2645949,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 4.56,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 48.8
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.85,
+        "compress_gib_s": 0.5,
+        "decode_gib_s": 27.8
+      },
+      "LZ4": {
+        "ratio": 2.18,
+        "compress_gib_s": 0.1,
+        "decode_gib_s": 43.9
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 48.8,
+    "best_ratio": 4.56
+  },
+  {
+    "dataset_id": "dbtext",
+    "column": "ps_comment",
+    "raw_bytes": 2471298,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 5.67,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 57.2
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.85,
+        "compress_gib_s": 0.4,
+        "decode_gib_s": 26.0
+      },
+      "LZ4": {
+        "ratio": 2.57,
+        "compress_gib_s": 0.1,
+        "decode_gib_s": 43.4
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 57.2,
+    "best_ratio": 5.67
+  },
+  {
+    "dataset_id": "dbtext",
+    "column": "yago",
+    "raw_bytes": 1826988,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 1.88,
+        "compress_gib_s": 0.0,
+        "decode_gib_s": 19.3
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.56,
+        "compress_gib_s": 0.3,
+        "decode_gib_s": 19.3
+      },
+      "LZ4": {
+        "ratio": 1.28,
+        "compress_gib_s": 0.1,
+        "decode_gib_s": 26.7
+      }
+    },
+    "best_codec": "LZ4",
+    "best_decode_gib_s": 26.7,
+    "best_ratio": 1.28
+  },
+  {
+    "dataset_id": "synthetic",
+    "column": "url",
+    "raw_bytes": 923569389,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 19.58,
+        "compress_gib_s": 0.5,
+        "decode_gib_s": 599.9
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.61,
+        "compress_gib_s": 100.5,
+        "decode_gib_s": 126.4
+      },
+      "LZ4": {
+        "ratio": 6.73,
+        "compress_gib_s": 44.8,
+        "decode_gib_s": 475.8
+      }
+    },
+    "best_codec": "DEFLATE-hi",
+    "best_decode_gib_s": 599.9,
+    "best_ratio": 19.58
+  },
+  {
+    "dataset_id": "book-reviews",
+    "column": "text",
+    "raw_bytes": 1000000000,
+    "chunk_bytes": 262144,
+    "codecs": {
+      "DEFLATE-hi": {
+        "ratio": 2.76,
+        "compress_gib_s": 0.4,
+        "decode_gib_s": 183.6
+      },
+      "DEFLATE-fast": {
+        "ratio": 1.76,
+        "compress_gib_s": 62.7,
+        "decode_gib_s": 126.5
+      },
+      "LZ4": {
+        "ratio": 1.61,
+        "compress_gib_s": 10.4,
+        "decode_gib_s": 188.6
+      }
+    },
+    "best_codec": "LZ4",
+    "best_decode_gib_s": 188.6,
+    "best_ratio": 1.61
+  }
+]

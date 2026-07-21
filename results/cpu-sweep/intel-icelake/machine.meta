@@ -1,0 +1,5 @@
+label=intel-icelake
+instance_type=m6i.2xlarge
+ddr=DDR4
+region=us-east-1
+bench_mb=256

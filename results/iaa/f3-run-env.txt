@@ -1,0 +1,43 @@
+6.17.0-1020-gcp
+model name	: Intel(R) Xeon(R) Platinum 8481C
+192
+[
+  {
+    "dev":"iax1",
+    "max_groups":4,
+    "max_work_queues":8,
+    "max_engines":8,
+    "work_queue_size":128,
+    "numa_node":0,
+    "op_cap":"00000000,00000000,00000000,00000000,00000000,007f331c,00000000,0000000d",
+    "gen_cap":"0x71f10901f0105",
+    "version":"0x100",
+    "state":"enabled",
+    "max_batch_size":-2,
+    "max_transfer_size":2147483648,
+    "configurable":1,
+    "pasid_enabled":1,
+    "cdev_major":235,
+    "clients":0,
+    "groups":[
+      {
+        "dev":"group1.0",
+        "grouped_workqueues":[
+          {
+            "dev":"wq1.0",
+            "mode":"dedicated",
+            "size":16,
+            "group_id":0,
+            "priority":10,
+            "block_on_fault":1,
+            "max_batch_size":-2,
+            "max_transfer_size":2097152,
+            "cdev_minor":0,
+            "type":"user",
+            "name":"iaad0",
+            "driver_name":"user",
+            "threshold":0,
+            "ats_disable":-2,
+            "state":"enabled",
+            "clients":0
+          },

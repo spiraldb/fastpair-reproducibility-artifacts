@@ -1,0 +1,11 @@
+{"mb": 256, "results": [
+  {"column":"synthetic_url","threads":1,"fat_gibs":4.16,"entries_gibs":4.06,"naive_gibs":2.34,"fat_over_naive":1.777,"fat_over_entries":1.025},
+  {"column":"synthetic_url","threads":4,"fat_gibs":12.35,"entries_gibs":12.31,"naive_gibs":8.47,"fat_over_naive":1.459,"fat_over_entries":1.004},
+  {"column":"synthetic_url","threads":8,"fat_gibs":14.19,"entries_gibs":14.09,"naive_gibs":10.54,"fat_over_naive":1.347,"fat_over_entries":1.008},
+  {"column":"tpch_comment","threads":1,"fat_gibs":5.45,"entries_gibs":5.21,"naive_gibs":2.20,"fat_over_naive":2.481,"fat_over_entries":1.046},
+  {"column":"tpch_comment","threads":4,"fat_gibs":13.56,"entries_gibs":13.40,"naive_gibs":7.99,"fat_over_naive":1.697,"fat_over_entries":1.012},
+  {"column":"tpch_comment","threads":8,"fat_gibs":15.04,"entries_gibs":15.14,"naive_gibs":10.65,"fat_over_naive":1.411,"fat_over_entries":0.993},
+  {"column":"fineweb_text","threads":1,"fat_gibs":1.56,"entries_gibs":1.50,"naive_gibs":0.58,"fat_over_naive":2.691,"fat_over_entries":1.039},
+  {"column":"fineweb_text","threads":4,"fat_gibs":5.65,"entries_gibs":5.50,"naive_gibs":2.23,"fat_over_naive":2.538,"fat_over_entries":1.028},
+  {"column":"fineweb_text","threads":8,"fat_gibs":8.21,"entries_gibs":7.02,"naive_gibs":3.18,"fat_over_naive":2.582,"fat_over_entries":1.170}
+]}

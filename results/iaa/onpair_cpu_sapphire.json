@@ -1,0 +1,1087 @@
+{
+"results": [
+{
+"column": "synthetic_url",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 5.28,
+"entries_gibs": 5.59,
+"naive_gibs": 2.8,
+"fat_over_naive": 1.883,
+"fat_over_entries": 0.945
+},
+{
+"column": "synthetic_url",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 18.66,
+"entries_gibs": 17.7,
+"naive_gibs": 10.41,
+"fat_over_naive": 1.792,
+"fat_over_entries": 1.054
+},
+{
+"column": "synthetic_url",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 35.64,
+"entries_gibs": 36.24,
+"naive_gibs": 17.73,
+"fat_over_naive": 2.01,
+"fat_over_entries": 0.984
+},
+{
+"column": "synthetic_url",
+"bits": 16,
+"dict_entries": 62693,
+"threads": 1,
+"fat_gibs": 5.98,
+"entries_gibs": 5.94,
+"naive_gibs": 2.83,
+"fat_over_naive": 2.113,
+"fat_over_entries": 1.007
+},
+{
+"column": "synthetic_url",
+"bits": 16,
+"dict_entries": 62693,
+"threads": 4,
+"fat_gibs": 21.57,
+"entries_gibs": 21.3,
+"naive_gibs": 9.32,
+"fat_over_naive": 2.315,
+"fat_over_entries": 1.013
+},
+{
+"column": "synthetic_url",
+"bits": 16,
+"dict_entries": 62693,
+"threads": 8,
+"fat_gibs": 39.18,
+"entries_gibs": 41.29,
+"naive_gibs": 17.38,
+"fat_over_naive": 2.254,
+"fat_over_entries": 0.949
+},
+{
+"column": "clickbench_url",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 4.93,
+"entries_gibs": 5.04,
+"naive_gibs": 0.91,
+"fat_over_naive": 5.396,
+"fat_over_entries": 0.98
+},
+{
+"column": "clickbench_url",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 18.32,
+"entries_gibs": 17.12,
+"naive_gibs": 3.56,
+"fat_over_naive": 5.151,
+"fat_over_entries": 1.07
+},
+{
+"column": "clickbench_url",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 37.66,
+"entries_gibs": 35.88,
+"naive_gibs": 6.28,
+"fat_over_naive": 6.0,
+"fat_over_entries": 1.05
+},
+{
+"column": "clickbench_url",
+"bits": 16,
+"dict_entries": 65041,
+"threads": 1,
+"fat_gibs": 5.6,
+"entries_gibs": 6.17,
+"naive_gibs": 1.44,
+"fat_over_naive": 3.886,
+"fat_over_entries": 0.907
+},
+{
+"column": "clickbench_url",
+"bits": 16,
+"dict_entries": 65041,
+"threads": 4,
+"fat_gibs": 21.52,
+"entries_gibs": 23.37,
+"naive_gibs": 5.62,
+"fat_over_naive": 3.83,
+"fat_over_entries": 0.921
+},
+{
+"column": "clickbench_url",
+"bits": 16,
+"dict_entries": 65041,
+"threads": 8,
+"fat_gibs": 37.4,
+"entries_gibs": 43.19,
+"naive_gibs": 6.24,
+"fat_over_naive": 5.998,
+"fat_over_entries": 0.866
+},
+{
+"column": "l_comment",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 5.69,
+"entries_gibs": 5.72,
+"naive_gibs": 1.08,
+"fat_over_naive": 5.276,
+"fat_over_entries": 0.996
+},
+{
+"column": "l_comment",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 21.17,
+"entries_gibs": 22.01,
+"naive_gibs": 4.32,
+"fat_over_naive": 4.898,
+"fat_over_entries": 0.962
+},
+{
+"column": "l_comment",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 42.13,
+"entries_gibs": 41.34,
+"naive_gibs": 7.87,
+"fat_over_naive": 5.355,
+"fat_over_entries": 1.019
+},
+{
+"column": "l_comment",
+"bits": 16,
+"dict_entries": 65323,
+"threads": 1,
+"fat_gibs": 5.83,
+"entries_gibs": 5.64,
+"naive_gibs": 1.44,
+"fat_over_naive": 4.062,
+"fat_over_entries": 1.034
+},
+{
+"column": "l_comment",
+"bits": 16,
+"dict_entries": 65323,
+"threads": 4,
+"fat_gibs": 22.33,
+"entries_gibs": 20.11,
+"naive_gibs": 5.62,
+"fat_over_naive": 3.973,
+"fat_over_entries": 1.11
+},
+{
+"column": "l_comment",
+"bits": 16,
+"dict_entries": 65323,
+"threads": 8,
+"fat_gibs": 42.12,
+"entries_gibs": 39.77,
+"naive_gibs": 10.79,
+"fat_over_naive": 3.905,
+"fat_over_entries": 1.059
+},
+{
+"column": "ps_comment",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 6.76,
+"entries_gibs": 6.7,
+"naive_gibs": 1.9,
+"fat_over_naive": 3.556,
+"fat_over_entries": 1.009
+},
+{
+"column": "ps_comment",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 24.16,
+"entries_gibs": 25.39,
+"naive_gibs": 7.53,
+"fat_over_naive": 3.207,
+"fat_over_entries": 0.952
+},
+{
+"column": "ps_comment",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 47.74,
+"entries_gibs": 47.74,
+"naive_gibs": 14.4,
+"fat_over_naive": 3.315,
+"fat_over_entries": 1.0
+},
+{
+"column": "ps_comment",
+"bits": 16,
+"dict_entries": 59765,
+"threads": 1,
+"fat_gibs": 6.38,
+"entries_gibs": 6.22,
+"naive_gibs": 1.72,
+"fat_over_naive": 3.709,
+"fat_over_entries": 1.025
+},
+{
+"column": "ps_comment",
+"bits": 16,
+"dict_entries": 59765,
+"threads": 4,
+"fat_gibs": 24.44,
+"entries_gibs": 23.99,
+"naive_gibs": 6.66,
+"fat_over_naive": 3.671,
+"fat_over_entries": 1.019
+},
+{
+"column": "ps_comment",
+"bits": 16,
+"dict_entries": 59765,
+"threads": 8,
+"fat_gibs": 44.43,
+"entries_gibs": 45.79,
+"naive_gibs": 12.73,
+"fat_over_naive": 3.492,
+"fat_over_entries": 0.97
+},
+{
+"column": "l_shipinstruct",
+"bits": 12,
+"dict_entries": 296,
+"threads": 1,
+"fat_gibs": 6.33,
+"entries_gibs": 6.58,
+"naive_gibs": 1.6,
+"fat_over_naive": 3.96,
+"fat_over_entries": 0.961
+},
+{
+"column": "l_shipinstruct",
+"bits": 12,
+"dict_entries": 296,
+"threads": 4,
+"fat_gibs": 21.95,
+"entries_gibs": 19.52,
+"naive_gibs": 6.09,
+"fat_over_naive": 3.602,
+"fat_over_entries": 1.124
+},
+{
+"column": "l_shipinstruct",
+"bits": 12,
+"dict_entries": 296,
+"threads": 8,
+"fat_gibs": 29.43,
+"entries_gibs": 32.01,
+"naive_gibs": 11.64,
+"fat_over_naive": 2.529,
+"fat_over_entries": 0.919
+},
+{
+"column": "l_shipinstruct",
+"bits": 16,
+"dict_entries": 296,
+"threads": 1,
+"fat_gibs": 6.7,
+"entries_gibs": 6.58,
+"naive_gibs": 1.53,
+"fat_over_naive": 4.378,
+"fat_over_entries": 1.018
+},
+{
+"column": "l_shipinstruct",
+"bits": 16,
+"dict_entries": 296,
+"threads": 4,
+"fat_gibs": 21.92,
+"entries_gibs": 20.98,
+"naive_gibs": 6.13,
+"fat_over_naive": 3.579,
+"fat_over_entries": 1.045
+},
+{
+"column": "l_shipinstruct",
+"bits": 16,
+"dict_entries": 296,
+"threads": 8,
+"fat_gibs": 30.77,
+"entries_gibs": 31.52,
+"naive_gibs": 11.6,
+"fat_over_naive": 2.652,
+"fat_over_entries": 0.976
+},
+{
+"column": "fineweb",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 3.26,
+"entries_gibs": 3.77,
+"naive_gibs": 0.54,
+"fat_over_naive": 6.01,
+"fat_over_entries": 0.865
+},
+{
+"column": "fineweb",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 13.45,
+"entries_gibs": 11.75,
+"naive_gibs": 2.13,
+"fat_over_naive": 6.306,
+"fat_over_entries": 1.145
+},
+{
+"column": "fineweb",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 22.03,
+"entries_gibs": 23.57,
+"naive_gibs": 3.97,
+"fat_over_naive": 5.554,
+"fat_over_entries": 0.934
+},
+{
+"column": "fineweb",
+"bits": 16,
+"dict_entries": 65486,
+"threads": 1,
+"fat_gibs": 4.28,
+"entries_gibs": 4.05,
+"naive_gibs": 0.8,
+"fat_over_naive": 5.331,
+"fat_over_entries": 1.058
+},
+{
+"column": "fineweb",
+"bits": 16,
+"dict_entries": 65486,
+"threads": 4,
+"fat_gibs": 15.89,
+"entries_gibs": 14.78,
+"naive_gibs": 3.11,
+"fat_over_naive": 5.109,
+"fat_over_entries": 1.075
+},
+{
+"column": "fineweb",
+"bits": 16,
+"dict_entries": 65486,
+"threads": 8,
+"fat_gibs": 25.61,
+"entries_gibs": 24.98,
+"naive_gibs": 6.0,
+"fat_over_naive": 4.269,
+"fat_over_entries": 1.025
+},
+{
+"column": "wikipedia",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 4.03,
+"entries_gibs": 3.83,
+"naive_gibs": 0.53,
+"fat_over_naive": 7.634,
+"fat_over_entries": 1.053
+},
+{
+"column": "wikipedia",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 13.48,
+"entries_gibs": 13.37,
+"naive_gibs": 2.07,
+"fat_over_naive": 6.512,
+"fat_over_entries": 1.009
+},
+{
+"column": "wikipedia",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 24.18,
+"entries_gibs": 24.36,
+"naive_gibs": 3.87,
+"fat_over_naive": 6.239,
+"fat_over_entries": 0.992
+},
+{
+"column": "wikipedia",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 1,
+"fat_gibs": 4.58,
+"entries_gibs": 4.26,
+"naive_gibs": 0.8,
+"fat_over_naive": 5.752,
+"fat_over_entries": 1.074
+},
+{
+"column": "wikipedia",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 4,
+"fat_gibs": 16.62,
+"entries_gibs": 15.56,
+"naive_gibs": 3.1,
+"fat_over_naive": 5.366,
+"fat_over_entries": 1.068
+},
+{
+"column": "wikipedia",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 8,
+"fat_gibs": 26.71,
+"entries_gibs": 25.71,
+"naive_gibs": 5.95,
+"fat_over_naive": 4.491,
+"fat_over_entries": 1.039
+},
+{
+"column": "book_reviews",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 4.32,
+"entries_gibs": 4.21,
+"naive_gibs": 0.64,
+"fat_over_naive": 6.775,
+"fat_over_entries": 1.027
+},
+{
+"column": "book_reviews",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 15.07,
+"entries_gibs": 14.7,
+"naive_gibs": 2.37,
+"fat_over_naive": 6.347,
+"fat_over_entries": 1.025
+},
+{
+"column": "book_reviews",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 24.78,
+"entries_gibs": 25.26,
+"naive_gibs": 4.85,
+"fat_over_naive": 5.109,
+"fat_over_entries": 0.981
+},
+{
+"column": "book_reviews",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 1,
+"fat_gibs": 4.8,
+"entries_gibs": 4.48,
+"naive_gibs": 0.89,
+"fat_over_naive": 5.41,
+"fat_over_entries": 1.07
+},
+{
+"column": "book_reviews",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 4,
+"fat_gibs": 17.2,
+"entries_gibs": 16.23,
+"naive_gibs": 3.43,
+"fat_over_naive": 5.02,
+"fat_over_entries": 1.06
+},
+{
+"column": "book_reviews",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 8,
+"fat_gibs": 27.63,
+"entries_gibs": 26.75,
+"naive_gibs": 6.58,
+"fat_over_naive": 4.199,
+"fat_over_entries": 1.033
+},
+{
+"column": "amazon_movies",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 4.15,
+"entries_gibs": 4.2,
+"naive_gibs": 0.62,
+"fat_over_naive": 6.655,
+"fat_over_entries": 0.987
+},
+{
+"column": "amazon_movies",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 14.92,
+"entries_gibs": 15.1,
+"naive_gibs": 2.39,
+"fat_over_naive": 6.235,
+"fat_over_entries": 0.988
+},
+{
+"column": "amazon_movies",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 25.56,
+"entries_gibs": 24.76,
+"naive_gibs": 4.69,
+"fat_over_naive": 5.451,
+"fat_over_entries": 1.032
+},
+{
+"column": "amazon_movies",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 1,
+"fat_gibs": 4.79,
+"entries_gibs": 4.46,
+"naive_gibs": 0.88,
+"fat_over_naive": 5.473,
+"fat_over_entries": 1.074
+},
+{
+"column": "amazon_movies",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 4,
+"fat_gibs": 17.29,
+"entries_gibs": 16.16,
+"naive_gibs": 3.37,
+"fat_over_naive": 5.124,
+"fat_over_entries": 1.07
+},
+{
+"column": "amazon_movies",
+"bits": 16,
+"dict_entries": 65536,
+"threads": 8,
+"fat_gibs": 27.44,
+"entries_gibs": 26.68,
+"naive_gibs": 6.49,
+"fat_over_naive": 4.227,
+"fat_over_entries": 1.028
+},
+{
+"column": "amazon_electronics",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 1,
+"fat_gibs": 4.21,
+"entries_gibs": 4.35,
+"naive_gibs": 0.66,
+"fat_over_naive": 6.425,
+"fat_over_entries": 0.968
+},
+{
+"column": "amazon_electronics",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 4,
+"fat_gibs": 15.51,
+"entries_gibs": 14.34,
+"naive_gibs": 2.57,
+"fat_over_naive": 6.043,
+"fat_over_entries": 1.082
+},
+{
+"column": "amazon_electronics",
+"bits": 12,
+"dict_entries": 4096,
+"threads": 8,
+"fat_gibs": 25.98,
+"entries_gibs": 24.56,
+"naive_gibs": 4.8,
+"fat_over_naive": 5.409,
+"fat_over_entries": 1.058
+},
+{
+"column": "amazon_electronics",
+"bits": 16,
+"dict_entries": 65451,
+"threads": 1,
+"fat_gibs": 4.94,
+"entries_gibs": 4.57,
+"naive_gibs": 0.89,
+"fat_over_naive": 5.567,
+"fat_over_entries": 1.081
+},
+{
+"column": "amazon_electronics",
+"bits": 16,
+"dict_entries": 65451,
+"threads": 4,
+"fat_gibs": 17.74,
+"entries_gibs": 16.65,
+"naive_gibs": 3.45,
+"fat_over_naive": 5.149,
+"fat_over_entries": 1.065
+},
+{
+"column": "amazon_electronics",
+"bits": 16,
+"dict_entries": 65451,
+"threads": 8,
+"fat_gibs": 28.24,
+"entries_gibs": 27.38,
+"naive_gibs": 6.57,
+"fat_over_naive": 4.3,
+"fat_over_entries": 1.031
+}
+],
+"competitors": [
+{
+"column": "synthetic_url",
+"codec": "FSST",
+"decode_gbs": 1.99,
+"ratio": 3.549
+},
+{
+"column": "synthetic_url",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.4,
+"ratio": 3.02
+},
+{
+"column": "synthetic_url",
+"codec": "Zstd (1)",
+"decode_gbs": 1.24,
+"ratio": 5.362
+},
+{
+"column": "synthetic_url",
+"codec": "Zstd (3)",
+"decode_gbs": 1.38,
+"ratio": 5.768
+},
+{
+"column": "synthetic_url",
+"codec": "LZ4",
+"decode_gbs": 3.07,
+"ratio": 3.156
+},
+{
+"column": "synthetic_url",
+"codec": "Deflate-hi",
+"decode_gbs": 1.26,
+"ratio": 7.424
+},
+{
+"column": "synthetic_url",
+"codec": "Deflate-fast",
+"decode_gbs": 0.7,
+"ratio": 4.792
+},
+{
+"column": "clickbench_url",
+"codec": "FSST",
+"decode_gbs": 1.69,
+"ratio": 1.796
+},
+{
+"column": "clickbench_url",
+"codec": "Zstd (-10)",
+"decode_gbs": 2.67,
+"ratio": 4.53
+},
+{
+"column": "clickbench_url",
+"codec": "Zstd (1)",
+"decode_gbs": 2.15,
+"ratio": 6.426
+},
+{
+"column": "clickbench_url",
+"codec": "Zstd (3)",
+"decode_gbs": 2.1,
+"ratio": 6.677
+},
+{
+"column": "clickbench_url",
+"codec": "LZ4",
+"decode_gbs": 2.93,
+"ratio": 4.551
+},
+{
+"column": "clickbench_url",
+"codec": "Deflate-hi",
+"decode_gbs": 0.88,
+"ratio": 6.936
+},
+{
+"column": "clickbench_url",
+"codec": "Deflate-fast",
+"decode_gbs": 0.69,
+"ratio": 5.033
+},
+{
+"column": "l_comment",
+"codec": "FSST",
+"decode_gbs": 1.39,
+"ratio": 2.854
+},
+{
+"column": "l_comment",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.45,
+"ratio": 2.583
+},
+{
+"column": "l_comment",
+"codec": "Zstd (1)",
+"decode_gbs": 1.4,
+"ratio": 3.559
+},
+{
+"column": "l_comment",
+"codec": "Zstd (3)",
+"decode_gbs": 1.44,
+"ratio": 3.801
+},
+{
+"column": "l_comment",
+"codec": "LZ4",
+"decode_gbs": 2.98,
+"ratio": 2.351
+},
+{
+"column": "l_comment",
+"codec": "Deflate-hi",
+"decode_gbs": 0.57,
+"ratio": 4.468
+},
+{
+"column": "l_comment",
+"codec": "Deflate-fast",
+"decode_gbs": 0.33,
+"ratio": 2.654
+},
+{
+"column": "ps_comment",
+"codec": "FSST",
+"decode_gbs": 2.44,
+"ratio": 3.187
+},
+{
+"column": "ps_comment",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.44,
+"ratio": 3.64
+},
+{
+"column": "ps_comment",
+"codec": "Zstd (1)",
+"decode_gbs": 1.45,
+"ratio": 4.292
+},
+{
+"column": "ps_comment",
+"codec": "Zstd (3)",
+"decode_gbs": 1.55,
+"ratio": 4.605
+},
+{
+"column": "ps_comment",
+"codec": "LZ4",
+"decode_gbs": 3.09,
+"ratio": 2.751
+},
+{
+"column": "ps_comment",
+"codec": "Deflate-hi",
+"decode_gbs": 0.78,
+"ratio": 5.577
+},
+{
+"column": "ps_comment",
+"codec": "Deflate-fast",
+"decode_gbs": 0.39,
+"ratio": 3.152
+},
+{
+"column": "l_shipinstruct",
+"codec": "FSST",
+"decode_gbs": 1.18,
+"ratio": 6.0
+},
+{
+"column": "l_shipinstruct",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.75,
+"ratio": 12.313
+},
+{
+"column": "l_shipinstruct",
+"codec": "Zstd (1)",
+"decode_gbs": 1.75,
+"ratio": 12.379
+},
+{
+"column": "l_shipinstruct",
+"codec": "Zstd (3)",
+"decode_gbs": 1.75,
+"ratio": 12.379
+},
+{
+"column": "l_shipinstruct",
+"codec": "LZ4",
+"decode_gbs": 2.54,
+"ratio": 5.708
+},
+{
+"column": "l_shipinstruct",
+"codec": "Deflate-hi",
+"decode_gbs": 4.31,
+"ratio": 24.734
+},
+{
+"column": "l_shipinstruct",
+"codec": "Deflate-fast",
+"decode_gbs": 1.02,
+"ratio": 11.05
+},
+{
+"column": "fineweb",
+"codec": "FSST",
+"decode_gbs": 1.64,
+"ratio": 1.744
+},
+{
+"column": "fineweb",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.68,
+"ratio": 1.361
+},
+{
+"column": "fineweb",
+"codec": "Zstd (1)",
+"decode_gbs": 1.21,
+"ratio": 2.33
+},
+{
+"column": "fineweb",
+"codec": "Zstd (3)",
+"decode_gbs": 1.0,
+"ratio": 2.416
+},
+{
+"column": "fineweb",
+"codec": "LZ4",
+"decode_gbs": 2.58,
+"ratio": 1.566
+},
+{
+"column": "fineweb",
+"codec": "Deflate-hi",
+"decode_gbs": 0.36,
+"ratio": 2.491
+},
+{
+"column": "fineweb",
+"codec": "Deflate-fast",
+"decode_gbs": 0.23,
+"ratio": 1.918
+},
+{
+"column": "wikipedia",
+"codec": "FSST",
+"decode_gbs": 2.64,
+"ratio": 1.788
+},
+{
+"column": "wikipedia",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.67,
+"ratio": 1.488
+},
+{
+"column": "wikipedia",
+"codec": "Zstd (1)",
+"decode_gbs": 1.11,
+"ratio": 2.519
+},
+{
+"column": "wikipedia",
+"codec": "Zstd (3)",
+"decode_gbs": 1.09,
+"ratio": 2.614
+},
+{
+"column": "wikipedia",
+"codec": "LZ4",
+"decode_gbs": 2.96,
+"ratio": 1.703
+},
+{
+"column": "wikipedia",
+"codec": "Deflate-hi",
+"decode_gbs": 0.38,
+"ratio": 2.709
+},
+{
+"column": "wikipedia",
+"codec": "Deflate-fast",
+"decode_gbs": 0.24,
+"ratio": 2.001
+},
+{
+"column": "book_reviews",
+"codec": "FSST",
+"decode_gbs": 2.39,
+"ratio": 1.895
+},
+{
+"column": "book_reviews",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.69,
+"ratio": 1.515
+},
+{
+"column": "book_reviews",
+"codec": "Zstd (1)",
+"decode_gbs": 1.32,
+"ratio": 2.569
+},
+{
+"column": "book_reviews",
+"codec": "Zstd (3)",
+"decode_gbs": 1.11,
+"ratio": 2.667
+},
+{
+"column": "book_reviews",
+"codec": "LZ4",
+"decode_gbs": 2.99,
+"ratio": 1.674
+},
+{
+"column": "book_reviews",
+"codec": "Deflate-hi",
+"decode_gbs": 0.4,
+"ratio": 2.746
+},
+{
+"column": "book_reviews",
+"codec": "Deflate-fast",
+"decode_gbs": 0.23,
+"ratio": 1.967
+},
+{
+"column": "amazon_movies",
+"codec": "FSST",
+"decode_gbs": 2.37,
+"ratio": 1.889
+},
+{
+"column": "amazon_movies",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.71,
+"ratio": 1.473
+},
+{
+"column": "amazon_movies",
+"codec": "Zstd (1)",
+"decode_gbs": 1.3,
+"ratio": 2.495
+},
+{
+"column": "amazon_movies",
+"codec": "Zstd (3)",
+"decode_gbs": 1.09,
+"ratio": 2.593
+},
+{
+"column": "amazon_movies",
+"codec": "LZ4",
+"decode_gbs": 2.97,
+"ratio": 1.634
+},
+{
+"column": "amazon_movies",
+"codec": "Deflate-hi",
+"decode_gbs": 0.39,
+"ratio": 2.665
+},
+{
+"column": "amazon_movies",
+"codec": "Deflate-fast",
+"decode_gbs": 0.23,
+"ratio": 1.94
+},
+{
+"column": "amazon_electronics",
+"codec": "FSST",
+"decode_gbs": 2.17,
+"ratio": 1.883
+},
+{
+"column": "amazon_electronics",
+"codec": "Zstd (-10)",
+"decode_gbs": 1.67,
+"ratio": 1.505
+},
+{
+"column": "amazon_electronics",
+"codec": "Zstd (1)",
+"decode_gbs": 1.29,
+"ratio": 2.522
+},
+{
+"column": "amazon_electronics",
+"codec": "Zstd (3)",
+"decode_gbs": 1.1,
+"ratio": 2.631
+},
+{
+"column": "amazon_electronics",
+"codec": "LZ4",
+"decode_gbs": 2.98,
+"ratio": 1.667
+},
+{
+"column": "amazon_electronics",
+"codec": "Deflate-hi",
+"decode_gbs": 0.4,
+"ratio": 2.712
+},
+{
+"column": "amazon_electronics",
+"codec": "Deflate-fast",
+"decode_gbs": 0.23,
+"ratio": 1.939
+}
+],
+"box": "gcp c3-standard-192-metal Xeon 8481C Sapphire Rapids"
+}

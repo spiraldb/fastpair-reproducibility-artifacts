@@ -1,0 +1,16 @@
+# NCU cost-surface (NCU_ONLY)
+-rw-rw-r-- 1 ubuntu ubuntu    14031 Jun 12 01:01 /home/ubuntu/work/ncu_costsurface_clickbench_URL.log
+-rw-r--r-- 1 ubuntu ubuntu 69752186 Jun 12 01:00 /home/ubuntu/work/ncu_costsurface_clickbench_URL_b12.ncu-rep
+-rw-r--r-- 1 ubuntu ubuntu 69752186 Jun 12 01:00 /home/ubuntu/work/ncu_costsurface_clickbench_URL_b12.ncu-rep
+-rw-rw-r-- 1 ubuntu ubuntu   379826 Jun 12 01:01 /home/ubuntu/work/ncu_costsurface_clickbench_URL_b12_details.csv
+-rw-rw-r-- 1 ubuntu ubuntu   424147 Jun 12 01:01 /home/ubuntu/work/ncu_costsurface_clickbench_URL_b12_raw.csv
+-rw-rw-r-- 1 ubuntu ubuntu    14074 Jun 12 00:55 /home/ubuntu/work/ncu_costsurface_synthetic_url.log
+-rw-r--r-- 1 ubuntu ubuntu 65800092 Jun 12 00:54 /home/ubuntu/work/ncu_costsurface_synthetic_url_b12.ncu-rep
+-rw-r--r-- 1 ubuntu ubuntu 65800092 Jun 12 00:54 /home/ubuntu/work/ncu_costsurface_synthetic_url_b12.ncu-rep
+-rw-rw-r-- 1 ubuntu ubuntu   387261 Jun 12 00:55 /home/ubuntu/work/ncu_costsurface_synthetic_url_b12_details.csv
+-rw-rw-r-- 1 ubuntu ubuntu   423247 Jun 12 00:55 /home/ubuntu/work/ncu_costsurface_synthetic_url_b12_raw.csv
+-rw-rw-r-- 1 ubuntu ubuntu    14081 Jun 12 00:53 /home/ubuntu/work/ncu_costsurface_tpch-sf10_l_shipinstruct.log
+-rw-r--r-- 1 ubuntu ubuntu 43415560 Jun 12 00:34 /home/ubuntu/work/ncu_costsurface_tpch-sf10_l_shipinstruct_b12.ncu-rep
+-rw-r--r-- 1 ubuntu ubuntu 43415560 Jun 12 00:34 /home/ubuntu/work/ncu_costsurface_tpch-sf10_l_shipinstruct_b12.ncu-rep
+-rw-rw-r-- 1 ubuntu ubuntu   347934 Jun 12 00:53 /home/ubuntu/work/ncu_costsurface_tpch-sf10_l_shipinstruct_b12_details.csv
+-rw-rw-r-- 1 ubuntu ubuntu   423347 Jun 12 00:53 /home/ubuntu/work/ncu_costsurface_tpch-sf10_l_shipinstruct_b12_raw.csv

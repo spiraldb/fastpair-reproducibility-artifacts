@@ -1,0 +1,189 @@
+==> building onpair-chunk-bench (release, cuda)
+   Compiling cudarc v0.19.4
+   Compiling bindgen v0.72.1
+   Compiling custom-labels v0.4.6
+   Compiling vortex-nvcomp v0.1.0 (/home/ubuntu/work/vortex-cuda/nvcomp)
+   Compiling vortex-cub v0.1.0 (/home/ubuntu/work/vortex-cuda/cub)
+   Compiling vortex-cuda v0.1.0 (/home/ubuntu/work/vortex-cuda)
+   Compiling vortex-array v0.1.0 (/home/ubuntu/work/vortex-array)
+   Compiling vortex-fastlanes v0.1.0 (/home/ubuntu/work/encodings/fastlanes)
+   Compiling vortex-compressor v0.1.0 (/home/ubuntu/work/vortex-compressor)
+   Compiling vortex-zigzag v0.1.0 (/home/ubuntu/work/encodings/zigzag)
+   Compiling vortex-decimal-byte-parts v0.1.0 (/home/ubuntu/work/encodings/decimal-byte-parts)
+   Compiling vortex-sequence v0.1.0 (/home/ubuntu/work/encodings/sequence)
+   Compiling vortex-sparse v0.1.0 (/home/ubuntu/work/encodings/sparse)
+   Compiling vortex-pco v0.1.0 (/home/ubuntu/work/encodings/pco)
+   Compiling vortex-zstd v0.1.0 (/home/ubuntu/work/encodings/zstd)
+   Compiling vortex-runend v0.1.0 (/home/ubuntu/work/encodings/runend)
+   Compiling vortex-onpair v0.1.0 (/home/ubuntu/work/encodings/onpair)
+   Compiling vortex-fsst v0.1.0 (/home/ubuntu/work/encodings/fsst)
+   Compiling vortex-datetime-parts v0.1.0 (/home/ubuntu/work/encodings/datetime-parts)
+   Compiling vortex-io v0.1.0 (/home/ubuntu/work/vortex-io)
+   Compiling vortex-scan v0.1.0 (/home/ubuntu/work/vortex-scan)
+   Compiling vortex-bytebool v0.1.0 (/home/ubuntu/work/encodings/bytebool)
+   Compiling vortex-ipc v0.1.0 (/home/ubuntu/work/vortex-ipc)
+   Compiling vortex-alp v0.1.0 (/home/ubuntu/work/encodings/alp)
+   Compiling vortex-tensor v0.1.0 (/home/ubuntu/work/vortex-tensor)
+   Compiling vortex-btrblocks v0.1.0 (/home/ubuntu/work/vortex-btrblocks)
+   Compiling vortex-layout v0.1.0 (/home/ubuntu/work/vortex-layout)
+   Compiling vortex-file v0.1.0 (/home/ubuntu/work/vortex-file)
+   Compiling vortex v0.1.0 (/home/ubuntu/work/vortex)
+   Compiling vortex-bench v0.1.0 (/home/ubuntu/work/vortex-bench)
+    Finished `release` profile [optimized] target(s) in 2m 04s
+==> 4/4 columns selected
+==> running with 1 column worker(s)
+==> running tpch-sf10/s_comment
+==> running tpch-sf10/ps_comment
+==> running tpch-sf10/l_shipinstruct
+==> running tpch-sf10/l_comment
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+8 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| tpch-sf10/l_comment | 61.9% | 4.15 | 4.19 |
+| tpch-sf10/l_shipinstruct | 0.0% | 11.16 | 11.16 |
+| tpch-sf10/ps_comment | 98.9% | 6.27 | 5.82 |
+| tpch-sf10/s_comment | 100.0% | 5.19 | 4.67 |
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.28s
+==> generating synthetic URL corpus (10000000 rows)
+synthetic URLs (10000000 rows) ready at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/synthetic/synthetic_urls.parquet
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running synthetic/url
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| synthetic/url | 0.1% | 9.62 | 9.69 |
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> downloading https://raw.githubusercontent.com/cwida/fsst/master/paper/dbtext/hex
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/hex.txt
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  872k  100  872k    0     0  3192k      0 --:--:-- --:--:-- --:--:-- 3195k
+==> converting /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/hex.txt -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/hex.parquet
+==> downloading https://raw.githubusercontent.com/cwida/fsst/master/paper/dbtext/yago
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/yago.txt
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 1881k  100 1881k    0     0  6522k      0 --:--:-- --:--:-- --:--:-- 6534k
+==> converting /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/yago.txt -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/yago.parquet
+==> downloading https://raw.githubusercontent.com/cwida/fsst/master/paper/dbtext/email
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/email.txt
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 2165k  100 2165k    0     0  7532k      0 --:--:-- --:--:-- --:--:-- 7544k
+==> converting /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/email.txt -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/email.parquet
+==> downloading https://raw.githubusercontent.com/cwida/fsst/master/paper/dbtext/l_comment
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/l_comment.txt
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 2681k  100 2681k    0     0  8729k      0 --:--:-- --:--:-- --:--:-- 8734k
+==> converting /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/l_comment.txt -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/l_comment.parquet
+==> downloading https://raw.githubusercontent.com/cwida/fsst/master/paper/dbtext/ps_comment
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/ps_comment.txt
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 2432k  100 2432k    0     0  9683k      0 --:--:-- --:--:-- --:--:-- 9692k
+==> converting /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/raw/ps_comment.txt -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/dbtext/ps_comment.parquet
+==> 5/5 columns selected
+==> running with 1 column worker(s)
+==> running dbtext/hex
+==> running dbtext/yago
+==> running dbtext/email
+==> running dbtext/l_comment
+==> running dbtext/ps_comment
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+10 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| dbtext/email | 100.0% | 2.08 | 1.95 |
+| dbtext/hex | 100.0% | 1.22 | 1.11 |
+| dbtext/l_comment | 96.3% | 3.82 | 3.64 |
+| dbtext/ps_comment | 100.0% | 5.51 | 5.11 |
+| dbtext/yago | 100.0% | 1.60 | 1.62 |
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> downloading https://datasets.clickhouse.com/hits_compatible/hits.parquet
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/clickbench/hits.parquet
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0 13.7G    0 88.1M    0     0  84.4M      0  0:02:46  0:00:01  0:02:45 84.4M  1 13.7G    1  180M    0     0  88.5M      0  0:02:39  0:00:02  0:02:37 88.4M  1 13.7G    1  278M    0     0  91.5M      0  0:02:33  0:00:03  0:02:30 91.5M  2 13.7G    2  374M    0     0  92.5M      0  0:02:32  0:00:04  0:02:28 92.5M  3 13.7G    3  469M    0     0  93.0M      0  0:02:31  0:00:05  0:02:26 94.1M  4 13.7G    4  565M    0     0  93.4M      0  0:02:30  0:00:06  0:02:24 95.3M  4 13.7G    4  660M    0     0  93.7M      0  0:02:30  0:00:07  0:02:23 95.9M  5 13.7G    5  755M    0     0  93.9M      0  0:02:30  0:00:08  0:02:22 95.3M  6 13.7G    6  851M    0     0  94.1M      0  0:02:29  0:00:09  0:02:20 95.3M  6 13.7G    6  946M    0     0  94.2M      0  0:02:29  0:00:10  0:02:19 95.3M  7 13.7G    7 1041M    0     0  94.3M      0  0:02:29  0:00:11  0:02:18 95.3M  8 13.7G    8 1137M    0     0  94.4M      0  0:02:29  0:00:12  0:02:17 95.3M  8 13.7G    8 1219M    0     0  93.4M      0  0:02:30  0:00:13  0:02:17 92.7M  9 13.7G    9 1327M    0     0  94.5M      0  0:02:29  0:00:14  0:02:15 95.3M 10 13.7G   10 1423M    0     0  94.6M      0  0:02:28  0:00:15  0:02:13 95.3M 10 13.7G   10 1512M    0     0  93.4M      0  0:02:30  0:00:16  0:02:14 91.4M 11 13.7G   11 1614M    0     0  94.6M      0  0:02:28  0:00:17  0:02:11 95.2M 12 13.7G   12 1709M    0     0  94.7M      0  0:02:28  0:00:18  0:02:10 98.0M 12 13.7G   12 1804M    0     0  94.7M      0  0:02:28  0:00:19  0:02:09 95.3M 13 13.7G   13 1900M    0     0  94.8M      0  0:02:28  0:00:20  0:02:08 95.3M 14 13.7G   14 1995M    0     0  94.8M      0  0:02:28  0:00:21  0:02:07 99.5M 14 13.7G   14 2090M    0     0  94.8M      0  0:02:28  0:00:22  0:02:06 95.4M 15 13.7G   15 2186M    0     0  94.8M      0  0:02:28  0:00:23  0:02:05 95.3M 16 13.7G   16 2265M    0     0  94.2M      0  0:02:29  0:00:24  0:02:05 92.1M 16 13.7G   16 2377M    0     0  94.9M      0  0:02:28  0:00:25  0:02:03 95.3M 17 13.7G   17 2472M    0     0  94.9M      0  0:02:28  0:00:26  0:02:02 95.3M 18 13.7G   18 2567M    0     0  94.9M      0  0:02:28  0:00:27  0:02:01 95.3M 18 13.7G   18 2662M    0     0  94.9M      0  0:02:28  0:00:28  0:02:00 95.3M 19 13.7G   19 2758M    0     0  94.9M      0  0:02:28  0:00:29  0:01:59 98.6M 20 13.7G   20 2853M    0     0  94.9M      0  0:02:28  0:00:30  0:01:58 95.3M 20 13.7G   20 2938M    0     0  94.6M      0  0:02:28  0:00:31  0:01:57 93.2M 21 13.7G   21 3044M    0     0  95.0M      0  0:02:28  0:00:32  0:01:56 95.3M 22 13.7G   22 3140M    0     0  95.0M      0  0:02:28  0:00:33  0:01:55 95.4M 22 13.7G   22 3235M    0     0  95.0M      0  0:02:28  0:00:34  0:01:54 95.3M 23 13.7G   23 3311M    0     0  94.4M      0  0:02:29  0:00:35  0:01:54 91.3M 24 13.7G   24 3426M    0     0  95.0M      0  0:02:28  0:00:36  0:01:52 97.4M 24 13.7G   24 3521M    0     0  95.0M      0  0:02:28  0:00:37  0:01:51 95.3M 25 13.7G   25 3616M    0     0  95.0M      0  0:02:28  0:00:38  0:01:50 95.3M 26 13.7G   26 3712M    0     0  95.0M      0  0:02:28  0:00:39  0:01:49 95.3M 26 13.7G   26 3801M    0     0  94.9M      0  0:02:28  0:00:40  0:01:48 98.2M 27 13.7G   27 3902M    0     0  95.0M      0  0:02:28  0:00:41  0:01:47 95.3M 28 13.7G   28 3998M    0     0  95.0M      0  0:02:28  0:00:42  0:01:46 95.3M 29 13.7G   29 4093M    0     0  95.1M      0  0:02:28  0:00:43  0:01:45 95.3M 29 13.7G   29 4189M    0     0  95.1M      0  0:02:28  0:00:44  0:01:44 95.3M 30 13.7G   30 4284M    0     0  95.1M      0  0:02:28  0:00:45  0:01:43 96.5M 31 13.7G   31 4379M    0     0  95.1M      0  0:02:28  0:00:46  0:01:42 95.2M 31 13.7G   31 4475M    0     0  95.1M      0  0:02:28  0:00:47  0:01:41 95.3M 32 13.7G   32 4570M    0     0  95.1M      0  0:02:28  0:00:48  0:01:40 95.3M 33 13.7G   33 4665M    0     0  95.1M      0  0:02:28  0:00:49  0:01:39 95.3M 33 13.7G   33 4761M    0     0  95.1M      0  0:02:28  0:00:50  0:01:38 95.4M 34 13.7G   34 4856M    0     0  95.1M      0  0:02:28  0:00:51  0:01:37 95.4M 35 13.7G   35 4951M    0     0  95.1M      0  0:02:28  0:00:52  0:01:36 95.3M 35 13.7G   35 5047M    0     0  95.1M      0  0:02:28  0:00:53  0:01:35 95.3M 36 13.7G   36 5138M    0     0  95.0M      0  0:02:28  0:00:54  0:01:34 94.5M 37 13.7G   37 5238M    0     0  95.1M      0  0:02:28  0:00:55  0:01:33 95.3M 37 13.7G   37 5322M    0     0  94.9M      0  0:02:28  0:00:56  0:01:32 93.2M 38 13.7G   38 5424M    0     0  95.0M      0  0:02:28  0:00:57  0:01:31 94.4M 39 13.7G   39 5524M    0     0  95.1M      0  0:02:28  0:00:58  0:01:30 95.3M 39 13.7G   39 5619M    0     0  95.1M      0  0:02:28  0:00:59  0:01:29 96.2M 40 13.7G   40 5711M    0     0  95.0M      0  0:02:28  0:01:00  0:01:28 93.9M 41 13.7G   41 5810M    0     0  95.1M      0  0:02:28  0:01:01  0:01:27 97.5M 41 13.7G   41 5905M    0     0  95.1M      0  0:02:28  0:01:02  0:01:26 96.2M 42 13.7G   42 6001M    0     0  95.1M      0  0:02:28  0:01:03  0:01:25 95.4M 43 13.7G   43 6096M    0     0  95.1M      0  0:02:28  0:01:04  0:01:24 95.3M 43 13.7G   43 6191M    0     0  95.1M      0  0:02:28  0:01:05  0:01:23 96.7M 44 13.7G   44 6287M    0     0  95.1M      0  0:02:28  0:01:06  0:01:22 95.3M 45 13.7G   45 6382M    0     0  95.1M      0  0:02:28  0:01:07  0:01:21 95.3M 45 13.7G   45 6477M    0     0  95.2M      0  0:02:28  0:01:08  0:01:20 95.3M 46 13.7G   46 6573M    0     0  95.2M      0  0:02:28  0:01:09  0:01:19 95.3M 47 13.7G   47 6668M    0     0  95.2M      0  0:02:28  0:01:10  0:01:18 95.3M 47 13.7G   47 6744M    0     0  94.8M      0  0:02:28  0:01:11  0:01:17 90.5M 48 13.7G   48 6859M    0     0  95.2M      0  0:02:28  0:01:12  0:01:16 95.3M 49 13.7G   49 6954M    0     0  95.2M      0  0:02:28  0:01:13  0:01:15 95.3M 50 13.7G   50 7050M    0     0  95.2M      0  0:02:28  0:01:14  0:01:14 95.3M 50 13.7G   50 7145M    0     0  95.2M      0  0:02:28  0:01:15  0:01:13 95.3M 51 13.7G   51 7240M    0     0  95.2M      0  0:02:28  0:01:16  0:01:12  100M 52 13.7G   52 7336M    0     0  95.2M      0  0:02:28  0:01:17  0:01:11 95.3M 52 13.7G   52 7425M    0     0  95.1M      0  0:02:28  0:01:18  0:01:10 93.8M 53 13.7G   53 7526M    0     0  95.2M      0  0:02:28  0:01:19  0:01:09 95.3M 54 13.7G   54 7622M    0     0  95.2M      0  0:02:28  0:01:20  0:01:08 95.3M 54 13.7G   54 7717M    0     0  95.2M      0  0:02:28  0:01:21  0:01:07 95.3M 55 13.7G   55 7813M    0     0  95.2M      0  0:02:28  0:01:22  0:01:06 95.3M 56 13.7G   56 7908M    0     0  95.2M      0  0:02:28  0:01:23  0:01:05 96.9M 56 13.7G   56 8003M    0     0  95.2M      0  0:02:28  0:01:24  0:01:04 95.3M 57 13.7G   57 8099M    0     0  95.2M      0  0:02:28  0:01:25  0:01:03 95.3M 58 13.7G   58 8194M    0     0  95.2M      0  0:02:28  0:01:26  0:01:02 95.4M 58 13.7G   58 8289M    0     0  95.2M      0  0:02:27  0:01:27  0:01:00 95.3M 59 13.7G   59 8385M    0     0  95.2M      0  0:02:27  0:01:28  0:00:59 95.3M 60 13.7G   60 8480M    0     0  95.2M      0  0:02:27  0:01:29  0:00:58 95.3M 60 13.7G   60 8575M    0     0  95.2M      0  0:02:27  0:01:30  0:00:57 95.3M 61 13.7G   61 8671M    0     0  95.2M      0  0:02:27  0:01:31  0:00:56 95.3M 62 13.7G   62 8766M    0     0  95.2M      0  0:02:27  0:01:32  0:00:55 95.3M 62 13.7G   62 8862M    0     0  95.2M      0  0:02:27  0:01:33  0:00:54 95.3M 63 13.7G   63 8956M    0     0  95.2M      0  0:02:27  0:01:34  0:00:53 95.2M 64 13.7G   64 9052M    0     0  95.2M      0  0:02:27  0:01:35  0:00:52 95.3M 64 13.7G   64 9148M    0     0  95.2M      0  0:02:27  0:01:36  0:00:51 95.3M 65 13.7G   65 9243M    0     0  95.2M      0  0:02:27  0:01:37  0:00:50 95.3M 66 13.7G   66 9339M    0     0  95.2M      0  0:02:27  0:01:38  0:00:49 95.4M 66 13.7G   66 9433M    0     0  95.2M      0  0:02:27  0:01:39  0:00:48 95.4M 67 13.7G   67 9529M    0     0  95.2M      0  0:02:27  0:01:40  0:00:47 95.3M 68 13.7G   68 9625M    0     0  95.2M      0  0:02:27  0:01:41  0:00:46 95.3M 68 13.7G   68 9720M    0     0  95.2M      0  0:02:27  0:01:42  0:00:45 95.3M 69 13.7G   69 9815M    0     0  95.2M      0  0:02:27  0:01:43  0:00:44 95.3M 70 13.7G   70 9910M    0     0  95.2M      0  0:02:27  0:01:44  0:00:43 95.1M 70 13.7G   70  9.7G    0     0  95.2M      0  0:02:28  0:01:45  0:00:43 94.1M 71 13.7G   71  9.8G    0     0  95.2M      0  0:02:27  0:01:46  0:00:41 95.3M 72 13.7G   72  9.9G    0     0  95.2M      0  0:02:27  0:01:47  0:00:40 95.3M 72 13.7G   72 10.0G    0     0  95.2M      0  0:02:28  0:01:48  0:00:40 94.1M 73 13.7G   73 10.1G    0     0  95.2M      0  0:02:27  0:01:49  0:00:38 95.6M 74 13.7G   74 10.2G    0     0  95.2M      0  0:02:27  0:01:50  0:00:37 96.5M 75 13.7G   75 10.3G    0     0  95.2M      0  0:02:27  0:01:51  0:00:36 95.0M 75 13.7G   75 10.4G    0     0  95.2M      0  0:02:28  0:01:52  0:00:36 94.6M 76 13.7G   76 10.5G    0     0  95.2M      0  0:02:27  0:01:53  0:00:34 96.6M 77 13.7G   77 10.6G    0     0  95.2M      0  0:02:27  0:01:54  0:00:33 95.3M 77 13.7G   77 10.7G    0     0  95.2M      0  0:02:27  0:01:55  0:00:32 95.3M 78 13.7G   78 10.7G    0     0  95.2M      0  0:02:27  0:01:56  0:00:31 95.7M 79 13.7G   79 10.8G    0     0  95.2M      0  0:02:27  0:01:57  0:00:30 96.0M 79 13.7G   79 10.9G    0     0  95.2M      0  0:02:27  0:01:58  0:00:29 95.3M 80 13.7G   80 11.0G    0     0  95.2M      0  0:02:27  0:01:59  0:00:28 95.3M 81 13.7G   81 11.1G    0     0  95.2M      0  0:02:27  0:02:00  0:00:27 95.3M 81 13.7G   81 11.2G    0     0  95.2M      0  0:02:27  0:02:01  0:00:26 95.3M 82 13.7G   82 11.3G    0     0  95.1M      0  0:02:28  0:02:02  0:00:26 92.0M 83 13.7G   83 11.4G    0     0  95.2M      0  0:02:27  0:02:03  0:00:24 95.3M 83 13.7G   83 11.5G    0     0  95.1M      0  0:02:28  0:02:04  0:00:24 92.7M 84 13.7G   84 11.6G    0     0  95.2M      0  0:02:27  0:02:05  0:00:22 95.3M 85 13.7G   85 11.7G    0     0  95.2M      0  0:02:27  0:02:06  0:00:21 95.3M 85 13.7G   85 11.8G    0     0  95.2M      0  0:02:28  0:02:07  0:00:21 97.5M 86 13.7G   86 11.9G    0     0  95.2M      0  0:02:27  0:02:08  0:00:19 95.3M 87 13.7G   87 12.0G    0     0  95.2M      0  0:02:27  0:02:09  0:00:18 97.7M 87 13.7G   87 12.1G    0     0  95.2M      0  0:02:27  0:02:10  0:00:17 95.3M 88 13.7G   88 12.1G    0     0  95.2M      0  0:02:27  0:02:11  0:00:16 94.3M 89 13.7G   89 12.2G    0     0  95.2M      0  0:02:27  0:02:12  0:00:15 96.5M 89 13.7G   89 12.3G    0     0  95.2M      0  0:02:27  0:02:13  0:00:14 95.3M 90 13.7G   90 12.4G    0     0  95.2M      0  0:02:27  0:02:14  0:00:13 95.5M 91 13.7G   91 12.5G    0     0  95.2M      0  0:02:27  0:02:15  0:00:12 94.4M 91 13.7G   91 12.6G    0     0  95.2M      0  0:02:27  0:02:16  0:00:11 96.3M 92 13.7G   92 12.7G    0     0  95.2M      0  0:02:27  0:02:17  0:00:10 95.3M 93 13.7G   93 12.8G    0     0  95.2M      0  0:02:27  0:02:18  0:00:09 94.6M 93 13.7G   93 12.9G    0     0  95.2M      0  0:02:27  0:02:19  0:00:08 95.3M 94 13.7G   94 13.0G    0     0  95.2M      0  0:02:27  0:02:20  0:00:07 96.2M 95 13.7G   95 13.1G    0     0  95.2M      0  0:02:27  0:02:21  0:00:06 95.3M 96 13.7G   96 13.2G    0     0  95.2M      0  0:02:27  0:02:22  0:00:05 95.3M 96 13.7G   96 13.3G    0     0  95.2M      0  0:02:27  0:02:23  0:00:04 96.0M 97 13.7G   97 13.4G    0     0  95.2M      0  0:02:27  0:02:24  0:00:03 95.3M 98 13.7G   98 13.4G    0     0  95.2M      0  0:02:27  0:02:25  0:00:02 95.4M 98 13.7G   98 13.5G    0     0  95.2M      0  0:02:27  0:02:26  0:00:01 95.3M 99 13.7G   99 13.6G    0     0  95.2M      0  0:02:27  0:02:27 --:--:-- 95.3M100 13.7G  100 13.7G    0     0  95.2M      0  0:02:27  0:02:27 --:--:-- 95.3M
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running clickbench/URL
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| clickbench/URL | 24.1% | 2.89 | 3.86 |
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 4.16s
+==> downloading https://huggingface.co/datasets/HuggingFaceFW/fineweb/resolve/v1.4.0/sample/10BT/000_00000.parquet
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/fineweb/fineweb_10BT_000.parquet
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   984  100   984    0     0   8005      0 --:--:-- --:--:-- --:--:--  8065
+  0 2047M    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  1 2047M    1 21.4M    0     0  11.8M      0  0:02:53  0:00:01  0:02:52 22.2M  1 2047M    1 40.9M    0     0  14.5M      0  0:02:20  0:00:02  0:02:18 20.9M  2 2047M    2 57.8M    0     0  15.1M      0  0:02:14  0:00:03  0:02:11 19.5M  3 2047M    3 65.4M    0     0  13.6M      0  0:02:30  0:00:04  0:02:26 16.5M  3 2047M    3 80.4M    0     0  13.8M      0  0:02:27  0:00:05  0:02:22 16.2M  4 2047M    4 87.2M    0     0  12.8M      0  0:02:39  0:00:06  0:02:33 13.1M  4 2047M    4  101M    0     0  12.9M      0  0:02:37  0:00:07  0:02:30 12.0M  5 2047M    5  110M    0     0  12.5M      0  0:02:43  0:00:08  0:02:35 10.5M  6 2047M    6  124M    0     0  12.6M      0  0:02:41  0:00:09  0:02:32 11.7M  6 2047M    6  137M    0     0  12.7M      0  0:02:40  0:00:10  0:02:30 11.4M  7 2047M    7  160M    0     0  13.5M      0  0:02:30  0:00:11  0:02:19 14.6M  8 2047M    8  182M    0     0  14.2M      0  0:02:23  0:00:12  0:02:11 16.3M  9 2047M    9  202M    0     0  14.6M      0  0:02:19  0:00:13  0:02:06 18.4M 11 2047M   11  231M    0     0  15.6M      0  0:02:10  0:00:14  0:01:56 21.5M 12 2047M   12  255M    0     0  16.1M      0  0:02:07  0:00:15  0:01:52 23.3M 13 2047M   13  284M    0     0  16.9M      0  0:02:01  0:00:16  0:01:45 24.7M 15 2047M   15  314M    0     0  17.6M      0  0:01:55  0:00:17  0:01:38 26.3M 16 2047M   16  337M    0     0  17.9M      0  0:01:54  0:00:18  0:01:36 26.8M 17 2047M   17  358M    0     0  18.0M      0  0:01:53  0:00:19  0:01:34 25.2M 18 2047M   18  383M    0     0  18.4M      0  0:01:50  0:00:20  0:01:30 25.9M 20 2047M   20  410M    0     0  18.8M      0  0:01:48  0:00:21  0:01:27 25.3M 21 2047M   21  436M    0     0  19.1M      0  0:01:46  0:00:22  0:01:24 24.4M 22 2047M   22  453M    0     0  19.0M      0  0:01:47  0:00:23  0:01:24 23.2M 22 2047M   22  470M    0     0  18.9M      0  0:01:47  0:00:24  0:01:23 22.5M 23 2047M   23  488M    0     0  18.9M      0  0:01:48  0:00:25  0:01:23 20.8M 24 2047M   24  505M    0     0  18.8M      0  0:01:48  0:00:26  0:01:22 18.7M 25 2047M   25  527M    0     0  18.9M      0  0:01:48  0:00:27  0:01:21 18.0M 26 2047M   26  548M    0     0  19.0M      0  0:01:47  0:00:28  0:01:19 19.0M 28 2047M   28  575M    0     0  19.2M      0  0:01:46  0:00:29  0:01:17 20.8M 29 2047M   29  598M    0     0  19.4M      0  0:01:45  0:00:30  0:01:15 22.1M 30 2047M   30  624M    0     0  19.6M      0  0:01:44  0:00:31  0:01:13 24.0M 31 2047M   31  647M    0     0  19.7M      0  0:01:43  0:00:32  0:01:11 24.0M 33 2047M   33  675M    0     0  19.9M      0  0:01:42  0:00:33  0:01:09 25.4M 34 2047M   34  703M    0     0  20.1M      0  0:01:41  0:00:34  0:01:07 25.4M 35 2047M   35  725M    0     0  20.2M      0  0:01:41  0:00:35  0:01:06 25.3M 36 2047M   36  749M    0     0  20.3M      0  0:01:40  0:00:36  0:01:04 25.0M 37 2047M   37  770M    0     0  20.3M      0  0:01:40  0:00:37  0:01:03 24.5M 38 2047M   38  793M    0     0  20.4M      0  0:01:40  0:00:38  0:01:02 23.5M 39 2047M   39  811M    0     0  20.3M      0  0:01:40  0:00:39  0:01:01 21.8M 40 2047M   40  828M    0     0  20.2M      0  0:01:40  0:00:40  0:01:00 20.5M 41 2047M   41  848M    0     0  20.2M      0  0:01:40  0:00:41  0:00:59 19.8M 42 2047M   42  866M    0     0  20.2M      0  0:01:41  0:00:42  0:00:59 19.3M 43 2047M   43  885M    0     0  20.2M      0  0:01:41  0:00:43  0:00:58 18.3M 43 2047M   43  900M    0     0  20.1M      0  0:01:41  0:00:44  0:00:57 17.8M 44 2047M   44  920M    0     0  20.1M      0  0:01:41  0:00:45  0:00:56 18.4M 46 2047M   46  942M    0     0  20.1M      0  0:01:41  0:00:46  0:00:55 18.7M 46 2047M   46  959M    0     0  20.0M      0  0:01:42  0:00:47  0:00:55 18.0M 47 2047M   47  973M    0     0  19.9M      0  0:01:42  0:00:48  0:00:54 17.6M 48 2047M   48  990M    0     0  19.8M      0  0:01:43  0:00:49  0:00:54 17.8M 49 2047M   49 1010M    0     0  19.8M      0  0:01:42  0:00:50  0:00:52 18.0M 50 2047M   50 1027M    0     0  19.8M      0  0:01:43  0:00:51  0:00:52 17.0M 51 2047M   51 1050M    0     0  19.8M      0  0:01:42  0:00:52  0:00:50 18.6M 52 2047M   52 1074M    0     0  19.9M      0  0:01:42  0:00:53  0:00:49 20.1M 53 2047M   53 1092M    0     0  19.9M      0  0:01:42  0:00:54  0:00:48 20.5M 54 2047M   54 1111M    0     0  19.9M      0  0:01:42  0:00:55  0:00:47 20.1M 55 2047M   55 1128M    0     0  19.8M      0  0:01:43  0:00:56  0:00:47 20.1M 55 2047M   55 1143M    0     0  19.7M      0  0:01:43  0:00:57  0:00:46 18.7M 56 2047M   56 1159M    0     0  19.7M      0  0:01:43  0:00:58  0:00:45 16.9M 57 2047M   57 1181M    0     0  19.7M      0  0:01:43  0:00:59  0:00:44 17.6M 58 2047M   58 1201M    0     0  19.7M      0  0:01:43  0:01:00  0:00:43 17.8M 59 2047M   59 1216M    0     0  19.6M      0  0:01:44  0:01:01  0:00:43 17.5M 60 2047M   60 1232M    0     0  19.6M      0  0:01:44  0:01:02  0:00:42 17.7M 61 2047M   61 1257M    0     0  19.7M      0  0:01:43  0:01:03  0:00:40 19.7M 62 2047M   62 1279M    0     0  19.7M      0  0:01:43  0:01:04  0:00:39 19.6M 63 2047M   63 1301M    0     0  19.7M      0  0:01:43  0:01:05  0:00:38 20.1M 64 2047M   64 1319M    0     0  19.7M      0  0:01:43  0:01:06  0:00:37 20.5M 65 2047M   65 1340M    0     0  19.7M      0  0:01:43  0:01:07  0:00:36 21.5M 65 2047M   65 1350M    0     0  19.6M      0  0:01:44  0:01:08  0:00:36 18.5M 66 2047M   66 1371M    0     0  19.6M      0  0:01:44  0:01:09  0:00:35 18.4M 68 2047M   68 1393M    0     0  19.6M      0  0:01:44  0:01:10  0:00:34 18.2M 69 2047M   69 1413M    0     0  19.6M      0  0:01:44  0:01:11  0:00:33 18.9M 70 2047M   70 1436M    0     0  19.7M      0  0:01:43  0:01:12  0:00:31 19.1M 71 2047M   71 1457M    0     0  19.7M      0  0:01:43  0:01:13  0:00:30 21.4M 72 2047M   72 1475M    0     0  19.7M      0  0:01:43  0:01:14  0:00:29 20.7M 72 2047M   72 1490M    0     0  19.6M      0  0:01:44  0:01:15  0:00:29 19.3M 73 2047M   73 1513M    0     0  19.7M      0  0:01:43  0:01:16  0:00:27 19.8M 74 2047M   74 1535M    0     0  19.7M      0  0:01:43  0:01:17  0:00:26 19.8M 76 2047M   76 1559M    0     0  19.7M      0  0:01:43  0:01:18  0:00:25 20.4M 77 2047M   77 1587M    0     0  19.8M      0  0:01:42  0:01:19  0:00:23 22.5M 78 2047M   78 1602M    0     0  19.8M      0  0:01:43  0:01:20  0:00:23 22.5M 79 2047M   79 1628M    0     0  19.9M      0  0:01:42  0:01:21  0:00:21 23.0M 80 2047M   80 1650M    0     0  19.9M      0  0:01:42  0:01:22  0:00:20 22.9M 81 2047M   81 1666M    0     0  19.8M      0  0:01:42  0:01:23  0:00:19 21.3M 82 2047M   82 1681M    0     0  19.8M      0  0:01:43  0:01:24  0:00:19 18.8M 83 2047M   83 1705M    0     0  19.8M      0  0:01:43  0:01:25  0:00:18 20.6M 84 2047M   84 1726M    0     0  19.8M      0  0:01:42  0:01:26  0:00:16 19.5M 85 2047M   85 1744M    0     0  19.8M      0  0:01:43  0:01:27  0:00:16 18.8M 86 2047M   86 1773M    0     0  19.9M      0  0:01:42  0:01:28  0:00:14 21.4M 87 2047M   87 1791M    0     0  19.9M      0  0:01:42  0:01:29  0:00:13 21.8M 88 2047M   88 1816M    0     0  20.0M      0  0:01:42  0:01:30  0:00:12 22.1M 89 2047M   89 1837M    0     0  20.0M      0  0:01:42  0:01:31  0:00:11 22.2M 90 2047M   90 1855M    0     0  19.9M      0  0:01:42  0:01:32  0:00:10 22.1M 91 2047M   91 1875M    0     0  19.9M      0  0:01:42  0:01:33  0:00:09 20.4M 92 2047M   92 1897M    0     0  20.0M      0  0:01:42  0:01:34  0:00:08 21.1M 93 2047M   93 1918M    0     0  20.0M      0  0:01:42  0:01:35  0:00:07 20.0M 95 2047M   95 1946M    0     0  20.1M      0  0:01:41  0:01:36  0:00:05 21.8M 96 2047M   96 1967M    0     0  20.1M      0  0:01:41  0:01:37  0:00:04 22.5M 97 2047M   97 1992M    0     0  20.1M      0  0:01:41  0:01:38  0:00:03 23.3M 98 2047M   98 2024M    0     0  20.2M      0  0:01:40  0:01:39  0:00:01 25.4M 99 2047M   99 2046M    0     0  20.2M      0  0:01:40  0:01:40 --:--:-- 25.8M100 2047M  100 2047M    0     0  20.2M      0  0:01:40  0:01:40 --:--:-- 24.1M
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running fineweb/text
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| fineweb/text | 100.0% | 2.26 | 2.87 |
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> downloading https://huggingface.co/datasets/wikimedia/wikipedia/resolve/main/20231101.en/train-00000-of-00041.parquet
+        -> /home/ubuntu/work/vortex-bench/data/onpair-bench-src/wikipedia/wikipedia_20231101_en_000.parquet
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  1034  100  1034    0     0   8571      0 --:--:-- --:--:-- --:--:--  8616
+  0  400M    0  3446    0     0   5596      0 20:51:46 --:--:-- 20:51:46  5596 25  400M   25  100M    0     0  63.5M      0  0:00:06  0:00:01  0:00:05  103M 50  400M   50  202M    0     0  78.0M      0  0:00:05  0:00:02  0:00:03  102M 74  400M   74  300M    0     0  83.7M      0  0:00:04  0:00:03  0:00:01  101M100  400M  100  400M    0     0  87.6M      0  0:00:04  0:00:04 --:--:--  101M
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running wikipedia/text
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| wikipedia/text | 100.0% | 2.17 | 2.81 |

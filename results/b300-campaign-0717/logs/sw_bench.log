@@ -1,0 +1,338 @@
+input: /home/ubuntu/work/coldump/tpch-sf10_l_comment.bin  953.7 MiB
+
+== chunk 32 KiB (30518 chunks) ==
+gANS          chunk= 32768  ratio=1.80x  compress= 463.4 GiB/s  decode= 510.2 GiB/s (548 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.33x  compress= 715.4 GiB/s  decode= 329.2 GiB/s (353 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 707.2 GiB/s  decode= 900.4 GiB/s (967 GB/s)  valid=YES
+
+== chunk 64 KiB (15259 chunks) ==
+gANS          chunk= 65536  ratio=1.83x  compress= 505.5 GiB/s  decode= 578.2 GiB/s (621 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.33x  compress= 722.0 GiB/s  decode= 326.1 GiB/s (350 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress= 717.6 GiB/s  decode= 908.4 GiB/s (975 GB/s)  valid=YES
+
+== chunk 128 KiB (7630 chunks) ==
+gANS          chunk=131072  ratio=1.85x  compress= 526.9 GiB/s  decode= 593.5 GiB/s (637 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.33x  compress= 717.7 GiB/s  decode= 325.3 GiB/s (349 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress= 709.3 GiB/s  decode= 905.5 GiB/s (972 GB/s)  valid=YES
+
+== chunk 256 KiB (3815 chunks) ==
+gANS          chunk=262144  ratio=1.86x  compress= 529.6 GiB/s  decode= 560.7 GiB/s (602 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.33x  compress= 710.6 GiB/s  decode= 297.4 GiB/s (319 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress= 672.7 GiB/s  decode= 888.1 GiB/s (954 GB/s)  valid=YES
+
+== chunk 512 KiB (1908 chunks) ==
+gANS          chunk=524288  ratio=1.86x  compress= 516.3 GiB/s  decode= 563.7 GiB/s (605 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.33x  compress= 693.2 GiB/s  decode= 252.2 GiB/s (271 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress= 669.9 GiB/s  decode= 834.3 GiB/s (896 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/tpch-sf10_ps_comment.bin  942.2 MiB
+
+== chunk 32 KiB (30150 chunks) ==
+gANS          chunk= 32768  ratio=1.80x  compress= 463.1 GiB/s  decode= 510.0 GiB/s (548 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.33x  compress= 713.5 GiB/s  decode= 330.0 GiB/s (354 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 707.3 GiB/s  decode= 897.4 GiB/s (964 GB/s)  valid=YES
+
+== chunk 64 KiB (15075 chunks) ==
+gANS          chunk= 65536  ratio=1.83x  compress= 506.4 GiB/s  decode= 578.6 GiB/s (621 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.33x  compress= 722.8 GiB/s  decode= 331.4 GiB/s (356 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress= 713.1 GiB/s  decode= 905.6 GiB/s (972 GB/s)  valid=YES
+
+== chunk 128 KiB (7538 chunks) ==
+gANS          chunk=131072  ratio=1.85x  compress= 528.2 GiB/s  decode= 594.9 GiB/s (639 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.33x  compress= 719.7 GiB/s  decode= 323.4 GiB/s (347 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress= 704.0 GiB/s  decode= 906.8 GiB/s (974 GB/s)  valid=YES
+
+== chunk 256 KiB (3769 chunks) ==
+gANS          chunk=262144  ratio=1.86x  compress= 524.0 GiB/s  decode= 556.2 GiB/s (597 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.33x  compress= 701.5 GiB/s  decode= 294.8 GiB/s (317 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress= 673.7 GiB/s  decode= 878.7 GiB/s (944 GB/s)  valid=YES
+
+== chunk 512 KiB (1885 chunks) ==
+gANS          chunk=524288  ratio=1.86x  compress= 510.6 GiB/s  decode= 559.2 GiB/s (600 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.33x  compress= 683.9 GiB/s  decode= 250.1 GiB/s (269 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress= 672.6 GiB/s  decode= 822.9 GiB/s (884 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/tpch-sf10_s_comment.bin  6.0 MiB
+
+== chunk 32 KiB (191 chunks) ==
+gANS          chunk= 32768  ratio=1.69x  compress=  86.0 GiB/s  decode= 204.6 GiB/s (220 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.33x  compress= 281.3 GiB/s  decode=  64.7 GiB/s (69 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 256.2 GiB/s  decode= 166.7 GiB/s (179 GB/s)  valid=YES
+
+== chunk 64 KiB (96 chunks) ==
+gANS          chunk= 65536  ratio=1.70x  compress=  84.4 GiB/s  decode= 202.1 GiB/s (217 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.33x  compress= 217.8 GiB/s  decode=  37.7 GiB/s (41 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress= 178.7 GiB/s  decode= 137.8 GiB/s (148 GB/s)  valid=YES
+
+== chunk 128 KiB (48 chunks) ==
+gANS          chunk=131072  ratio=1.71x  compress=  81.2 GiB/s  decode= 201.4 GiB/s (216 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.33x  compress= 122.5 GiB/s  decode=  20.5 GiB/s (22 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress=  97.6 GiB/s  decode=  96.4 GiB/s (104 GB/s)  valid=YES
+
+== chunk 256 KiB (24 chunks) ==
+gANS          chunk=262144  ratio=1.78x  compress=  71.5 GiB/s  decode= 145.6 GiB/s (156 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.33x  compress=  64.5 GiB/s  decode=  10.7 GiB/s (11 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress=  51.3 GiB/s  decode=  58.1 GiB/s (62 GB/s)  valid=YES
+
+== chunk 512 KiB (12 chunks) ==
+gANS          chunk=524288  ratio=1.82x  compress=  55.4 GiB/s  decode=  92.7 GiB/s (100 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.33x  compress=  33.4 GiB/s  decode=   5.5 GiB/s (6 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress=  26.2 GiB/s  decode=  32.6 GiB/s (35 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/tpch-sf10_l_shipinstruct.bin  686.4 MiB
+
+== chunk 32 KiB (21967 chunks) ==
+gANS          chunk= 32768  ratio=2.01x  compress= 477.6 GiB/s  decode= 522.8 GiB/s (561 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.14x  compress= 667.1 GiB/s  decode= 327.4 GiB/s (352 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.06x  compress= 664.3 GiB/s  decode= 842.2 GiB/s (904 GB/s)  valid=YES
+
+== chunk 64 KiB (10984 chunks) ==
+gANS          chunk= 65536  ratio=2.05x  compress= 517.1 GiB/s  decode= 589.2 GiB/s (633 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.14x  compress= 670.2 GiB/s  decode= 322.9 GiB/s (347 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.06x  compress= 673.0 GiB/s  decode= 845.9 GiB/s (908 GB/s)  valid=YES
+
+== chunk 128 KiB (5492 chunks) ==
+gANS          chunk=131072  ratio=2.07x  compress= 528.4 GiB/s  decode= 581.7 GiB/s (625 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.14x  compress= 659.9 GiB/s  decode= 304.6 GiB/s (327 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.06x  compress= 654.5 GiB/s  decode= 833.2 GiB/s (895 GB/s)  valid=YES
+
+== chunk 256 KiB (2746 chunks) ==
+gANS          chunk=262144  ratio=2.08x  compress= 519.8 GiB/s  decode= 567.6 GiB/s (609 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.14x  compress= 650.0 GiB/s  decode= 271.0 GiB/s (291 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.06x  compress= 663.3 GiB/s  decode= 800.6 GiB/s (860 GB/s)  valid=YES
+
+== chunk 512 KiB (1373 chunks) ==
+gANS          chunk=524288  ratio=2.08x  compress= 504.7 GiB/s  decode= 570.1 GiB/s (612 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.14x  compress= 607.0 GiB/s  decode= 267.5 GiB/s (287 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.06x  compress= 630.6 GiB/s  decode= 764.6 GiB/s (821 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/synthetic_url.bin  880.8 MiB
+
+== chunk 32 KiB (28186 chunks) ==
+gANS          chunk= 32768  ratio=1.57x  compress= 434.1 GiB/s  decode= 502.0 GiB/s (539 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.28x  compress= 704.0 GiB/s  decode= 389.1 GiB/s (418 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 703.4 GiB/s  decode= 892.0 GiB/s (958 GB/s)  valid=YES
+
+== chunk 64 KiB (14093 chunks) ==
+gANS          chunk= 65536  ratio=1.59x  compress= 472.4 GiB/s  decode= 570.4 GiB/s (612 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.28x  compress= 708.5 GiB/s  decode= 389.5 GiB/s (418 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress= 708.9 GiB/s  decode= 899.8 GiB/s (966 GB/s)  valid=YES
+
+== chunk 128 KiB (7047 chunks) ==
+gANS          chunk=131072  ratio=1.60x  compress= 488.4 GiB/s  decode= 578.1 GiB/s (621 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.28x  compress= 704.9 GiB/s  decode= 387.5 GiB/s (416 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress= 712.8 GiB/s  decode= 895.5 GiB/s (962 GB/s)  valid=YES
+
+== chunk 256 KiB (3524 chunks) ==
+gANS          chunk=262144  ratio=1.61x  compress= 488.5 GiB/s  decode= 550.6 GiB/s (591 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.28x  compress= 697.6 GiB/s  decode= 386.4 GiB/s (415 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress= 714.0 GiB/s  decode= 889.7 GiB/s (955 GB/s)  valid=YES
+
+== chunk 512 KiB (1762 chunks) ==
+gANS          chunk=524288  ratio=1.61x  compress= 476.8 GiB/s  decode= 554.2 GiB/s (595 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.28x  compress= 683.3 GiB/s  decode= 384.8 GiB/s (413 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress= 644.9 GiB/s  decode= 880.3 GiB/s (945 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/dbtext_email.bin  2.0 MiB
+
+== chunk 32 KiB (65 chunks) ==
+gANS          chunk= 32768  ratio=1.58x  compress=  31.8 GiB/s  decode=  76.5 GiB/s (82 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.14x  compress= 119.9 GiB/s  decode=  25.7 GiB/s (28 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.02x  compress= 105.7 GiB/s  decode=  59.9 GiB/s (64 GB/s)  valid=YES
+
+== chunk 64 KiB (33 chunks) ==
+gANS          chunk= 65536  ratio=1.59x  compress=  31.1 GiB/s  decode=  75.4 GiB/s (81 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.14x  compress=  73.5 GiB/s  decode=  15.2 GiB/s (16 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.02x  compress=  59.9 GiB/s  decode=  48.8 GiB/s (52 GB/s)  valid=YES
+
+== chunk 128 KiB (17 chunks) ==
+gANS          chunk=131072  ratio=1.60x  compress=  29.6 GiB/s  decode=  74.3 GiB/s (80 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.14x  compress=  40.5 GiB/s  decode=   8.5 GiB/s (9 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.02x  compress=  32.7 GiB/s  decode=  32.2 GiB/s (35 GB/s)  valid=YES
+
+== chunk 256 KiB (9 chunks) ==
+gANS          chunk=262144  ratio=1.66x  compress=  25.1 GiB/s  decode=  51.3 GiB/s (55 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.14x  compress=  21.8 GiB/s  decode=   4.5 GiB/s (5 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.02x  compress=  17.1 GiB/s  decode=  19.4 GiB/s (21 GB/s)  valid=YES
+
+== chunk 512 KiB (5 chunks) ==
+gANS          chunk=524288  ratio=1.70x  compress=  18.9 GiB/s  decode=  30.3 GiB/s (33 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.14x  compress=  11.1 GiB/s  decode=   2.3 GiB/s (2 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.02x  compress=   8.8 GiB/s  decode=  10.9 GiB/s (12 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/dbtext_hex.bin  0.8 MiB
+
+== chunk 32 KiB (25 chunks) ==
+gANS          chunk= 32768  ratio=1.84x  compress=  13.2 GiB/s  decode=  34.2 GiB/s (37 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.14x  compress=  46.1 GiB/s  decode=  11.8 GiB/s (13 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.05x  compress=  39.8 GiB/s  decode=  22.6 GiB/s (24 GB/s)  valid=YES
+
+== chunk 64 KiB (13 chunks) ==
+gANS          chunk= 65536  ratio=1.84x  compress=  12.4 GiB/s  decode=  33.8 GiB/s (36 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.14x  compress=  27.4 GiB/s  decode=   7.1 GiB/s (8 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.05x  compress=  23.3 GiB/s  decode=  18.4 GiB/s (20 GB/s)  valid=YES
+
+== chunk 128 KiB (7 chunks) ==
+gANS          chunk=131072  ratio=1.85x  compress=  12.1 GiB/s  decode=  34.1 GiB/s (37 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.14x  compress=  15.2 GiB/s  decode=   4.0 GiB/s (4 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.05x  compress=  12.7 GiB/s  decode=  12.5 GiB/s (13 GB/s)  valid=YES
+
+== chunk 256 KiB (4 chunks) ==
+gANS          chunk=262144  ratio=1.92x  compress=  10.2 GiB/s  decode=  23.2 GiB/s (25 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.14x  compress=   8.0 GiB/s  decode=   2.1 GiB/s (2 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.05x  compress=   6.6 GiB/s  decode=   7.4 GiB/s (8 GB/s)  valid=YES
+
+== chunk 512 KiB (2 chunks) ==
+gANS          chunk=524288  ratio=1.96x  compress=   7.6 GiB/s  decode=  14.3 GiB/s (15 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.15x  compress=   4.1 GiB/s  decode=   1.1 GiB/s (1 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.05x  compress=   3.4 GiB/s  decode=   4.2 GiB/s (5 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/dbtext_l_comment.bin  2.5 MiB
+
+== chunk 32 KiB (81 chunks) ==
+gANS          chunk= 32768  ratio=1.69x  compress=  38.9 GiB/s  decode=  95.8 GiB/s (103 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.33x  compress= 157.0 GiB/s  decode=  28.2 GiB/s (30 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 132.4 GiB/s  decode=  76.2 GiB/s (82 GB/s)  valid=YES
+
+== chunk 64 KiB (41 chunks) ==
+gANS          chunk= 65536  ratio=1.70x  compress=  38.6 GiB/s  decode=  92.7 GiB/s (100 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.33x  compress=  93.4 GiB/s  decode=  16.1 GiB/s (17 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress=  76.2 GiB/s  decode=  59.8 GiB/s (64 GB/s)  valid=YES
+
+== chunk 128 KiB (21 chunks) ==
+gANS          chunk=131072  ratio=1.71x  compress=  37.1 GiB/s  decode=  92.3 GiB/s (99 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.33x  compress=  52.1 GiB/s  decode=   8.7 GiB/s (9 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress=  41.4 GiB/s  decode=  40.9 GiB/s (44 GB/s)  valid=YES
+
+== chunk 256 KiB (11 chunks) ==
+gANS          chunk=262144  ratio=1.79x  compress=  31.6 GiB/s  decode=  66.3 GiB/s (71 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.33x  compress=  27.5 GiB/s  decode=   4.5 GiB/s (5 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress=  21.8 GiB/s  decode=  24.1 GiB/s (26 GB/s)  valid=YES
+
+== chunk 512 KiB (6 chunks) ==
+gANS          chunk=524288  ratio=1.82x  compress=  24.1 GiB/s  decode=  39.3 GiB/s (42 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.33x  compress=  14.2 GiB/s  decode=   2.3 GiB/s (2 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress=  11.1 GiB/s  decode=  13.9 GiB/s (15 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/dbtext_ps_comment.bin  2.4 MiB
+
+== chunk 32 KiB (76 chunks) ==
+gANS          chunk= 32768  ratio=1.69x  compress=  37.9 GiB/s  decode=  89.1 GiB/s (96 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.33x  compress= 146.3 GiB/s  decode=  26.0 GiB/s (28 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 123.8 GiB/s  decode=  71.9 GiB/s (77 GB/s)  valid=YES
+
+== chunk 64 KiB (38 chunks) ==
+gANS          chunk= 65536  ratio=1.70x  compress=  35.7 GiB/s  decode=  88.9 GiB/s (95 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.33x  compress=  87.3 GiB/s  decode=  15.2 GiB/s (16 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress=  71.6 GiB/s  decode=  56.5 GiB/s (61 GB/s)  valid=YES
+
+== chunk 128 KiB (19 chunks) ==
+gANS          chunk=131072  ratio=1.71x  compress=  33.9 GiB/s  decode=  87.7 GiB/s (94 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.33x  compress=  48.5 GiB/s  decode=   8.2 GiB/s (9 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress=  38.7 GiB/s  decode=  37.9 GiB/s (41 GB/s)  valid=YES
+
+== chunk 256 KiB (10 chunks) ==
+gANS          chunk=262144  ratio=1.79x  compress=  29.5 GiB/s  decode=  61.4 GiB/s (66 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.33x  compress=  25.9 GiB/s  decode=   4.3 GiB/s (5 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress=  20.3 GiB/s  decode=  22.7 GiB/s (24 GB/s)  valid=YES
+
+== chunk 512 KiB (5 chunks) ==
+gANS          chunk=524288  ratio=1.83x  compress=  22.6 GiB/s  decode=  36.8 GiB/s (40 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.33x  compress=  13.3 GiB/s  decode=   2.2 GiB/s (2 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress=  10.4 GiB/s  decode=  12.9 GiB/s (14 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/dbtext_yago.bin  1.7 MiB
+
+== chunk 32 KiB (56 chunks) ==
+gANS          chunk= 32768  ratio=1.42x  compress=  25.2 GiB/s  decode=  61.3 GiB/s (66 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.19x  compress= 102.7 GiB/s  decode=  20.2 GiB/s (22 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.00x  compress= 131.9 GiB/s  decode=  60.6 GiB/s (65 GB/s)  valid=YES
+
+== chunk 64 KiB (28 chunks) ==
+gANS          chunk= 65536  ratio=1.44x  compress=  24.6 GiB/s  decode=  59.4 GiB/s (64 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.20x  compress=  59.0 GiB/s  decode=  11.7 GiB/s (13 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.00x  compress=  88.5 GiB/s  decode=  51.5 GiB/s (55 GB/s)  valid=YES
+
+== chunk 128 KiB (14 chunks) ==
+gANS          chunk=131072  ratio=1.44x  compress=  23.2 GiB/s  decode=  58.6 GiB/s (63 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.20x  compress=  33.0 GiB/s  decode=   6.4 GiB/s (7 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.00x  compress=  52.2 GiB/s  decode=  38.7 GiB/s (42 GB/s)  valid=YES
+
+== chunk 256 KiB (7 chunks) ==
+gANS          chunk=262144  ratio=1.49x  compress=  20.1 GiB/s  decode=  39.8 GiB/s (43 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.20x  compress=  17.3 GiB/s  decode=   3.4 GiB/s (4 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.00x  compress=  28.0 GiB/s  decode=  25.9 GiB/s (28 GB/s)  valid=YES
+
+== chunk 512 KiB (4 chunks) ==
+gANS          chunk=524288  ratio=1.52x  compress=  15.5 GiB/s  decode=  24.7 GiB/s (26 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.20x  compress=   8.9 GiB/s  decode=   1.7 GiB/s (2 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.00x  compress=  14.6 GiB/s  decode=  15.5 GiB/s (17 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/clickbench_URL.bin  953.7 MiB
+
+== chunk 32 KiB (30518 chunks) ==
+gANS          chunk= 32768  ratio=1.41x  compress= 411.1 GiB/s  decode= 474.5 GiB/s (510 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.20x  compress= 664.2 GiB/s  decode= 384.0 GiB/s (412 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.00x  compress= 862.2 GiB/s  decode=1082.9 GiB/s (1163 GB/s)  valid=YES
+
+== chunk 64 KiB (15259 chunks) ==
+gANS          chunk= 65536  ratio=1.43x  compress= 450.8 GiB/s  decode= 548.7 GiB/s (589 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.20x  compress= 669.2 GiB/s  decode= 382.2 GiB/s (410 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.00x  compress= 865.2 GiB/s  decode=1109.0 GiB/s (1191 GB/s)  valid=YES
+
+== chunk 128 KiB (7630 chunks) ==
+gANS          chunk=131072  ratio=1.44x  compress= 470.7 GiB/s  decode= 566.6 GiB/s (608 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.20x  compress= 665.3 GiB/s  decode= 379.2 GiB/s (407 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.00x  compress= 855.5 GiB/s  decode=1108.8 GiB/s (1191 GB/s)  valid=YES
+
+== chunk 256 KiB (3815 chunks) ==
+gANS          chunk=262144  ratio=1.44x  compress= 476.0 GiB/s  decode= 526.5 GiB/s (565 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.20x  compress= 658.2 GiB/s  decode= 350.6 GiB/s (376 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.00x  compress= 825.8 GiB/s  decode=1046.2 GiB/s (1123 GB/s)  valid=YES
+
+== chunk 512 KiB (1908 chunks) ==
+gANS          chunk=524288  ratio=1.44x  compress= 463.4 GiB/s  decode= 529.4 GiB/s (568 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.20x  compress= 640.9 GiB/s  decode= 293.3 GiB/s (315 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.00x  compress= 761.7 GiB/s  decode= 945.4 GiB/s (1015 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/fineweb_text.bin  953.7 MiB
+
+== chunk 32 KiB (30518 chunks) ==
+gANS          chunk= 32768  ratio=1.65x  compress= 438.5 GiB/s  decode= 485.2 GiB/s (521 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.21x  compress= 664.2 GiB/s  decode= 385.2 GiB/s (414 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 733.6 GiB/s  decode= 949.7 GiB/s (1020 GB/s)  valid=YES
+
+== chunk 64 KiB (15259 chunks) ==
+gANS          chunk= 65536  ratio=1.68x  compress= 483.4 GiB/s  decode= 558.4 GiB/s (600 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.22x  compress= 669.8 GiB/s  decode= 382.3 GiB/s (411 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress= 736.9 GiB/s  decode= 960.8 GiB/s (1032 GB/s)  valid=YES
+
+== chunk 128 KiB (7630 chunks) ==
+gANS          chunk=131072  ratio=1.69x  compress= 505.5 GiB/s  decode= 579.0 GiB/s (622 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.22x  compress= 665.5 GiB/s  decode= 377.8 GiB/s (406 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress= 729.0 GiB/s  decode= 957.8 GiB/s (1028 GB/s)  valid=YES
+
+== chunk 256 KiB (3815 chunks) ==
+gANS          chunk=262144  ratio=1.69x  compress= 511.0 GiB/s  decode= 546.1 GiB/s (586 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.22x  compress= 659.1 GiB/s  decode= 351.0 GiB/s (377 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress= 699.3 GiB/s  decode= 932.5 GiB/s (1001 GB/s)  valid=YES
+
+== chunk 512 KiB (1908 chunks) ==
+gANS          chunk=524288  ratio=1.68x  compress= 499.2 GiB/s  decode= 550.1 GiB/s (591 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.22x  compress= 643.3 GiB/s  decode= 300.3 GiB/s (322 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress= 676.8 GiB/s  decode= 865.3 GiB/s (929 GB/s)  valid=YES
+input: /home/ubuntu/work/coldump/wikipedia_text.bin  670.5 MiB
+
+== chunk 32 KiB (21456 chunks) ==
+gANS          chunk= 32768  ratio=1.61x  compress= 429.2 GiB/s  decode= 483.9 GiB/s (520 GB/s)  valid=YES
+Bitcomp-default chunk= 32768  ratio=1.20x  compress= 662.1 GiB/s  decode= 388.4 GiB/s (417 GB/s)  valid=YES
+Bitcomp-sparse chunk= 32768  ratio=1.01x  compress= 715.7 GiB/s  decode= 925.9 GiB/s (994 GB/s)  valid=YES
+
+== chunk 64 KiB (10728 chunks) ==
+gANS          chunk= 65536  ratio=1.63x  compress= 469.0 GiB/s  decode= 556.8 GiB/s (598 GB/s)  valid=YES
+Bitcomp-default chunk= 65536  ratio=1.20x  compress= 666.4 GiB/s  decode= 383.1 GiB/s (411 GB/s)  valid=YES
+Bitcomp-sparse chunk= 65536  ratio=1.01x  compress= 716.6 GiB/s  decode= 931.7 GiB/s (1000 GB/s)  valid=YES
+
+== chunk 128 KiB (5364 chunks) ==
+gANS          chunk=131072  ratio=1.64x  compress= 481.2 GiB/s  decode= 547.7 GiB/s (588 GB/s)  valid=YES
+Bitcomp-default chunk=131072  ratio=1.20x  compress= 654.8 GiB/s  decode= 363.4 GiB/s (390 GB/s)  valid=YES
+Bitcomp-sparse chunk=131072  ratio=1.01x  compress= 697.9 GiB/s  decode= 918.2 GiB/s (986 GB/s)  valid=YES
+
+== chunk 256 KiB (2682 chunks) ==
+gANS          chunk=262144  ratio=1.64x  compress= 472.2 GiB/s  decode= 532.2 GiB/s (571 GB/s)  valid=YES
+Bitcomp-default chunk=262144  ratio=1.20x  compress= 630.8 GiB/s  decode= 324.1 GiB/s (348 GB/s)  valid=YES
+Bitcomp-sparse chunk=262144  ratio=1.01x  compress= 690.9 GiB/s  decode= 868.6 GiB/s (933 GB/s)  valid=YES
+
+== chunk 512 KiB (1341 chunks) ==
+gANS          chunk=524288  ratio=1.63x  compress= 464.8 GiB/s  decode= 537.2 GiB/s (577 GB/s)  valid=YES
+Bitcomp-default chunk=524288  ratio=1.20x  compress= 584.4 GiB/s  decode= 309.8 GiB/s (333 GB/s)  valid=YES
+Bitcomp-sparse chunk=524288  ratio=1.01x  compress= 661.2 GiB/s  decode= 823.1 GiB/s (884 GB/s)  valid=YES

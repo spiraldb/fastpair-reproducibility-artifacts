@@ -1,0 +1,43 @@
+# FSST recipe-port (fsst_4tpt vs fsst.cu vs GSST-191) run environment
+date_utc:    2026-07-07T01:22:00Z
+host:        orch-martin-1783387210-88340
+vortex_rev:  24719f925 (mp/fsst-recipe)
+
+## GPU (name, mem, compute capability, driver)
+name, memory.total [MiB], compute_cap, driver_version
+NVIDIA A100-SXM4-40GB, 40960 MiB, 8.0, 580.159.03
+
+## nvidia-smi
+Tue Jul  7 01:22:00 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.159.03             Driver Version: 580.159.03     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100-SXM4-40GB          On  |   00000000:00:04.0 Off |                    0 |
+| N/A   25C    P0             45W /  400W |       0MiB /  40960MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+## nvcc
+_run.sh: line 42: nvcc: command not found
+nvcc not on PATH yet
+
+## CPU / memory
+nproc: 12
+CPU(s):                                  12
+Model name:                              Intel(R) Xeon(R) CPU @ 2.20GHz
+               total        used        free      shared  buff/cache   available
+Mem:            83Gi       1.3Gi        82Gi       1.0Mi       483Mi        82Gi
+Swap:             0B          0B          0B
+clocks: LOCKED sm=1410 MHz

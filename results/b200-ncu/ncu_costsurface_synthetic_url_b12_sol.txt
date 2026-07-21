@@ -1,0 +1,240 @@
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.91
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.31
+    L1/TEX Cache Throughput           %        90.65
+    L2 Cache Throughput               %        50.79
+    Compute (SM) Throughput           %        10.73
+    Memory Throughput                          Gbyte/s        90.51
+    L1/TEX Hit Rate                                  %        97.35
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.61
+    Achieved Active Warps Per SM           warp        47.75
+    Average DRAM Active Cycles       cycle    941690.25
+    Total DRAM Elapsed Cycles        cycle   5449313792
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.62
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.27
+    L1/TEX Cache Throughput           %        90.58
+    L2 Cache Throughput               %        50.87
+    Compute (SM) Throughput           %        10.69
+    Memory Throughput                          Gbyte/s        90.75
+    L1/TEX Hit Rate                                  %        97.34
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.72
+    Achieved Active Warps Per SM           warp        47.82
+    Average DRAM Active Cycles       cycle    942715.88
+    Total DRAM Elapsed Cycles        cycle   5440931328
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.55
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.32
+    L1/TEX Cache Throughput           %        90.60
+    L2 Cache Throughput               %        50.76
+    Compute (SM) Throughput           %        10.67
+    Memory Throughput                          Gbyte/s        90.49
+    L1/TEX Hit Rate                                  %        97.38
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.76
+    Achieved Active Warps Per SM           warp        47.84
+    Average DRAM Active Cycles       cycle    941966.75
+    Total DRAM Elapsed Cycles        cycle   5452021760
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.89
+    DRAM Throughput                   %         1.35
+    Duration                         ms        21.39
+    L1/TEX Cache Throughput           %        90.65
+    L2 Cache Throughput               %        50.59
+    Compute (SM) Throughput           %        10.73
+    Memory Throughput                          Gbyte/s        90.13
+    L1/TEX Hit Rate                                  %        97.35
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.59
+    Achieved Active Warps Per SM           warp        47.74
+    Average DRAM Active Cycles       cycle       941466
+    Total DRAM Elapsed Cycles        cycle   5470787072
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.64
+    DRAM Throughput                   %         1.35
+    Duration                         ms        21.40
+    L1/TEX Cache Throughput           %        90.61
+    L2 Cache Throughput               %        50.56
+    Compute (SM) Throughput           %        10.69
+    Memory Throughput                          Gbyte/s        90.12
+    L1/TEX Hit Rate                                  %        97.33
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.71
+    Achieved Active Warps Per SM           warp        47.81
+    Average DRAM Active Cycles       cycle    941923.25
+    Total DRAM Elapsed Cycles        cycle   5474004224
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.62
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.33
+    L1/TEX Cache Throughput           %        90.55
+    L2 Cache Throughput               %        50.74
+    Compute (SM) Throughput           %        10.69
+    Memory Throughput                          Gbyte/s        90.46
+    L1/TEX Hit Rate                                  %        97.37
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.49
+    Achieved Active Warps Per SM           warp        47.67
+    Average DRAM Active Cycles       cycle    941974.75
+    Total DRAM Elapsed Cycles        cycle   5454215680
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.75
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.38
+    L1/TEX Cache Throughput           %        90.67
+    L2 Cache Throughput               %        50.61
+    Compute (SM) Throughput           %        10.71
+    Memory Throughput                          Gbyte/s        90.17
+    L1/TEX Hit Rate                                  %        97.37
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.68
+    Achieved Active Warps Per SM           warp        47.79
+    Average DRAM Active Cycles       cycle       941370
+    Total DRAM Elapsed Cycles        cycle   5468013056
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.84
+    DRAM Throughput                   %         1.35
+    Duration                         ms        21.41
+    L1/TEX Cache Throughput           %        90.68
+    L2 Cache Throughput               %        50.54
+    Compute (SM) Throughput           %        10.72
+    Memory Throughput                          Gbyte/s        90.10
+    L1/TEX Hit Rate                                  %        97.32
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.64
+    Achieved Active Warps Per SM           warp        47.77
+    Average DRAM Active Cycles       cycle    942025.88
+    Total DRAM Elapsed Cycles        cycle   5476236544
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.74
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.32
+    L1/TEX Cache Throughput           %        90.62
+    L2 Cache Throughput               %        50.76
+    Compute (SM) Throughput           %        10.71
+    Memory Throughput                          Gbyte/s        90.59
+    L1/TEX Hit Rate                                  %        97.33
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.57
+    Achieved Active Warps Per SM           warp        47.73
+    Average DRAM Active Cycles       cycle    943156.25
+    Total DRAM Elapsed Cycles        cycle   5452857344
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.64
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.31
+    L1/TEX Cache Throughput           %        90.65
+    L2 Cache Throughput               %        50.79
+    Compute (SM) Throughput           %        10.69
+    Memory Throughput                          Gbyte/s        90.54
+    L1/TEX Hit Rate                                  %        97.34
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.76
+    Achieved Active Warps Per SM           warp        47.84
+    Average DRAM Active Cycles       cycle    941864.50
+    Total DRAM Elapsed Cycles        cycle   5448717824
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.61
+    DRAM Throughput                   %         1.35
+    Duration                         ms        21.41
+    L1/TEX Cache Throughput           %        90.60
+    L2 Cache Throughput               %        50.55
+    Compute (SM) Throughput           %        10.68
+    Memory Throughput                          Gbyte/s        90.14
+    L1/TEX Hit Rate                                  %        97.33
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.64
+    Achieved Active Warps Per SM           warp        47.77
+    Average DRAM Active Cycles       cycle    942305.75
+    Total DRAM Elapsed Cycles        cycle   5475405312
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.79
+    DRAM Throughput                   %         1.35
+    Duration                         ms        21.42
+    L1/TEX Cache Throughput           %        90.60
+    L2 Cache Throughput               %        50.52
+    Compute (SM) Throughput           %        10.71
+    Memory Throughput                          Gbyte/s        90.13
+    L1/TEX Hit Rate                                  %        97.34
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.59
+    Achieved Active Warps Per SM           warp        47.74
+    Average DRAM Active Cycles       cycle    942594.12
+    Total DRAM Elapsed Cycles        cycle   5477732352
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.76
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.28
+    L1/TEX Cache Throughput           %        90.66
+    L2 Cache Throughput               %        50.86
+    Compute (SM) Throughput           %        10.71
+    Memory Throughput                          Gbyte/s        90.68
+    L1/TEX Hit Rate                                  %        97.34
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.46
+    Achieved Active Warps Per SM           warp        47.65
+    Average DRAM Active Cycles       cycle    942062.50
+    Total DRAM Elapsed Cycles        cycle   5441274368
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.79
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.28
+    L1/TEX Cache Throughput           %        90.60
+    L2 Cache Throughput               %        50.85
+    Compute (SM) Throughput           %        10.71
+    Memory Throughput                          Gbyte/s        90.75
+    L1/TEX Hit Rate                                  %        97.35
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.70
+    Achieved Active Warps Per SM           warp        47.81
+    Average DRAM Active Cycles       cycle    942959.25
+    Total DRAM Elapsed Cycles        cycle   5442548992
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.71
+    DRAM Throughput                   %         1.35
+    Duration                         ms        21.47
+    L1/TEX Cache Throughput           %        90.60
+    L2 Cache Throughput               %        50.42
+    Compute (SM) Throughput           %        10.70
+    Memory Throughput                          Gbyte/s        89.93
+    L1/TEX Hit Rate                                  %        97.31
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.58
+    Achieved Active Warps Per SM           warp        47.73
+    Average DRAM Active Cycles       cycle    942546.88
+    Total DRAM Elapsed Cycles        cycle   5489565952
+    DRAM Frequency                  Ghz         4.00
+    Memory Throughput                 %        63.64
+    DRAM Throughput                   %         1.36
+    Duration                         ms        21.32
+    L1/TEX Cache Throughput           %        90.63
+    L2 Cache Throughput               %        50.77
+    Compute (SM) Throughput           %        10.69
+    Memory Throughput                          Gbyte/s        90.45
+    L1/TEX Hit Rate                                  %        97.27
+          number of eligible warps, avoid possible load imbalances due to highly different execution durations per      
+          blocks. Under the assumption of a uniform execution duration of all thread blocks, this partial wave may      
+    Achieved Occupancy                        %        74.50
+    Achieved Active Warps Per SM           warp        47.68
+    Average DRAM Active Cycles       cycle    941394.62
+    Total DRAM Elapsed Cycles        cycle   5451173888

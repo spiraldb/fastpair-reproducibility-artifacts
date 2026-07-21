@@ -1,0 +1,5 @@
+label=amd-milan
+instance_type=m6a.2xlarge
+ddr=DDR4
+region=us-east-1
+bench_mb=256

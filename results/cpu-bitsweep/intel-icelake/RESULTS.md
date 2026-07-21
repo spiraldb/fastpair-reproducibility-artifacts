@@ -1,0 +1,62 @@
+# OnPair CPU decode microbench — Intel(R) Xeon(R) Platinum 8375C CPU @ 2.90GHz
+
+cores/socket: 4, threads/core: 2. Decode throughput (GiB/s of output), byte-identical across layouts. fat = data+code*16 (independent fixed-stride load + over-copy, this work); entries = variable-stride + over-copy = the published OnPair decode; naive = variable-stride + exact copy (non-over-copying baseline, not a codec).
+
+| column | bits | thr | fat | entries | naive | fat/entries | fat/naive |
+|--|--:|--:|--:|--:|--:|--:|--:|
+| synthetic_url | 9 | 1 | 4.8 | 4.2 | 1.0 | 1.15x | 4.69x |
+| synthetic_url | 10 | 1 | 5.5 | 5.0 | 2.2 | 1.09x | 2.53x |
+| synthetic_url | 11 | 1 | 5.6 | 5.2 | 2.3 | 1.07x | 2.43x |
+| synthetic_url | 12 | 1 | 5.7 | 5.3 | 2.3 | 1.07x | 2.48x |
+| synthetic_url | 13 | 1 | 5.9 | 5.4 | 1.8 | 1.09x | 3.19x |
+| synthetic_url | 14 | 1 | 6.2 | 5.6 | 2.6 | 1.11x | 2.42x |
+| synthetic_url | 15 | 1 | 6.3 | 5.7 | 2.1 | 1.11x | 2.98x |
+| synthetic_url | 16 | 1 | 6.2 | 5.5 | 2.6 | 1.13x | 2.33x |
+| tpch_comment | 9 | 1 | 6.1 | 5.5 | 1.3 | 1.10x | 4.71x |
+| tpch_comment | 10 | 1 | 6.5 | 6.3 | 2.1 | 1.03x | 3.14x |
+| tpch_comment | 11 | 1 | 6.7 | 6.5 | 2.2 | 1.03x | 3.08x |
+| tpch_comment | 12 | 1 | 6.7 | 6.5 | 2.1 | 1.03x | 3.18x |
+| tpch_comment | 13 | 1 | 6.7 | 6.5 | 2.1 | 1.03x | 3.19x |
+| tpch_comment | 14 | 1 | 6.7 | 6.4 | 2.1 | 1.04x | 3.14x |
+| tpch_comment | 15 | 1 | 6.7 | 6.5 | 2.1 | 1.03x | 3.23x |
+| tpch_comment | 16 | 1 | 6.7 | 6.5 | 2.1 | 1.03x | 3.18x |
+| fineweb_text | 9 | 1 | 1.8 | 1.5 | 0.2 | 1.22x | 7.53x |
+| fineweb_text | 10 | 1 | 2.3 | 1.9 | 0.7 | 1.22x | 3.15x |
+| fineweb_text | 11 | 1 | 2.5 | 2.2 | 0.6 | 1.16x | 4.20x |
+| fineweb_text | 12 | 1 | 2.8 | 2.5 | 0.5 | 1.11x | 5.30x |
+| fineweb_text | 13 | 1 | 3.7 | 3.2 | 0.7 | 1.18x | 5.43x |
+| fineweb_text | 14 | 1 | 4.8 | 3.9 | 0.9 | 1.21x | 5.22x |
+| fineweb_text | 15 | 1 | 4.9 | 4.0 | 0.9 | 1.22x | 5.13x |
+| fineweb_text | 16 | 1 | 4.1 | 3.4 | 0.9 | 1.20x | 4.53x |
+| clickbench_url | 9 | 1 | 2.3 | 1.9 | 0.5 | 1.24x | 4.43x |
+| clickbench_url | 10 | 1 | 3.1 | 2.6 | 0.5 | 1.19x | 5.79x |
+| clickbench_url | 11 | 1 | 3.8 | 3.4 | 0.7 | 1.12x | 5.88x |
+| clickbench_url | 12 | 1 | 4.5 | 3.9 | 0.8 | 1.14x | 5.77x |
+| clickbench_url | 13 | 1 | 4.8 | 4.1 | 0.9 | 1.17x | 5.44x |
+| clickbench_url | 14 | 1 | 5.0 | 4.4 | 1.0 | 1.14x | 5.17x |
+| clickbench_url | 15 | 1 | 5.1 | 4.6 | 1.1 | 1.11x | 4.90x |
+| clickbench_url | 16 | 1 | 4.4 | 4.4 | 1.1 | 1.01x | 4.03x |
+| l_comment | 9 | 1 | 3.4 | 2.8 | 0.4 | 1.19x | 9.13x |
+| l_comment | 10 | 1 | 4.5 | 3.8 | 0.6 | 1.17x | 7.92x |
+| l_comment | 11 | 1 | 5.1 | 4.6 | 0.8 | 1.10x | 6.49x |
+| l_comment | 12 | 1 | 5.2 | 4.8 | 0.9 | 1.09x | 5.79x |
+| l_comment | 13 | 1 | 5.2 | 4.4 | 1.0 | 1.19x | 5.30x |
+| l_comment | 14 | 1 | 5.2 | 4.2 | 1.0 | 1.22x | 4.95x |
+| l_comment | 15 | 1 | 5.0 | 4.0 | 1.1 | 1.23x | 4.59x |
+| l_comment | 16 | 1 | 3.8 | 3.8 | 1.1 | 1.00x | 3.44x |
+| l_shipinstruct | 9 | 1 | 6.4 | 5.9 | 1.3 | 1.09x | 5.04x |
+| l_shipinstruct | 10 | 1 | 6.3 | 5.8 | 1.3 | 1.09x | 4.91x |
+| l_shipinstruct | 11 | 1 | 6.2 | 5.7 | 1.3 | 1.08x | 4.78x |
+| l_shipinstruct | 12 | 1 | 6.1 | 5.8 | 1.3 | 1.06x | 4.83x |
+| l_shipinstruct | 13 | 1 | 6.3 | 5.7 | 1.3 | 1.09x | 4.88x |
+| l_shipinstruct | 14 | 1 | 6.3 | 5.8 | 1.3 | 1.08x | 4.93x |
+| l_shipinstruct | 15 | 1 | 6.1 | 5.8 | 1.3 | 1.06x | 4.75x |
+| l_shipinstruct | 16 | 1 | 6.3 | 5.7 | 1.3 | 1.11x | 4.96x |
+| book_reviews | 9 | 1 | 2.4 | 1.9 | 0.3 | 1.24x | 7.42x |
+| book_reviews | 10 | 1 | 3.0 | 2.5 | 0.4 | 1.20x | 7.62x |
+| book_reviews | 11 | 1 | 3.3 | 2.8 | 0.4 | 1.17x | 7.36x |
+| book_reviews | 12 | 1 | 3.6 | 3.2 | 0.5 | 1.12x | 6.67x |
+| book_reviews | 13 | 1 | 3.8 | 3.0 | 0.6 | 1.24x | 6.20x |
+| book_reviews | 14 | 1 | 3.9 | 3.0 | 0.7 | 1.29x | 5.75x |
+| book_reviews | 15 | 1 | 3.9 | 3.0 | 0.7 | 1.29x | 5.48x |
+| book_reviews | 16 | 1 | 3.2 | 3.0 | 0.7 | 1.08x | 4.38x |

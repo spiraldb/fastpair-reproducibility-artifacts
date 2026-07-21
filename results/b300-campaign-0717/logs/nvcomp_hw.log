@@ -1,0 +1,432 @@
+
+=== tpch-sf10/l_comment: dumped 1000000000 bytes -> /tmp/tpch-sf10_l_comment.bin ===
+input: /tmp/tpch-sf10_l_comment.bin  953.7 MiB
+
+== chunk 32 KiB (30518 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=4.12x  compress=   0.7 GiB/s  decode= 201.9 GiB/s (217 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.85x  compress= 102.5 GiB/s  decode= 110.2 GiB/s (118 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=2.11x  compress=  18.0 GiB/s  decode= 187.1 GiB/s (201 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=2.36x  compress=  18.4 GiB/s  decode= 191.0 GiB/s (205 GB/s)  valid=YES
+
+== chunk 64 KiB (15259 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=4.35x  compress=   0.6 GiB/s  decode= 254.6 GiB/s (273 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.85x  compress=  96.0 GiB/s  decode= 119.1 GiB/s (128 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=2.16x  compress=  15.5 GiB/s  decode= 206.5 GiB/s (222 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=2.40x  compress=  16.9 GiB/s  decode= 208.6 GiB/s (224 GB/s)  valid=YES
+
+== chunk 128 KiB (7630 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=4.49x  compress=   0.5 GiB/s  decode= 289.9 GiB/s (311 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.85x  compress=  83.1 GiB/s  decode= 124.3 GiB/s (133 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=2.17x  compress=  14.3 GiB/s  decode= 219.2 GiB/s (235 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=2.43x  compress=  14.5 GiB/s  decode= 222.0 GiB/s (238 GB/s)  valid=YES
+
+== chunk 256 KiB (3815 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=4.56x  compress=   0.5 GiB/s  decode= 312.3 GiB/s (335 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.85x  compress=  65.2 GiB/s  decode= 127.1 GiB/s (136 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=2.17x  compress=  13.4 GiB/s  decode= 226.5 GiB/s (243 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=2.44x  compress=  11.5 GiB/s  decode= 228.2 GiB/s (245 GB/s)  valid=YES
+
+== chunk 512 KiB (1908 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=4.60x  compress=   0.4 GiB/s  decode= 324.6 GiB/s (349 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.85x  compress=  61.3 GiB/s  decode= 128.5 GiB/s (138 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=2.18x  compress=   8.0 GiB/s  decode= 230.4 GiB/s (247 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=2.44x  compress=  11.6 GiB/s  decode= 231.9 GiB/s (249 GB/s)  valid=YES
+
+=== tpch-sf10/ps_comment: dumped 987934065 bytes -> /tmp/tpch-sf10_ps_comment.bin ===
+input: /tmp/tpch-sf10_ps_comment.bin  942.2 MiB
+
+== chunk 32 KiB (30150 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=4.98x  compress=   0.8 GiB/s  decode= 237.7 GiB/s (255 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.85x  compress= 101.9 GiB/s  decode= 109.3 GiB/s (117 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=2.48x  compress=  20.9 GiB/s  decode= 201.9 GiB/s (217 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=2.95x  compress=  20.5 GiB/s  decode= 210.5 GiB/s (226 GB/s)  valid=YES
+
+== chunk 64 KiB (15075 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=5.33x  compress=   0.7 GiB/s  decode= 312.3 GiB/s (335 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.85x  compress=  95.5 GiB/s  decode= 119.2 GiB/s (128 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=2.55x  compress=  18.2 GiB/s  decode= 228.7 GiB/s (246 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=3.02x  compress=  18.9 GiB/s  decode= 232.0 GiB/s (249 GB/s)  valid=YES
+
+== chunk 128 KiB (7538 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=5.55x  compress=   0.6 GiB/s  decode= 361.7 GiB/s (388 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.85x  compress=  82.7 GiB/s  decode= 123.8 GiB/s (133 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=2.56x  compress=  17.1 GiB/s  decode= 245.0 GiB/s (263 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=3.06x  compress=  16.3 GiB/s  decode= 245.6 GiB/s (264 GB/s)  valid=YES
+
+== chunk 256 KiB (3769 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=5.67x  compress=   0.5 GiB/s  decode= 396.6 GiB/s (426 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.85x  compress=  64.8 GiB/s  decode= 126.8 GiB/s (136 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=2.56x  compress=  15.8 GiB/s  decode= 253.3 GiB/s (272 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=3.07x  compress=  12.8 GiB/s  decode= 254.6 GiB/s (273 GB/s)  valid=YES
+
+== chunk 512 KiB (1885 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=5.74x  compress=   0.4 GiB/s  decode= 412.7 GiB/s (443 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.85x  compress=  60.6 GiB/s  decode= 127.0 GiB/s (136 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=2.57x  compress=   9.7 GiB/s  decode= 255.9 GiB/s (275 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=3.08x  compress=  12.9 GiB/s  decode= 256.8 GiB/s (276 GB/s)  valid=YES
+
+=== tpch-sf10/s_comment: dumped 6242126 bytes -> /tmp/tpch-sf10_s_comment.bin ===
+input: /tmp/tpch-sf10_s_comment.bin  6.0 MiB
+
+== chunk 32 KiB (191 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=4.70x  compress=   0.2 GiB/s  decode= 124.3 GiB/s (133 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.85x  compress=   8.4 GiB/s  decode=  74.8 GiB/s (80 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=2.37x  compress=   1.6 GiB/s  decode= 115.2 GiB/s (124 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=2.75x  compress=   1.8 GiB/s  decode= 113.0 GiB/s (121 GB/s)  valid=YES
+
+== chunk 64 KiB (96 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=5.02x  compress=   0.1 GiB/s  decode= 142.8 GiB/s (153 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.85x  compress=   4.9 GiB/s  decode=  80.6 GiB/s (87 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=2.42x  compress=   0.8 GiB/s  decode= 121.8 GiB/s (131 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=2.81x  compress=   0.9 GiB/s  decode= 122.4 GiB/s (131 GB/s)  valid=YES
+
+== chunk 128 KiB (48 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=5.21x  compress=   0.0 GiB/s  decode= 136.5 GiB/s (147 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.85x  compress=   2.2 GiB/s  decode=  63.8 GiB/s (69 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=2.43x  compress=   0.4 GiB/s  decode= 107.2 GiB/s (115 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=2.84x  compress=   0.5 GiB/s  decode= 107.1 GiB/s (115 GB/s)  valid=YES
+
+== chunk 256 KiB (24 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=5.31x  compress=   0.0 GiB/s  decode= 141.2 GiB/s (152 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.85x  compress=   1.1 GiB/s  decode=  66.1 GiB/s (71 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=2.43x  compress=   0.2 GiB/s  decode= 109.5 GiB/s (118 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=2.86x  compress=   0.2 GiB/s  decode= 108.1 GiB/s (116 GB/s)  valid=YES
+
+== chunk 512 KiB (12 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=5.36x  compress=   0.0 GiB/s  decode=  89.0 GiB/s (96 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.85x  compress=   0.6 GiB/s  decode=  37.9 GiB/s (41 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=2.44x  compress=   0.1 GiB/s  decode=  64.7 GiB/s (69 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=2.86x  compress=   0.1 GiB/s  decode=  64.7 GiB/s (69 GB/s)  valid=YES
+
+=== tpch-sf10/l_shipinstruct: dumped 719788494 bytes -> /tmp/tpch-sf10_l_shipinstruct.bin ===
+input: /tmp/tpch-sf10_l_shipinstruct.bin  686.4 MiB
+
+== chunk 32 KiB (21967 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=20.86x  compress=   0.7 GiB/s  decode= 355.3 GiB/s (382 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=2.05x  compress=  98.5 GiB/s  decode= 109.1 GiB/s (117 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=4.94x  compress=  53.3 GiB/s  decode= 299.8 GiB/s (322 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=6.05x  compress=  45.9 GiB/s  decode= 302.8 GiB/s (325 GB/s)  valid=YES
+
+== chunk 64 KiB (10984 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=22.62x  compress=   0.6 GiB/s  decode= 484.5 GiB/s (520 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=2.05x  compress=  89.5 GiB/s  decode= 118.7 GiB/s (127 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=4.96x  compress=  46.8 GiB/s  decode= 351.4 GiB/s (377 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=6.07x  compress=  41.8 GiB/s  decode= 360.9 GiB/s (387 GB/s)  valid=YES
+
+== chunk 128 KiB (5492 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=23.74x  compress=   0.5 GiB/s  decode= 561.1 GiB/s (602 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=2.05x  compress=  86.0 GiB/s  decode= 123.8 GiB/s (133 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=4.96x  compress=  37.3 GiB/s  decode= 387.9 GiB/s (416 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=6.08x  compress=  39.6 GiB/s  decode= 393.5 GiB/s (422 GB/s)  valid=YES
+
+== chunk 256 KiB (2746 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=24.42x  compress=   0.5 GiB/s  decode= 612.9 GiB/s (658 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=2.05x  compress=  85.2 GiB/s  decode= 125.8 GiB/s (135 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=4.96x  compress=  34.9 GiB/s  decode= 409.0 GiB/s (439 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=6.09x  compress=  37.2 GiB/s  decode= 415.7 GiB/s (446 GB/s)  valid=YES
+
+== chunk 512 KiB (1373 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=24.81x  compress=   0.3 GiB/s  decode= 632.4 GiB/s (679 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=2.05x  compress=  45.5 GiB/s  decode= 125.5 GiB/s (135 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=4.96x  compress=  19.9 GiB/s  decode= 415.7 GiB/s (446 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=6.09x  compress=  24.0 GiB/s  decode= 422.2 GiB/s (453 GB/s)  valid=YES
+
+=== clickbench/URL: dumped 1000000000 bytes -> /tmp/clickbench_URL.bin ===
+input: /tmp/clickbench_URL.bin  953.7 MiB
+
+== chunk 32 KiB (30518 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=5.56x  compress=   0.6 GiB/s  decode= 246.2 GiB/s (264 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.46x  compress=  99.4 GiB/s  decode= 109.9 GiB/s (118 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=3.40x  compress=  44.5 GiB/s  decode= 277.6 GiB/s (298 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=3.39x  compress=  53.7 GiB/s  decode= 286.9 GiB/s (308 GB/s)  valid=YES
+
+== chunk 64 KiB (15259 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=6.03x  compress=   0.5 GiB/s  decode= 315.6 GiB/s (339 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.46x  compress=  93.4 GiB/s  decode= 118.8 GiB/s (128 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=3.58x  compress=  37.5 GiB/s  decode= 322.3 GiB/s (346 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=3.50x  compress=  48.5 GiB/s  decode= 327.7 GiB/s (352 GB/s)  valid=YES
+
+== chunk 128 KiB (7630 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=6.30x  compress=   0.4 GiB/s  decode= 360.5 GiB/s (387 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.45x  compress=  81.2 GiB/s  decode= 124.3 GiB/s (133 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=3.66x  compress=  32.7 GiB/s  decode= 350.4 GiB/s (376 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=3.55x  compress=  41.6 GiB/s  decode= 354.2 GiB/s (380 GB/s)  valid=YES
+
+== chunk 256 KiB (3815 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=6.45x  compress=   0.4 GiB/s  decode= 389.5 GiB/s (418 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.45x  compress=  63.7 GiB/s  decode= 127.1 GiB/s (136 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=3.70x  compress=  24.1 GiB/s  decode= 365.9 GiB/s (393 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=3.57x  compress=  31.8 GiB/s  decode= 369.2 GiB/s (396 GB/s)  valid=YES
+
+== chunk 512 KiB (1908 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=6.52x  compress=   0.3 GiB/s  decode= 401.6 GiB/s (431 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.45x  compress=  60.7 GiB/s  decode= 128.5 GiB/s (138 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=3.73x  compress=  14.2 GiB/s  decode= 373.0 GiB/s (400 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=3.59x  compress=  22.6 GiB/s  decode= 376.8 GiB/s (405 GB/s)  valid=YES
+
+=== fineweb/text: dumped 1000000000 bytes -> /tmp/fineweb_text.bin ===
+input: /tmp/fineweb_text.bin  953.7 MiB
+
+== chunk 32 KiB (30518 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=2.40x  compress=   0.9 GiB/s  decode= 130.5 GiB/s (140 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.71x  compress= 100.1 GiB/s  decode= 110.0 GiB/s (118 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=1.49x  compress=  15.1 GiB/s  decode= 164.4 GiB/s (177 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=1.48x  compress=  18.5 GiB/s  decode= 173.4 GiB/s (186 GB/s)  valid=YES
+
+== chunk 64 KiB (15259 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=2.48x  compress=   0.8 GiB/s  decode= 152.1 GiB/s (163 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.71x  compress=  94.0 GiB/s  decode= 118.7 GiB/s (127 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=1.53x  compress=  12.5 GiB/s  decode= 178.3 GiB/s (191 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=1.50x  compress=  16.7 GiB/s  decode= 187.4 GiB/s (201 GB/s)  valid=YES
+
+== chunk 128 KiB (7630 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=2.52x  compress=   0.6 GiB/s  decode= 163.9 GiB/s (176 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.71x  compress=  81.9 GiB/s  decode= 124.4 GiB/s (134 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=1.54x  compress=  11.3 GiB/s  decode= 185.9 GiB/s (200 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=1.51x  compress=  14.3 GiB/s  decode= 195.5 GiB/s (210 GB/s)  valid=YES
+
+== chunk 256 KiB (3815 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=2.55x  compress=   0.5 GiB/s  decode= 171.0 GiB/s (184 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.71x  compress=  64.4 GiB/s  decode= 127.1 GiB/s (136 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=1.54x  compress=  10.8 GiB/s  decode= 190.1 GiB/s (204 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=1.51x  compress=  11.4 GiB/s  decode= 200.3 GiB/s (215 GB/s)  valid=YES
+
+== chunk 512 KiB (1908 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=2.56x  compress=   0.4 GiB/s  decode= 174.6 GiB/s (188 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.71x  compress=  60.7 GiB/s  decode= 128.4 GiB/s (138 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=1.55x  compress=   6.4 GiB/s  decode= 192.5 GiB/s (207 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=1.51x  compress=  11.2 GiB/s  decode= 202.9 GiB/s (218 GB/s)  valid=YES
+
+=== wikipedia/text: dumped 703062420 bytes -> /tmp/wikipedia_text.bin ===
+input: /tmp/wikipedia_text.bin  670.5 MiB
+
+== chunk 32 KiB (21456 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=2.53x  compress=   0.8 GiB/s  decode= 137.6 GiB/s (148 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.67x  compress=  94.3 GiB/s  decode= 109.1 GiB/s (117 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=1.57x  compress=  16.0 GiB/s  decode= 172.8 GiB/s (186 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=1.58x  compress=  19.5 GiB/s  decode= 181.5 GiB/s (195 GB/s)  valid=YES
+
+== chunk 64 KiB (10728 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=2.62x  compress=   0.7 GiB/s  decode= 159.6 GiB/s (171 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.67x  compress=  86.0 GiB/s  decode= 118.8 GiB/s (128 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=1.61x  compress=  13.0 GiB/s  decode= 187.4 GiB/s (201 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=1.60x  compress=  17.3 GiB/s  decode= 197.4 GiB/s (212 GB/s)  valid=YES
+
+== chunk 128 KiB (5364 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=2.67x  compress=   0.5 GiB/s  decode= 174.3 GiB/s (187 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.67x  compress=  82.6 GiB/s  decode= 124.2 GiB/s (133 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=1.63x  compress=  10.2 GiB/s  decode= 196.9 GiB/s (211 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=1.60x  compress=  15.5 GiB/s  decode= 207.0 GiB/s (222 GB/s)  valid=YES
+
+== chunk 256 KiB (2682 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=2.70x  compress=   0.5 GiB/s  decode= 180.1 GiB/s (193 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.67x  compress=  82.3 GiB/s  decode= 126.2 GiB/s (135 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=1.64x  compress=   8.9 GiB/s  decode= 200.3 GiB/s (215 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=1.61x  compress=  15.7 GiB/s  decode= 211.4 GiB/s (227 GB/s)  valid=YES
+
+== chunk 512 KiB (1341 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=2.71x  compress=   0.4 GiB/s  decode= 182.1 GiB/s (195 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.67x  compress=  43.9 GiB/s  decode= 125.9 GiB/s (135 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=1.64x  compress=   5.3 GiB/s  decode= 200.4 GiB/s (215 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=1.61x  compress=   8.9 GiB/s  decode= 211.9 GiB/s (228 GB/s)  valid=YES
+
+=== dbtext/email: dumped 2117251 bytes -> /tmp/dbtext_email.bin ===
+input: /tmp/dbtext_email.bin  2.0 MiB
+
+== chunk 32 KiB (65 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=2.26x  compress=   0.1 GiB/s  decode=  57.9 GiB/s (62 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.72x  compress=   4.0 GiB/s  decode=  51.3 GiB/s (55 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=1.50x  compress=   0.7 GiB/s  decode=  65.6 GiB/s (70 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=1.40x  compress=   1.0 GiB/s  decode=  63.2 GiB/s (68 GB/s)  valid=YES
+
+== chunk 64 KiB (33 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=2.31x  compress=   0.0 GiB/s  decode=  59.9 GiB/s (64 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.72x  compress=   1.7 GiB/s  decode=  47.2 GiB/s (51 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=1.54x  compress=   0.3 GiB/s  decode=  68.0 GiB/s (73 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=1.40x  compress=   0.5 GiB/s  decode=  67.9 GiB/s (73 GB/s)  valid=YES
+
+== chunk 128 KiB (17 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=2.34x  compress=   0.0 GiB/s  decode=  45.0 GiB/s (48 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.72x  compress=   0.8 GiB/s  decode=  37.5 GiB/s (40 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=1.56x  compress=   0.2 GiB/s  decode=  48.6 GiB/s (52 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=1.41x  compress=   0.2 GiB/s  decode=  51.3 GiB/s (55 GB/s)  valid=YES
+
+== chunk 256 KiB (9 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=2.35x  compress=   0.0 GiB/s  decode=  27.7 GiB/s (30 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.72x  compress=   0.4 GiB/s  decode=  22.5 GiB/s (24 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=1.57x  compress=   0.1 GiB/s  decode=  36.6 GiB/s (39 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=1.41x  compress=   0.1 GiB/s  decode=  37.5 GiB/s (40 GB/s)  valid=YES
+
+== chunk 512 KiB (5 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=2.36x  compress=   0.0 GiB/s  decode=  16.0 GiB/s (17 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.72x  compress=   0.2 GiB/s  decode=  12.9 GiB/s (14 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=1.58x  compress=   0.0 GiB/s  decode=  22.0 GiB/s (24 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=1.41x  compress=   0.1 GiB/s  decode=  22.0 GiB/s (24 GB/s)  valid=YES
+
+=== dbtext/hex: dumped 793322 bytes -> /tmp/dbtext_hex.bin ===
+input: /tmp/dbtext_hex.bin  0.8 MiB
+
+== chunk 32 KiB (25 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=1.82x  compress=   0.0 GiB/s  decode=  25.5 GiB/s (27 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.97x  compress=   1.5 GiB/s  decode=  26.2 GiB/s (28 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=1.06x  compress=   0.3 GiB/s  decode=  28.9 GiB/s (31 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=1.02x  compress=   0.5 GiB/s  decode=  25.1 GiB/s (27 GB/s)  valid=YES
+
+== chunk 64 KiB (13 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=1.82x  compress=   0.0 GiB/s  decode=  18.6 GiB/s (20 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.97x  compress=   0.6 GiB/s  decode=  20.1 GiB/s (22 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=1.08x  compress=   0.1 GiB/s  decode=  26.0 GiB/s (28 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=1.02x  compress=   0.3 GiB/s  decode=  26.4 GiB/s (28 GB/s)  valid=YES
+
+== chunk 128 KiB (7 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=1.82x  compress=   0.0 GiB/s  decode=  12.8 GiB/s (14 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.97x  compress=   0.3 GiB/s  decode=  14.0 GiB/s (15 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=1.09x  compress=   0.1 GiB/s  decode=  18.6 GiB/s (20 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=1.02x  compress=   0.1 GiB/s  decode=  19.1 GiB/s (21 GB/s)  valid=YES
+
+== chunk 256 KiB (4 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=1.82x  compress=   0.0 GiB/s  decode=   7.3 GiB/s (8 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.97x  compress=   0.1 GiB/s  decode=   8.4 GiB/s (9 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=1.09x  compress=   0.0 GiB/s  decode=  11.8 GiB/s (13 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=1.02x  compress=   0.1 GiB/s  decode=  12.9 GiB/s (14 GB/s)  valid=YES
+
+== chunk 512 KiB (2 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=1.82x  compress=   0.0 GiB/s  decode=   4.2 GiB/s (4 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.97x  compress=   0.1 GiB/s  decode=   4.8 GiB/s (5 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=1.09x  compress=   0.0 GiB/s  decode=   7.1 GiB/s (8 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=1.02x  compress=   0.0 GiB/s  decode=   7.3 GiB/s (8 GB/s)  valid=YES
+
+=== dbtext/l_comment: dumped 2645949 bytes -> /tmp/dbtext_l_comment.bin ===
+input: /tmp/dbtext_l_comment.bin  2.5 MiB
+
+== chunk 32 KiB (81 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=4.12x  compress=   0.1 GiB/s  decode=  75.1 GiB/s (81 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.85x  compress=   5.1 GiB/s  decode=  51.9 GiB/s (56 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=2.11x  compress=   0.6 GiB/s  decode=  71.4 GiB/s (77 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=2.36x  compress=   0.8 GiB/s  decode=  69.9 GiB/s (75 GB/s)  valid=YES
+
+== chunk 64 KiB (41 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=4.35x  compress=   0.0 GiB/s  decode=  71.6 GiB/s (77 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.85x  compress=   2.1 GiB/s  decode=  45.9 GiB/s (49 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=2.16x  compress=   0.3 GiB/s  decode=  59.1 GiB/s (63 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=2.41x  compress=   0.4 GiB/s  decode=  59.6 GiB/s (64 GB/s)  valid=YES
+
+== chunk 128 KiB (21 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=4.49x  compress=   0.0 GiB/s  decode=  77.3 GiB/s (83 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.85x  compress=   0.9 GiB/s  decode=  46.9 GiB/s (50 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=2.17x  compress=   0.2 GiB/s  decode=  60.8 GiB/s (65 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=2.43x  compress=   0.2 GiB/s  decode=  58.9 GiB/s (63 GB/s)  valid=YES
+
+== chunk 256 KiB (11 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=4.56x  compress=   0.0 GiB/s  decode=  55.6 GiB/s (60 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.85x  compress=   0.5 GiB/s  decode=  28.4 GiB/s (30 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=2.18x  compress=   0.1 GiB/s  decode=  44.4 GiB/s (48 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=2.44x  compress=   0.1 GiB/s  decode=  44.6 GiB/s (48 GB/s)  valid=YES
+
+== chunk 512 KiB (6 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=4.60x  compress=   0.0 GiB/s  decode=  35.0 GiB/s (38 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.85x  compress=   0.2 GiB/s  decode=  16.1 GiB/s (17 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=2.18x  compress=   0.0 GiB/s  decode=  26.7 GiB/s (29 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=2.44x  compress=   0.0 GiB/s  decode=  26.7 GiB/s (29 GB/s)  valid=YES
+
+=== dbtext/ps_comment: dumped 2471298 bytes -> /tmp/dbtext_ps_comment.bin ===
+input: /tmp/dbtext_ps_comment.bin  2.4 MiB
+
+== chunk 32 KiB (76 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=4.98x  compress=   0.1 GiB/s  decode=  73.8 GiB/s (79 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.85x  compress=   4.7 GiB/s  decode=  49.5 GiB/s (53 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=2.49x  compress=   0.6 GiB/s  decode=  69.2 GiB/s (74 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=2.95x  compress=   0.8 GiB/s  decode=  68.3 GiB/s (73 GB/s)  valid=YES
+
+== chunk 64 KiB (38 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=5.33x  compress=   0.0 GiB/s  decode=  78.1 GiB/s (84 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.85x  compress=   1.9 GiB/s  decode=  42.4 GiB/s (46 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=2.55x  compress=   0.3 GiB/s  decode=  54.7 GiB/s (59 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=3.02x  compress=   0.4 GiB/s  decode=  64.0 GiB/s (69 GB/s)  valid=YES
+
+== chunk 128 KiB (19 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=5.56x  compress=   0.0 GiB/s  decode=  79.2 GiB/s (85 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.85x  compress=   0.9 GiB/s  decode=  43.8 GiB/s (47 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=2.56x  compress=   0.2 GiB/s  decode=  60.6 GiB/s (65 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=3.05x  compress=   0.2 GiB/s  decode=  55.5 GiB/s (60 GB/s)  valid=YES
+
+== chunk 256 KiB (10 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=5.67x  compress=   0.0 GiB/s  decode=  56.5 GiB/s (61 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.85x  compress=   0.4 GiB/s  decode=  26.6 GiB/s (29 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=2.57x  compress=   0.1 GiB/s  decode=  43.6 GiB/s (47 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=3.07x  compress=   0.1 GiB/s  decode=  43.4 GiB/s (47 GB/s)  valid=YES
+
+== chunk 512 KiB (5 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=5.74x  compress=   0.0 GiB/s  decode=  39.6 GiB/s (43 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.85x  compress=   0.2 GiB/s  decode=  15.0 GiB/s (16 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=2.57x  compress=   0.0 GiB/s  decode=  26.5 GiB/s (28 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=3.08x  compress=   0.0 GiB/s  decode=  27.0 GiB/s (29 GB/s)  valid=YES
+
+=== dbtext/yago: dumped 1826988 bytes -> /tmp/dbtext_yago.bin ===
+input: /tmp/dbtext_yago.bin  1.7 MiB
+
+== chunk 32 KiB (56 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=1.77x  compress=   0.1 GiB/s  decode=  43.7 GiB/s (47 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.55x  compress=   3.4 GiB/s  decode=  42.8 GiB/s (46 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=1.21x  compress=   0.5 GiB/s  decode=  57.1 GiB/s (61 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=1.13x  compress=   0.8 GiB/s  decode=  56.7 GiB/s (61 GB/s)  valid=YES
+
+== chunk 64 KiB (28 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=1.83x  compress=   0.0 GiB/s  decode=  40.7 GiB/s (44 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.56x  compress=   1.4 GiB/s  decode=  41.3 GiB/s (44 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=1.25x  compress=   0.2 GiB/s  decode=  58.4 GiB/s (63 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=1.14x  compress=   0.4 GiB/s  decode=  57.6 GiB/s (62 GB/s)  valid=YES
+
+== chunk 128 KiB (14 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=1.86x  compress=   0.0 GiB/s  decode=  32.4 GiB/s (35 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.56x  compress=   0.6 GiB/s  decode=  32.3 GiB/s (35 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=1.27x  compress=   0.1 GiB/s  decode=  42.3 GiB/s (45 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=1.14x  compress=   0.2 GiB/s  decode=  41.8 GiB/s (45 GB/s)  valid=YES
+
+== chunk 256 KiB (7 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=1.88x  compress=   0.0 GiB/s  decode=  20.9 GiB/s (22 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.56x  compress=   0.3 GiB/s  decode=  19.3 GiB/s (21 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=1.28x  compress=   0.1 GiB/s  decode=  27.5 GiB/s (30 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=1.14x  compress=   0.1 GiB/s  decode=  28.6 GiB/s (31 GB/s)  valid=YES
+
+== chunk 512 KiB (4 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=1.89x  compress=   0.0 GiB/s  decode=  11.8 GiB/s (13 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.56x  compress=   0.2 GiB/s  decode=  11.2 GiB/s (12 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=1.29x  compress=   0.0 GiB/s  decode=  16.5 GiB/s (18 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=1.14x  compress=   0.0 GiB/s  decode=  16.8 GiB/s (18 GB/s)  valid=YES
+
+=== synthetic/url: dumped 923569389 bytes -> /tmp/synthetic_url.bin ===
+input: /tmp/synthetic_url.bin  880.8 MiB
+
+== chunk 32 KiB (28186 chunks) ==
+DEFLATE-hi    chunk= 32768  ratio=13.34x  compress=   0.7 GiB/s  decode= 337.5 GiB/s (362 GB/s)  valid=YES
+DEFLATE-fast  chunk= 32768  ratio=1.60x  compress= 103.7 GiB/s  decode= 109.7 GiB/s (118 GB/s)  valid=YES
+LZ4           chunk= 32768  ratio=6.17x  compress=  57.2 GiB/s  decode= 329.1 GiB/s (353 GB/s)  valid=YES
+Snappy        chunk= 32768  ratio=7.08x  compress=  56.8 GiB/s  decode= 331.5 GiB/s (356 GB/s)  valid=YES
+
+== chunk 64 KiB (14093 chunks) ==
+DEFLATE-hi    chunk= 65536  ratio=16.16x  compress=   0.7 GiB/s  decode= 462.1 GiB/s (496 GB/s)  valid=YES
+DEFLATE-fast  chunk= 65536  ratio=1.61x  compress= 104.6 GiB/s  decode= 118.7 GiB/s (127 GB/s)  valid=YES
+LZ4           chunk= 65536  ratio=6.64x  compress=  56.6 GiB/s  decode= 397.5 GiB/s (427 GB/s)  valid=YES
+Snappy        chunk= 65536  ratio=7.60x  compress=  56.1 GiB/s  decode= 395.4 GiB/s (425 GB/s)  valid=YES
+
+== chunk 128 KiB (7047 chunks) ==
+DEFLATE-hi    chunk=131072  ratio=18.26x  compress=   0.5 GiB/s  decode= 565.2 GiB/s (607 GB/s)  valid=YES
+DEFLATE-fast  chunk=131072  ratio=1.61x  compress= 104.7 GiB/s  decode= 124.1 GiB/s (133 GB/s)  valid=YES
+LZ4           chunk=131072  ratio=6.68x  compress=  48.2 GiB/s  decode= 444.7 GiB/s (477 GB/s)  valid=YES
+Snappy        chunk=131072  ratio=7.90x  compress=  55.2 GiB/s  decode= 439.8 GiB/s (472 GB/s)  valid=YES
+
+== chunk 256 KiB (3524 chunks) ==
+DEFLATE-hi    chunk=262144  ratio=19.58x  compress=   0.5 GiB/s  decode= 612.3 GiB/s (657 GB/s)  valid=YES
+DEFLATE-fast  chunk=262144  ratio=1.61x  compress= 104.2 GiB/s  decode= 126.9 GiB/s (136 GB/s)  valid=YES
+LZ4           chunk=262144  ratio=6.73x  compress=  46.3 GiB/s  decode= 478.3 GiB/s (514 GB/s)  valid=YES
+Snappy        chunk=262144  ratio=8.06x  compress=  54.6 GiB/s  decode= 469.9 GiB/s (505 GB/s)  valid=YES
+
+== chunk 512 KiB (1762 chunks) ==
+DEFLATE-hi    chunk=524288  ratio=20.24x  compress=   0.4 GiB/s  decode= 643.3 GiB/s (691 GB/s)  valid=YES
+DEFLATE-fast  chunk=524288  ratio=1.61x  compress=  57.2 GiB/s  decode= 128.3 GiB/s (138 GB/s)  valid=YES
+LZ4           chunk=524288  ratio=6.78x  compress=  28.8 GiB/s  decode= 498.1 GiB/s (535 GB/s)  valid=YES
+Snappy        chunk=524288  ratio=8.15x  compress=  33.0 GiB/s  decode= 485.9 GiB/s (522 GB/s)  valid=YES
+SKIP book-reviews/text: source parquet missing: /home/ubuntu/work/vortex-bench/data/onpair-bench-src/book-reviews/book_reviews.parquet
+SKIP amazon-movies/text: source parquet missing: /home/ubuntu/work/vortex-bench/data/onpair-bench-src/amazon-movies/amazon_movies.parquet
+SKIP amazon-electronics/text: source parquet missing: /home/ubuntu/work/vortex-bench/data/onpair-bench-src/amazon-electronics/amazon_electronics.parquet

@@ -1,0 +1,1825 @@
+[1;36m[harness][0m nebius credential primed + verified (profile spiral-research — non-interactive, no op/SSO)
+[1;36m[harness][0m provisioning [nebius] gpu-b300-sxm:1gpu-24vcpu-346gb in uk-south1 (name=orch-martin-1784328146-66003)
+[1;36m[harness][0m launched instance-id=computeinstance-e03ygjyntx1j6rqgde — teardown is now ARMED
+[1;36m[harness][0m waiting for active + IP ...
+[1;36m[harness][0m active at 89.124.37.60 — waiting for sshd ...
+[1;36m[harness][0m staging /Users/martin/repos/vortex@onpair @ 5e10231c5 -> ~/work (git archive: exact rev, no .git, no creds)
+[1;36m[harness][0m staging file onpair-bench.sh ( 32K) -> ~/work/
+[1;36m[harness][0m pushing job secrets -> ~/work/.job_secrets (0600, instance-only)
+[1;36m[harness][0m running job (hard timeout 10800s) — log -> /Users/martin/agents/harness/runs/b300-campaign-job1-20260717-184226/run.log
+
+[1;36m[campaign 22:44:44][0m step 0: BUILD_ONLY onpair-bench.sh (setup, build, smoke; TPC-H generated)
+
+[1;33m[job 22:44:44][0m wrote run-env.txt
+# OnPair-GPU GPU-decode run environment
+date_utc:    2026-07-17T22:44:44Z
+host:        computeinstance-e03ygjyntx1j6rqgde
+vortex_rev:  fe4a84d65
+
+## GPU (name, mem, compute capability, driver)
+name, memory.total [MiB], compute_cap, driver_version
+NVIDIA B300 SXM6 AC, 275040 MiB, 10.3, 580.159.04
+
+## nvidia-smi
+Fri Jul 17 22:44:44 2026       
++-----------------------------------------------------------------------------------------+
+
+[1;33m[job 22:44:44][0m GPU heartbeat started (pid 2394; samples 60s, prints on GPU activity or 5-min keepalive)
+
+[1;33m[job 22:44:44][0m installing rustup + stable toolchain
+info: downloading installer
+warn: It looks like you have an existing rustup settings file at:
+warn: /home/ubuntu/.rustup/settings.toml
+warn: Rustup will install the default toolchain as specified in the settings file,
+warn: instead of the one inferred from the default host triple.
+info: profile set to minimal
+info: default host triple is x86_64-unknown-linux-gnu
+info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+info: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)
+info: downloading 3 components
+
+info: default toolchain set to stable-x86_64-unknown-linux-gnu
+  stable-x86_64-unknown-linux-gnu installed - rustc 1.97.1 (8bab26f4f 2026-07-14)
+
+
+Rust is installed now. Great!
+
+To get started you may need to restart your current shell.
+This would reload your PATH environment variable to include
+Cargo's bin directory ($HOME/.cargo/bin).
+
+To configure your current shell, you need to source
+the corresponding env file under $HOME/.cargo.
+
+This is usually done by running one of the following (note the leading DOT):
+. "$HOME/.cargo/env"            # For sh/bash/zsh/ash/dash/pdksh
+source "$HOME/.cargo/env.fish"  # For fish
+source "~/.cargo/env.nu"  # For nushell
+source "$HOME/.cargo/env.tcsh"  # For tcsh
+. "$HOME/.cargo/env.ps1"        # For pwsh
+source "$HOME/.cargo/env.xsh"   # For xonsh
+
+[1;33m[job 22:44:50][0m installing build deps (clang/libclang, llvm, pkg-config, lld, build-essential)
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:5 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  InRelease [1477 B]
+Get:6 https://download.docker.com/linux/ubuntu noble InRelease [48.5 kB]
+Get:7 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64  InRelease [1581 B]
+Get:8 https://dr.nebius.cloud stable InRelease [3807 B]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1114 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main Translation-en [272 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.7 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1661 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [328 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [389 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1256 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [286 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
+Get:20 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:21 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [853 kB]
+Get:22 https://dr.nebius.cloud noble InRelease [2980 B]
+Get:23 http://security.ubuntu.com/ubuntu noble-security/main Translation-en [191 kB]
+Get:24 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [44.8 kB]
+Get:25 http://security.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
+Get:26 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1178 kB]
+Get:27 http://security.ubuntu.com/ubuntu noble-security/universe Translation-en [232 kB]
+Get:28 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.2 kB]
+Get:29 http://security.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:30 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1166 kB]
+Get:31 http://security.ubuntu.com/ubuntu noble-security/restricted Translation-en [268 kB]
+Get:32 http://security.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
+Get:33 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5744 B]
+Get:34 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:35 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64  Packages [1679 kB]
+Get:36 https://download.docker.com/linux/ubuntu noble/stable amd64 Packages [61.3 kB]
+Ign:37 https://linux.mellanox.com/public/repo/doca/3.1.0/ubuntu24.04/x86_64 ./ InRelease
+Get:38 https://dr.nebius.cloud stable/main amd64 Packages [19.0 kB]
+Get:39 https://dr.nebius.cloud noble/main amd64 Packages [21.2 kB]
+Hit:40 https://linux.mellanox.com/public/repo/doca/3.1.0/ubuntu24.04/x86_64 ./ Release
+Fetched 11.8 MB in 1s (10.1 MB/s)
+Reading package lists...
+W: https://download.docker.com/linux/ubuntu/dists/noble/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+pkg-config is already the newest version (1.8.1-2build1).
+build-essential is already the newest version (12.10ubuntu1).
+The following packages were automatically installed and are no longer required:
+  docker-ce-rootless-extras linux-image-6.8.0-117-generic
+  linux-modules-6.8.0-117-generic linux-tools-6.8.0-117
+  linux-tools-6.8.0-117-generic pigz
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  clang-18 icu-devtools libclang-18-dev libclang-common-18-dev libffi-dev
+  libgc1 libicu-dev libncurses-dev libncurses6 libncursesw6 libobjc-13-dev
+  libobjc4 libpfm4 libtinfo6 libxml2 libxml2-dev libz3-4 libz3-dev lld-18 llvm
+  llvm-18 llvm-18-dev llvm-18-linker-tools llvm-18-runtime llvm-18-tools
+  llvm-runtime ncurses-base ncurses-bin ncurses-term
+Suggested packages:
+  clang-18-doc wasi-libc icu-doc ncurses-doc llvm-18-doc
+Recommended packages:
+  libclang-rt-18-dev
+The following NEW packages will be installed:
+  clang clang-18 icu-devtools libclang-18-dev libclang-common-18-dev
+  libclang-dev libffi-dev libgc1 libicu-dev libncurses-dev libobjc-13-dev
+  libobjc4 libpfm4 libxml2-dev libz3-4 libz3-dev lld lld-18 llvm llvm-18
+  llvm-18-dev llvm-18-linker-tools llvm-18-runtime llvm-18-tools llvm-dev
+  llvm-runtime
+The following packages will be upgraded:
+  libncurses6 libncursesw6 libtinfo6 libxml2 ncurses-base ncurses-bin
+  ncurses-term
+7 upgraded, 26 newly installed, 0 to remove and 99 not upgraded.
+Need to get 125 MB of archives.
+After this operation, 855 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 ncurses-bin amd64 6.4+20240113-1ubuntu2.1 [188 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 ncurses-base all 6.4+20240113-1ubuntu2.1 [25.7 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 ncurses-term all 6.4+20240113-1ubuntu2.1 [275 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libncursesw6 amd64 6.4+20240113-1ubuntu2.1 [148 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libncurses6 amd64 6.4+20240113-1ubuntu2.1 [112 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libtinfo6 amd64 6.4+20240113-1ubuntu2.1 [108 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2 amd64 2.9.14+dfsg-1.3ubuntu3.8 [764 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble/main amd64 libgc1 amd64 1:8.2.6-1build1 [90.3 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libobjc4 amd64 14.2.0-4ubuntu2~24.04.1 [47.1 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libobjc-13-dev amd64 13.3.0-6ubuntu2~24.04.1 [194 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libclang-common-18-dev amd64 1:18.1.3-1ubuntu1 [736 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 llvm-18-linker-tools amd64 1:18.1.3-1ubuntu1 [1314 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 clang-18 amd64 1:18.1.3-1ubuntu1 [80.0 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble/universe amd64 clang amd64 1:18.0-59~exp2 [5846 B]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 icu-devtools amd64 74.2-1ubuntu3.1 [212 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libclang-18-dev amd64 1:18.1.3-1ubuntu1 [28.8 MB]
+Get:17 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-dev amd64 1:18.0-59~exp2 [5424 B]
+Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libicu-dev amd64 74.2-1ubuntu3.1 [11.9 MB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libncurses-dev amd64 6.4+20240113-1ubuntu2.1 [384 kB]
+Get:20 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2-dev amd64 2.9.14+dfsg-1.3ubuntu3.8 [782 kB]
+Get:21 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 lld-18 amd64 1:18.1.3-1ubuntu1 [1372 kB]
+Get:22 http://archive.ubuntu.com/ubuntu noble/universe amd64 lld amd64 1:18.0-59~exp2 [5494 B]
+Get:23 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 llvm-18-runtime amd64 1:18.1.3-1ubuntu1 [538 kB]
+Get:24 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-runtime amd64 1:18.0-59~exp2 [5496 B]
+Get:25 http://archive.ubuntu.com/ubuntu noble/universe amd64 libpfm4 amd64 4.13.0+git32-g0d4ed0e-1 [414 kB]
+Get:26 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 llvm-18 amd64 1:18.1.3-1ubuntu1 [25.3 MB]
+Get:27 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm amd64 1:18.0-59~exp2 [4146 B]
+Get:28 http://archive.ubuntu.com/ubuntu noble/main amd64 libffi-dev amd64 3.4.6-1build1 [62.8 kB]
+Get:29 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 llvm-18-tools amd64 1:18.1.3-1ubuntu1 [534 kB]
+Get:30 http://archive.ubuntu.com/ubuntu noble/universe amd64 libz3-4 amd64 4.8.12-3.1build1 [5836 kB]
+Get:31 http://archive.ubuntu.com/ubuntu noble/universe amd64 libz3-dev amd64 4.8.12-3.1build1 [72.2 kB]
+Get:32 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 llvm-18-dev amd64 1:18.1.3-1ubuntu1 [45.1 MB]
+Get:33 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-dev amd64 1:18.0-59~exp2 [1928 B]
+Fetched 125 MB in 3s (40.6 MB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 166785 files and directories currently installed.)
+Preparing to unpack .../ncurses-bin_6.4+20240113-1ubuntu2.1_amd64.deb ...
+Unpacking ncurses-bin (6.4+20240113-1ubuntu2.1) over (6.4+20240113-1ubuntu2) ...
+Setting up ncurses-bin (6.4+20240113-1ubuntu2.1) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 166785 files and directories currently installed.)
+Preparing to unpack .../ncurses-base_6.4+20240113-1ubuntu2.1_all.deb ...
+Unpacking ncurses-base (6.4+20240113-1ubuntu2.1) over (6.4+20240113-1ubuntu2) ...
+Setting up ncurses-base (6.4+20240113-1ubuntu2.1) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 166785 files and directories currently installed.)
+Preparing to unpack .../ncurses-term_6.4+20240113-1ubuntu2.1_all.deb ...
+Unpacking ncurses-term (6.4+20240113-1ubuntu2.1) over (6.4+20240113-1ubuntu2) ...
+Preparing to unpack .../libncursesw6_6.4+20240113-1ubuntu2.1_amd64.deb ...
+Unpacking libncursesw6:amd64 (6.4+20240113-1ubuntu2.1) over (6.4+20240113-1ubuntu2) ...
+Preparing to unpack .../libncurses6_6.4+20240113-1ubuntu2.1_amd64.deb ...
+Unpacking libncurses6:amd64 (6.4+20240113-1ubuntu2.1) over (6.4+20240113-1ubuntu2) ...
+Preparing to unpack .../libtinfo6_6.4+20240113-1ubuntu2.1_amd64.deb ...
+Unpacking libtinfo6:amd64 (6.4+20240113-1ubuntu2.1) over (6.4+20240113-1ubuntu2) ...
+Setting up libtinfo6:amd64 (6.4+20240113-1ubuntu2.1) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 166785 files and directories currently installed.)
+Preparing to unpack .../00-libxml2_2.9.14+dfsg-1.3ubuntu3.8_amd64.deb ...
+Unpacking libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.8) over (2.9.14+dfsg-1.3ubuntu3.7) ...
+Selecting previously unselected package libgc1:amd64.
+Preparing to unpack .../01-libgc1_1%3a8.2.6-1build1_amd64.deb ...
+Unpacking libgc1:amd64 (1:8.2.6-1build1) ...
+Selecting previously unselected package libobjc4:amd64.
+Preparing to unpack .../02-libobjc4_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libobjc4:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libobjc-13-dev:amd64.
+Preparing to unpack .../03-libobjc-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking libobjc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package libclang-common-18-dev:amd64.
+Preparing to unpack .../04-libclang-common-18-dev_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking libclang-common-18-dev:amd64 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package llvm-18-linker-tools.
+Preparing to unpack .../05-llvm-18-linker-tools_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking llvm-18-linker-tools (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package clang-18.
+Preparing to unpack .../06-clang-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking clang-18 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package clang.
+Preparing to unpack .../07-clang_1%3a18.0-59~exp2_amd64.deb ...
+Unpacking clang (1:18.0-59~exp2) ...
+Selecting previously unselected package icu-devtools.
+Preparing to unpack .../08-icu-devtools_74.2-1ubuntu3.1_amd64.deb ...
+Unpacking icu-devtools (74.2-1ubuntu3.1) ...
+Selecting previously unselected package libclang-18-dev.
+Preparing to unpack .../09-libclang-18-dev_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking libclang-18-dev (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package libclang-dev.
+Preparing to unpack .../10-libclang-dev_1%3a18.0-59~exp2_amd64.deb ...
+Unpacking libclang-dev (1:18.0-59~exp2) ...
+Selecting previously unselected package libicu-dev:amd64.
+Preparing to unpack .../11-libicu-dev_74.2-1ubuntu3.1_amd64.deb ...
+Unpacking libicu-dev:amd64 (74.2-1ubuntu3.1) ...
+Selecting previously unselected package libncurses-dev:amd64.
+Preparing to unpack .../12-libncurses-dev_6.4+20240113-1ubuntu2.1_amd64.deb ...
+Unpacking libncurses-dev:amd64 (6.4+20240113-1ubuntu2.1) ...
+Selecting previously unselected package libxml2-dev:amd64.
+Preparing to unpack .../13-libxml2-dev_2.9.14+dfsg-1.3ubuntu3.8_amd64.deb ...
+Unpacking libxml2-dev:amd64 (2.9.14+dfsg-1.3ubuntu3.8) ...
+Selecting previously unselected package lld-18.
+Preparing to unpack .../14-lld-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking lld-18 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package lld:amd64.
+Preparing to unpack .../15-lld_1%3a18.0-59~exp2_amd64.deb ...
+Unpacking lld:amd64 (1:18.0-59~exp2) ...
+Selecting previously unselected package llvm-18-runtime.
+Preparing to unpack .../16-llvm-18-runtime_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking llvm-18-runtime (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package llvm-runtime:amd64.
+Preparing to unpack .../17-llvm-runtime_1%3a18.0-59~exp2_amd64.deb ...
+Unpacking llvm-runtime:amd64 (1:18.0-59~exp2) ...
+Selecting previously unselected package libpfm4:amd64.
+Preparing to unpack .../18-libpfm4_4.13.0+git32-g0d4ed0e-1_amd64.deb ...
+Unpacking libpfm4:amd64 (4.13.0+git32-g0d4ed0e-1) ...
+Selecting previously unselected package llvm-18.
+Preparing to unpack .../19-llvm-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking llvm-18 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package llvm.
+Preparing to unpack .../20-llvm_1%3a18.0-59~exp2_amd64.deb ...
+Unpacking llvm (1:18.0-59~exp2) ...
+Selecting previously unselected package libffi-dev:amd64.
+Preparing to unpack .../21-libffi-dev_3.4.6-1build1_amd64.deb ...
+Unpacking libffi-dev:amd64 (3.4.6-1build1) ...
+Selecting previously unselected package llvm-18-tools.
+Preparing to unpack .../22-llvm-18-tools_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking llvm-18-tools (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package libz3-4:amd64.
+Preparing to unpack .../23-libz3-4_4.8.12-3.1build1_amd64.deb ...
+Unpacking libz3-4:amd64 (4.8.12-3.1build1) ...
+Selecting previously unselected package libz3-dev:amd64.
+Preparing to unpack .../24-libz3-dev_4.8.12-3.1build1_amd64.deb ...
+Unpacking libz3-dev:amd64 (4.8.12-3.1build1) ...
+Selecting previously unselected package llvm-18-dev.
+Preparing to unpack .../25-llvm-18-dev_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking llvm-18-dev (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package llvm-dev.
+Preparing to unpack .../26-llvm-dev_1%3a18.0-59~exp2_amd64.deb ...
+Unpacking llvm-dev (1:18.0-59~exp2) ...
+Setting up llvm-18-tools (1:18.1.3-1ubuntu1) ...
+Setting up libffi-dev:amd64 (3.4.6-1build1) ...
+Setting up libz3-4:amd64 (4.8.12-3.1build1) ...
+Setting up libpfm4:amd64 (4.13.0+git32-g0d4ed0e-1) ...
+Setting up libncurses6:amd64 (6.4+20240113-1ubuntu2.1) ...
+Setting up icu-devtools (74.2-1ubuntu3.1) ...
+Setting up libclang-common-18-dev:amd64 (1:18.1.3-1ubuntu1) ...
+Setting up libncursesw6:amd64 (6.4+20240113-1ubuntu2.1) ...
+Setting up libgc1:amd64 (1:8.2.6-1build1) ...
+Setting up llvm-18-linker-tools (1:18.1.3-1ubuntu1) ...
+Setting up llvm-18-runtime (1:18.1.3-1ubuntu1) ...
+Setting up libicu-dev:amd64 (74.2-1ubuntu3.1) ...
+Setting up libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.8) ...
+Setting up lld-18 (1:18.1.3-1ubuntu1) ...
+Setting up ncurses-term (6.4+20240113-1ubuntu2.1) ...
+Setting up libz3-dev:amd64 (4.8.12-3.1build1) ...
+Setting up libncurses-dev:amd64 (6.4+20240113-1ubuntu2.1) ...
+Setting up lld:amd64 (1:18.0-59~exp2) ...
+Setting up libobjc4:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libxml2-dev:amd64 (2.9.14+dfsg-1.3ubuntu3.8) ...
+Setting up llvm-runtime:amd64 (1:18.0-59~exp2) ...
+Setting up llvm-18 (1:18.1.3-1ubuntu1) ...
+Setting up libobjc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up llvm-18-dev (1:18.1.3-1ubuntu1) ...
+Setting up clang-18 (1:18.1.3-1ubuntu1) ...
+Setting up libclang-18-dev (1:18.1.3-1ubuntu1) ...
+Setting up clang (1:18.0-59~exp2) ...
+Setting up llvm (1:18.0-59~exp2) ...
+Setting up llvm-dev (1:18.0-59~exp2) ...
+Setting up libclang-dev (1:18.0-59~exp2) ...
+Processing triggers for systemd (255.4-1ubuntu8.15) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for install-info (7.1-3build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+
+Running kernel seems to be up-to-date.
+
+Restarting services...
+ systemctl restart atop.service packagekit.service
+
+No containers need to be restarted.
+
+User sessions running outdated binaries:
+ ubuntu @ session #8: bash[2365,2373], timeout[2363]
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+[1;33m[job 22:45:55][0m installing pyarrow for run.py
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following packages were automatically installed and are no longer required:
+  docker-ce-rootless-extras linux-image-6.8.0-117-generic
+  linux-modules-6.8.0-117-generic linux-tools-6.8.0-117
+  linux-tools-6.8.0-117-generic pigz
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  javascript-common libexpat1-dev libjs-jquery libjs-sphinxdoc
+  libjs-underscore libpython3-dev libpython3.12-dev libpython3.12-minimal
+  libpython3.12-stdlib libpython3.12t64 python3-dev python3-wheel python3.12
+  python3.12-dev python3.12-minimal python3.12-venv zlib1g-dev
+Suggested packages:
+  apache2 | lighttpd | httpd python3.12-doc binfmt-support
+The following NEW packages will be installed:
+  javascript-common libexpat1-dev libjs-jquery libjs-sphinxdoc
+  libjs-underscore libpython3-dev libpython3.12-dev python3-dev python3-pip
+  python3-wheel python3.12-dev zlib1g-dev
+The following packages will be upgraded:
+  libpython3.12-minimal libpython3.12-stdlib libpython3.12t64 python3.12
+  python3.12-minimal python3.12-venv
+6 upgraded, 12 newly installed, 0 to remove and 93 not upgraded.
+Need to get 17.5 MB of archives.
+After this operation, 41.3 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3.12-venv amd64 3.12.3-1ubuntu0.15 [5674 B]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12t64 amd64 3.12.3-1ubuntu0.15 [2339 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.15 [651 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-stdlib amd64 3.12.3-1ubuntu0.15 [2071 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.15 [2334 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-minimal amd64 3.12.3-1ubuntu0.15 [839 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/main amd64 javascript-common all 11+nmu1 [5936 B]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libexpat1-dev amd64 2.6.1-2ubuntu0.4 [140 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/main amd64 libjs-jquery all 3.6.1+dfsg+~3.5.14-1 [328 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble/main amd64 libjs-underscore all 1.13.4~dfsg+~1.11.4-3 [118 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/main amd64 libjs-sphinxdoc all 7.2.6-6 [149 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 zlib1g-dev amd64 1:1.3.dfsg-3.1ubuntu2.1 [894 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-dev amd64 3.12.3-1ubuntu0.15 [5683 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3-dev amd64 3.12.3-0ubuntu2.1 [10.3 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-dev amd64 3.12.3-1ubuntu0.15 [498 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-dev amd64 3.12.3-0ubuntu2.1 [26.7 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble/universe amd64 python3-wheel all 0.42.0-2 [53.1 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3-pip all 24.0+dfsg-1ubuntu1.3 [1320 kB]
+Fetched 17.5 MB in 1s (15.9 MB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 172280 files and directories currently installed.)
+Preparing to unpack .../00-python3.12-venv_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking python3.12-venv (3.12.3-1ubuntu0.15) over (3.12.3-1ubuntu0.13) ...
+Preparing to unpack .../01-libpython3.12t64_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking libpython3.12t64:amd64 (3.12.3-1ubuntu0.15) over (3.12.3-1ubuntu0.13) ...
+Preparing to unpack .../02-python3.12_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking python3.12 (3.12.3-1ubuntu0.15) over (3.12.3-1ubuntu0.13) ...
+Preparing to unpack .../03-libpython3.12-stdlib_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.15) over (3.12.3-1ubuntu0.13) ...
+Preparing to unpack .../04-python3.12-minimal_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking python3.12-minimal (3.12.3-1ubuntu0.15) over (3.12.3-1ubuntu0.13) ...
+Preparing to unpack .../05-libpython3.12-minimal_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.15) over (3.12.3-1ubuntu0.13) ...
+Selecting previously unselected package javascript-common.
+Preparing to unpack .../06-javascript-common_11+nmu1_all.deb ...
+Unpacking javascript-common (11+nmu1) ...
+Selecting previously unselected package libexpat1-dev:amd64.
+Preparing to unpack .../07-libexpat1-dev_2.6.1-2ubuntu0.4_amd64.deb ...
+Unpacking libexpat1-dev:amd64 (2.6.1-2ubuntu0.4) ...
+Selecting previously unselected package libjs-jquery.
+Preparing to unpack .../08-libjs-jquery_3.6.1+dfsg+~3.5.14-1_all.deb ...
+Unpacking libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Selecting previously unselected package libjs-underscore.
+Preparing to unpack .../09-libjs-underscore_1.13.4~dfsg+~1.11.4-3_all.deb ...
+Unpacking libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Selecting previously unselected package libjs-sphinxdoc.
+Preparing to unpack .../10-libjs-sphinxdoc_7.2.6-6_all.deb ...
+Unpacking libjs-sphinxdoc (7.2.6-6) ...
+Selecting previously unselected package zlib1g-dev:amd64.
+Preparing to unpack .../11-zlib1g-dev_1%3a1.3.dfsg-3.1ubuntu2.1_amd64.deb ...
+Unpacking zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.1) ...
+Selecting previously unselected package libpython3.12-dev:amd64.
+Preparing to unpack .../12-libpython3.12-dev_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking libpython3.12-dev:amd64 (3.12.3-1ubuntu0.15) ...
+Selecting previously unselected package libpython3-dev:amd64.
+Preparing to unpack .../13-libpython3-dev_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking libpython3-dev:amd64 (3.12.3-0ubuntu2.1) ...
+Selecting previously unselected package python3.12-dev.
+Preparing to unpack .../14-python3.12-dev_3.12.3-1ubuntu0.15_amd64.deb ...
+Unpacking python3.12-dev (3.12.3-1ubuntu0.15) ...
+Selecting previously unselected package python3-dev.
+Preparing to unpack .../15-python3-dev_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking python3-dev (3.12.3-0ubuntu2.1) ...
+Selecting previously unselected package python3-wheel.
+Preparing to unpack .../16-python3-wheel_0.42.0-2_all.deb ...
+Unpacking python3-wheel (0.42.0-2) ...
+Selecting previously unselected package python3-pip.
+Preparing to unpack .../17-python3-pip_24.0+dfsg-1ubuntu1.3_all.deb ...
+Unpacking python3-pip (24.0+dfsg-1ubuntu1.3) ...
+Setting up javascript-common (11+nmu1) ...
+Setting up libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.15) ...
+Setting up python3-wheel (0.42.0-2) ...
+Setting up libexpat1-dev:amd64 (2.6.1-2ubuntu0.4) ...
+Setting up python3-pip (24.0+dfsg-1ubuntu1.3) ...
+Setting up zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.1) ...
+Setting up libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Setting up libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Setting up python3.12-minimal (3.12.3-1ubuntu0.15) ...
+Setting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.15) ...
+Setting up python3.12 (3.12.3-1ubuntu0.15) ...
+Setting up libpython3.12t64:amd64 (3.12.3-1ubuntu0.15) ...
+Setting up libjs-sphinxdoc (7.2.6-6) ...
+Setting up python3.12-venv (3.12.3-1ubuntu0.15) ...
+Setting up libpython3.12-dev:amd64 (3.12.3-1ubuntu0.15) ...
+Setting up python3.12-dev (3.12.3-1ubuntu0.15) ...
+Setting up libpython3-dev:amd64 (3.12.3-0ubuntu2.1) ...
+Setting up python3-dev (3.12.3-0ubuntu2.1) ...
+Processing triggers for systemd (255.4-1ubuntu8.15) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+
+[1;33m[job 22:46:09][0m pyarrow OK
+
+[1;33m[job 22:46:16][0m toolchain: info: syncing channel updates for 1.91.0-x86_64-unknown-linux-gnu | Build cuda_13.0.r13.0/compiler.36424714_0 | python3 Python 3.12.3
+
+[1;33m[job 22:46:16][0m building onpair-chunk-bench (release, --features cuda) — long pole; compiles ~60 CUDA kernels via -arch=native
+    Updating crates.io index
+    Updating git repository `https://github.com/clflushopt/tpchgen-rs.git`
+    Updating git repository `https://github.com/vortex-data/cargo-public-api.git`
+ Downloading crates ...
+  Downloaded anstyle-query v1.1.5
+  Downloaded alloc-stdlib v0.2.2
+  Downloaded anstyle-parse v1.0.0
+  Downloaded anyhow v1.0.102
+  Downloaded form_urlencoded v1.2.2
+  Downloaded fnv v1.0.7
+  Downloaded lru-slab v0.1.2
+  Downloaded futures-channel v0.3.32
+  Downloaded noodles-vcf v0.88.0
+  Downloaded hyper-rustls v0.27.9
+  Downloaded lazy_static v1.5.0
+  Downloaded futures-macro v0.3.32
+  Downloaded is_terminal_polyfill v1.70.2
+  Downloaded libloading v0.8.9
+  Downloaded icu_provider v2.2.0
+  Downloaded httparse v1.10.1
+  Downloaded multiversion-macros v0.8.0
+  Downloaded cpufeatures v0.3.0
+  Downloaded atoi v2.0.0
+  Downloaded noodles-core v0.20.0
+  Downloaded parking v2.2.1
+  Downloaded nougat-proc_macros v0.2.4
+  Downloaded num-complex v0.4.6
+  Downloaded prost-derive v0.12.6
+  Downloaded rand_chacha v0.3.1
+  Downloaded same-file v1.0.6
+  Downloaded rand_core v0.9.5
+  Downloaded rand_core v0.10.1
+  Downloaded rand v0.8.6
+  Downloaded rand v0.10.1
+  Downloaded untrusted v0.9.0
+  Downloaded utf8_iter v1.0.4
+  Downloaded zigzag v0.1.0
+  Downloaded zstd-safe v7.2.4
+  Downloaded yoke v0.8.2
+  Downloaded unicode-segmentation v1.13.2
+  Downloaded url v2.5.8
+  Downloaded version_check v0.9.5
+  Downloaded zmij v1.0.21
+  Downloaded tracing-attributes v0.1.31
+  Downloaded uuid v1.23.1
+  Downloaded unicode-width v0.2.2
+  Downloaded tower v0.5.3
+  Downloaded roaring v0.11.4
+  Downloaded tracing-perfetto v0.1.5
+  Downloaded zerotrie v0.2.4
+  Downloaded zerovec v0.11.6
+  Downloaded arrow-array v58.2.0
+  Downloaded tracing-subscriber v0.3.23
+  Downloaded syn v1.0.109
+  Downloaded bstr v1.12.1
+  Downloaded zlib-rs v0.6.3
+  Downloaded syn v2.0.117
+  Downloaded smol v2.0.2
+  Downloaded zerocopy v0.8.48
+  Downloaded rustls v0.23.40
+  Downloaded regex-syntax v0.8.10
+  Downloaded rustix v1.1.4
+  Downloaded parquet v58.2.0
+  Downloaded tracing v0.1.44
+  Downloaded tabled v0.20.0
+  Downloaded sysinfo v0.38.4
+  Downloaded zerocopy-derive v0.8.48
+  Downloaded regex-automata v0.4.14
+  Downloaded tokio-util v0.7.18
+  Downloaded cudarc v0.19.4
+  Downloaded serde_json v1.0.149
+  Downloaded brotli v8.0.2
+  Downloaded reqwest v0.13.3
+  Downloaded libc v0.2.186
+  Downloaded jiff v0.2.24
+  Downloaded bitvec v1.0.1
+  Downloaded bindgen v0.72.1
+  Downloaded tower-http v0.6.10
+  Downloaded zstd-sys v2.0.16+zstd.1.5.7
+  Downloaded portable-atomic v1.13.1
+  Downloaded tokio v1.52.3
+  Downloaded chrono v0.4.44
+  Downloaded liblzma-sys v0.4.6
+  Downloaded aws-lc-rs v1.16.3
+  Downloaded regex v1.12.3
+  Downloaded brotli-decompressor v5.0.0
+  Downloaded tinyvec v1.11.0
+  Downloaded tar v0.4.45
+  Downloaded serde v1.0.228
+  Downloaded rustls-webpki v0.103.13
+  Downloaded encoding_rs v0.8.35
+  Downloaded rand_distr v0.5.1
+  Downloaded tracing-core v0.1.36
+  Downloaded socket2 v0.6.3
+  Downloaded snap v1.1.1
+  Downloaded sharded-slab v0.1.7
+  Downloaded ryu v1.0.23
+  Downloaded tokio-stream v0.1.18
+  Downloaded tokio-rustls v0.26.4
+  Downloaded tinystr v0.8.3
+  Downloaded ring v0.17.14
+  Downloaded tiny-keccak v2.0.2
+  Downloaded thrift v0.17.0
+  Downloaded target-features v0.1.6
+  Downloaded smallvec v1.15.1
+  Downloaded serde_derive v1.0.228
+  Downloaded serde_core v1.0.228
+  Downloaded semver v1.0.28
+  Downloaded rustls-platform-verifier v0.7.0
+  Downloaded rustls-pki-types v1.14.1
+  Downloaded rustls-native-certs v0.8.3
+  Downloaded arrow-ipc v58.2.0
+  Downloaded walkdir v2.5.0
+  Downloaded utf8parse v0.2.2
+  Downloaded tracing-log v0.2.0
+  Downloaded thread_local v1.1.9
+  Downloaded thiserror-impl v2.0.18
+  Downloaded thiserror v2.0.18
+  Downloaded testing_table v0.3.0
+  Downloaded target-lexicon v0.13.5
+  Downloaded synstructure v0.13.2
+  Downloaded linux-raw-sys v0.12.1
+  Downloaded static_assertions v1.1.0
+  Downloaded slab v0.4.12
+  Downloaded sketches-ddsketch v0.4.0
+  Downloaded simdutf8 v0.1.5
+  Downloaded signal-hook-registry v1.4.8
+  Downloaded shlex v1.3.0
+  Downloaded arrow-cast v58.2.0
+  Downloaded arrow v58.2.0
+  Downloaded tower-service v0.3.3
+  Downloaded tower-layer v0.3.3
+  Downloaded tokio-macros v2.7.0
+  Downloaded tinyvec_macros v0.1.1
+  Downloaded thread-id v4.2.2
+  Downloaded tap v1.0.1
+  Downloaded tagptr v0.2.0
+  Downloaded sync_wrapper v1.0.2
+  Downloaded subtle v2.6.1
+  Downloaded strsim v0.11.1
+  Downloaded stable_deref_trait v1.2.1
+  Downloaded rustversion v1.0.22
+  Downloaded libmimalloc-sys v0.1.47
+  Downloaded termtree v1.0.0
+  Downloaded seq-macro v0.3.6
+  Downloaded rand_xoshiro v0.6.0
+  Downloaded xattr v1.6.1
+  Downloaded wyz v0.5.1
+  Downloaded writeable v0.6.3
+  Downloaded zstd v0.13.3
+  Downloaded zerovec-derive v0.11.3
+  Downloaded zeroize v1.8.2
+  Downloaded zerofrom-derive v0.1.7
+  Downloaded yoke-derive v0.8.2
+  Downloaded want v0.3.1
+  Downloaded rustc_version v0.4.1
+  Downloaded zerofrom v0.1.7
+  Downloaded unicode-ident v1.0.24
+  Downloaded twox-hash v2.1.2
+  Downloaded unit-prefix v0.5.2
+  Downloaded try-lock v0.2.5
+  Downloaded tracing-serde v0.2.0
+  Downloaded quinn-proto v0.11.14
+  Downloaded object_store v0.13.2
+  Downloaded moka v0.12.15
+  Downloaded scopeguard v1.2.0
+  Downloaded rustc-hash v2.1.2
+  Downloaded libm v0.2.16
+  Downloaded lexical-parse-float v1.0.6
+  Downloaded itertools v0.14.0
+  Downloaded itertools v0.13.0
+  Downloaded icu_properties_data v2.2.0
+  Downloaded h2 v0.4.14
+  Downloaded futures-util v0.3.32
+  Downloaded rand v0.9.4
+  Downloaded pco v1.0.2
+  Downloaded nom v7.1.3
+  Downloaded mio v1.2.0
+  Downloaded lexical-write-float v1.0.6
+  Downloaded lexical-util v1.0.7
+  Downloaded jiff-static v0.2.24
+  Downloaded itertools v0.12.1
+  Downloaded indexmap v2.14.0
+  Downloaded hyper v1.9.0
+  Downloaded hashbrown v0.17.1
+  Downloaded clap_builder v4.6.0
+  Downloaded quinn v0.11.9
+  Downloaded prettyplease v0.2.37
+  Downloaded num-bigint v0.4.6
+  Downloaded minimal-lexical v0.2.1
+  Downloaded memchr v2.8.0
+  Downloaded lexical-write-integer v1.0.6
+  Downloaded lasso v0.7.3
+  Downloaded indicatif v0.18.4
+  Downloaded idna v1.1.0
+  Downloaded icu_normalizer_data v2.2.0
+  Downloaded icu_normalizer v2.2.0
+  Downloaded icu_locale_core v2.2.0
+  Downloaded icu_collections v2.2.0
+  Downloaded hashbrown v0.14.5
+  Downloaded cc v1.2.62
+  Downloaded rand_core v0.6.4
+  Downloaded prost-types v0.14.3
+  Downloaded proc-macro2 v1.0.106
+  Downloaded polling v3.11.0
+  Downloaded num-traits v0.2.19
+  Downloaded log v0.4.29
+  Downloaded libbz2-rs-sys v0.2.3
+  Downloaded icu_properties v2.2.0
+  Downloaded hyper-util v0.1.20
+  Downloaded getrandom v0.4.2
+  Downloaded getrandom v0.3.4
+  Downloaded quinn-udp v0.5.14
+  Downloaded ppv-lite86 v0.2.21
+  Downloaded parking_lot_core v0.9.12
+  Downloaded parking_lot v0.12.5
+  Downloaded oneshot v0.2.1
+  Downloaded lz4_flex v0.13.1
+  Downloaded lock_api v0.4.14
+  Downloaded litemap v0.8.2
+  Downloaded liblzma v0.4.6
+  Downloaded libloading v0.9.0
+  Downloaded lexical-parse-integer v1.0.6
+  Downloaded lending-iterator v0.1.7
+  Downloaded kanal v0.1.1
+  Downloaded jobserver v0.1.34
+  Downloaded humantime v2.3.0
+  Downloaded http v1.4.0
+  Downloaded glob v0.3.3
+  Downloaded crossbeam-channel v0.5.15
+  Downloaded rand_chacha v0.9.0
+  Downloaded radium v0.7.0
+  Downloaded quote v1.0.45
+  Downloaded prost-derive v0.14.3
+  Downloaded percent-encoding v2.3.2
+  Downloaded paste v1.0.15
+  Downloaded num_enum_derive v0.7.6
+  Downloaded num_enum v0.7.6
+  Downloaded macro_rules_attribute v0.1.3
+  Downloaded lexical-core v1.0.6
+  Downloaded ipnet v2.12.0
+  Downloaded iana-time-zone v0.1.65
+  Downloaded http-body-util v0.1.3
+  Downloaded getrandom v0.2.17
+  Downloaded futures-io v0.3.32
+  Downloaded bytes v1.11.1
+  Downloaded base64 v0.22.1
+  Downloaded async-lock v3.4.2
+  Downloaded arrow-data v58.2.0
+  Downloaded prost v0.14.3
+  Downloaded potential_utf v0.1.5
+  Downloaded polonius-the-crab v0.2.1
+  Downloaded pkg-config v0.3.33
+  Downloaded const_for v0.1.5
+  Downloaded aws-lc-sys v0.40.0
+  Downloaded fastlanes v0.5.0
+  Downloaded piper v0.2.5
+  Downloaded pin-project-lite v0.2.17
+  Downloaded papergrid v0.17.0
+  Downloaded openssl-probe v0.2.1
+  Downloaded once_cell v1.21.4
+  Downloaded noodles-csi v0.56.0
+  Downloaded never-say-never v6.6.666
+  Downloaded multiversion v0.8.0
+  Downloaded mime v0.3.17
+  Downloaded mimalloc v0.1.50
+  Downloaded matchers v0.2.0
+  Downloaded macro_rules_attribute-proc_macro v0.1.3
+  Downloaded lending-iterator-proc_macros v0.1.7
+  Downloaded integer-encoding v3.0.4
+  Downloaded idna_adapter v1.2.2
+  Downloaded crossbeam-epoch v0.9.18
+  Downloaded console v0.16.3
+  Downloaded comfy-table v7.1.4
+  Downloaded clap_derive v4.6.1
+  Downloaded clang-sys v1.8.1
+  Downloaded chacha20 v0.10.0
+  Downloaded bzip2 v0.6.1
+  Downloaded bytemuck v1.25.0
+  Downloaded bitflags v2.11.1
+  Downloaded async-task v4.7.1
+  Downloaded async-signal v0.2.14
+  Downloaded async-io v2.6.0
+  Downloaded arrow-schema v58.2.0
+  Downloaded arrow-arith v58.2.0
+  Downloaded prost v0.12.6
+  Downloaded ordered-float v2.10.1
+  Downloaded num-integer v0.1.46
+  Downloaded noodles-tabix v0.62.0
+  Downloaded noodles-bgzf v0.47.0
+  Downloaded event-listener v5.4.1
+  Downloaded errno v0.3.14
+  Downloaded displaydoc v0.2.5
+  Downloaded custom-labels v0.4.6
+  Downloaded crossbeam-utils v0.8.21
+  Downloaded const-random v0.1.18
+  Downloaded concurrent-queue v2.5.0
+  Downloaded byteorder v1.5.0
+  Downloaded bit-vec v0.9.1
+  Downloaded async-process v2.5.0
+  Downloaded async-fs v2.2.0
+  Downloaded async-channel v2.5.0
+  Downloaded nu-ansi-term v0.50.3
+  Downloaded nougat v0.2.4
+  Downloaded fastrand v2.4.1
+  Downloaded either v1.15.0
+  Downloaded dashmap v6.1.0
+  Downloaded cexpr v0.6.0
+  Downloaded autocfg v1.5.0
+  Downloaded async-net v2.0.0
+  Downloaded async-executor v1.14.0
+  Downloaded cmake v0.1.58
+  Downloaded clap_lex v1.1.0
+  Downloaded bytecount v0.6.9
+  Downloaded arrow-string v58.2.0
+  Downloaded arrow-ord v58.2.0
+  Downloaded itoa v1.0.18
+  Downloaded crunchy v0.2.4
+  Downloaded extension-traits v1.0.1
+  Downloaded ext-trait-proc_macros v1.0.1
+  Downloaded ext-trait v1.0.1
+  Downloaded event-listener-strategy v0.5.4
+  Downloaded enum-iterator-derive v1.5.0
+  Downloaded enum-iterator v2.3.0
+  Downloaded dunce v1.0.5
+  Downloaded dtype_dispatch v0.2.1
+  Downloaded const-random-macro v0.1.16
+  Downloaded cfg-if v1.0.4
+  Downloaded better_io v0.2.0
+  Downloaded async-stream v0.3.6
+  Downloaded colorchoice v1.0.5
+  Downloaded inventory v0.3.24
+  Downloaded heck v0.5.0
+  Downloaded half v2.7.1
+  Downloaded http-body v1.0.1
+  Downloaded get_dir v0.5.0
+  Downloaded futures-sink v0.3.32
+  Downloaded futures-lite v2.6.1
+  Downloaded futures-core v0.3.32
+  Downloaded arrow-select v58.2.0
+  Downloaded arrow-row v58.2.0
+  Downloaded arrow-buffer v58.2.0
+  Downloaded humansize v2.1.3
+  Downloaded futures-task v0.3.32
+  Downloaded flate2 v1.1.9
+  Downloaded equivalent v1.0.2
+  Downloaded clap v4.6.1
+  Downloaded cfg_aliases v0.2.1
+  Downloaded blocking v1.6.2
+  Downloaded async-stream-impl v0.3.6
+  Downloaded arrayref v0.3.9
+  Downloaded futures-executor v0.3.32
+  Downloaded futures v0.3.32
+  Downloaded fs_extra v1.3.0
+  Downloaded flatbuffers v25.12.19
+  Downloaded find-msvc-tools v0.1.9
+  Downloaded filetime v0.2.28
+  Downloaded atomic-waker v1.1.2
+  Downloaded async-trait v0.1.89
+  Downloaded foldhash v0.2.0
+  Downloaded arcref v0.2.0
+  Downloaded funty v2.0.0
+  Downloaded arc-swap v1.9.1
+  Downloaded anstream v1.0.0
+  Downloaded aho-corasick v1.1.4
+  Downloaded allocator-api2 v0.2.21
+  Downloaded ahash v0.8.12
+  Downloaded anstyle v1.0.14
+  Downloaded alloc-no-stdlib v2.0.4
+  Downloaded fsst-rs v0.5.10
+   Compiling libc v0.2.186
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling cfg-if v1.0.4
+   Compiling smallvec v1.15.1
+   Compiling parking_lot_core v0.9.12
+   Compiling autocfg v1.5.0
+   Compiling pin-project-lite v0.2.17
+   Compiling bytes v1.11.1
+   Compiling futures-core v0.3.32
+   Compiling libm v0.2.16
+   Compiling shlex v1.3.0
+   Compiling zerocopy v0.8.48
+   Compiling memchr v2.8.0
+   Compiling find-msvc-tools v0.1.9
+   Compiling getrandom v0.3.4
+   Compiling futures-io v0.3.32
+   Compiling scopeguard v1.2.0
+   Compiling bitflags v2.11.1
+   Compiling slab v0.4.12
+   Compiling either v1.15.0
+   Compiling icu_normalizer_data v2.2.0
+   Compiling allocator-api2 v0.2.21
+   Compiling icu_properties_data v2.2.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling futures-sink v0.3.32
+   Compiling equivalent v1.0.2
+   Compiling lock_api v0.4.14
+   Compiling foldhash v0.2.0
+   Compiling futures-channel v0.3.32
+   Compiling stable_deref_trait v1.2.1
+   Compiling futures-task v0.3.32
+   Compiling iana-time-zone v0.1.65
+   Compiling itoa v1.0.18
+   Compiling version_check v0.9.5
+   Compiling arrow-schema v58.2.0
+   Compiling anyhow v1.0.102
+   Compiling litemap v0.8.2
+   Compiling writeable v0.6.3
+   Compiling utf8_iter v1.0.4
+   Compiling num-traits v0.2.19
+   Compiling parking v2.2.1
+   Compiling percent-encoding v2.3.2
+   Compiling semver v1.0.28
+   Compiling itertools v0.14.0
+   Compiling paste v1.0.15
+   Compiling thiserror v2.0.18
+   Compiling lexical-util v1.0.7
+   Compiling hashbrown v0.17.1
+   Compiling ahash v0.8.12
+   Compiling unicode-width v0.2.2
+   Compiling same-file v1.0.6
+   Compiling regex-syntax v0.8.10
+   Compiling form_urlencoded v1.2.2
+   Compiling aho-corasick v1.1.4
+   Compiling http v1.4.0
+   Compiling walkdir v2.5.0
+   Compiling humantime v2.3.0
+   Compiling rustc_version v0.4.1
+   Compiling base64 v0.22.1
+   Compiling target-features v0.1.6
+   Compiling radium v0.7.0
+   Compiling jiff v0.2.24
+   Compiling rand_core v0.10.1
+   Compiling tap v1.0.1
+   Compiling flatbuffers v25.12.19
+   Compiling lexical-parse-integer v1.0.6
+   Compiling lexical-write-integer v1.0.6
+   Compiling concurrent-queue v2.5.0
+   Compiling getrandom v0.4.2
+   Compiling lexical-parse-float v1.0.6
+   Compiling wyz v0.5.1
+   Compiling simdutf8 v0.1.5
+   Compiling syn v2.0.117
+   Compiling event-listener v5.4.1
+   Compiling funty v2.0.0
+   Compiling lexical-write-float v1.0.6
+   Compiling rustversion v1.0.22
+   Compiling unicode-segmentation v1.13.2
+   Compiling ryu v1.0.23
+   Compiling cudarc v0.19.4
+   Compiling fs_extra v1.3.0
+   Compiling cpufeatures v0.3.0
+   Compiling event-listener-strategy v0.5.4
+   Compiling dunce v1.0.5
+   Compiling async-lock v3.4.2
+   Compiling chacha20 v0.10.0
+   Compiling lexical-core v1.0.6
+   Compiling jobserver v0.1.34
+   Compiling libloading v0.9.0
+   Compiling rustc-hash v2.1.2
+   Compiling errno v0.3.14
+   Compiling mio v1.2.0
+   Compiling socket2 v0.6.3
+   Compiling comfy-table v7.1.4
+   Compiling signal-hook-registry v1.4.8
+   Compiling once_cell v1.21.4
+   Compiling cc v1.2.62
+   Compiling parking_lot v0.12.5
+   Compiling rand_core v0.9.5
+   Compiling bitvec v1.0.1
+   Compiling humansize v2.1.3
+   Compiling arc-swap v1.9.1
+   Compiling inventory v0.3.24
+   Compiling tracing-core v0.1.36
+   Compiling uuid v1.23.1
+   Compiling rand v0.10.1
+   Compiling arcref v0.2.0
+   Compiling static_assertions v1.1.0
+   Compiling termtree v1.0.0
+   Compiling aws-lc-rs v1.16.3
+   Compiling chrono v0.4.44
+   Compiling num-integer v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling atoi v2.0.0
+   Compiling glob v0.3.3
+   Compiling prettyplease v0.2.37
+   Compiling pkg-config v0.3.33
+   Compiling log v0.4.29
+   Compiling minimal-lexical v0.2.1
+   Compiling libloading v0.8.9
+   Compiling num-bigint v0.4.6
+   Compiling bindgen v0.72.1
+   Compiling itertools v0.13.0
+   Compiling regex-automata v0.4.14
+   Compiling nom v7.1.3
+   Compiling clang-sys v1.8.1
+   Compiling cmake v0.1.58
+   Compiling syn v1.0.109
+   Compiling httparse v1.10.1
+   Compiling rustls v0.23.40
+   Compiling atomic-waker v1.1.2
+   Compiling fastrand v2.4.1
+   Compiling seq-macro v0.3.6
+   Compiling futures-lite v2.6.1
+   Compiling rustix v1.1.4
+   Compiling zeroize v1.8.2
+   Compiling tokio v1.52.3
+   Compiling getrandom v0.2.17
+   Compiling linux-raw-sys v0.12.1
+   Compiling aws-lc-sys v0.40.0
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling rand_core v0.6.4
+   Compiling rustls-pki-types v1.14.1
+   Compiling async-io v2.6.0
+   Compiling async-task v4.7.1
+   Compiling macro_rules_attribute-proc_macro v0.1.3
+   Compiling macro_rules_attribute v0.1.3
+   Compiling async-channel v2.5.0
+   Compiling zstd-safe v7.2.4
+   Compiling http-body v1.0.1
+   Compiling untrusted v0.9.0
+   Compiling cexpr v0.6.0
+   Compiling futures-util v0.3.32
+   Compiling tracing v0.1.44
+   Compiling piper v0.2.5
+   Compiling crossbeam-channel v0.5.15
+   Compiling never-say-never v6.6.666
+   Compiling polonius-the-crab v0.2.1
+   Compiling fnv v1.0.7
+   Compiling indexmap v2.14.0
+   Compiling const_for v0.1.5
+   Compiling tower-service v0.3.3
+   Compiling arrayref v0.3.9
+   Compiling try-lock v0.2.5
+   Compiling subtle v2.6.1
+   Compiling blocking v1.6.2
+   Compiling fastlanes v0.5.0
+   Compiling want v0.3.1
+   Compiling vortex-onpair-sys v0.1.0 (/home/ubuntu/work/encodings/onpair-sys)
+   Compiling byteorder v1.5.0
+   Compiling portable-atomic v1.13.1
+   Compiling pco v1.0.2
+   Compiling synstructure v0.13.2
+   Compiling regex v1.12.3
+   Compiling rand_xoshiro v0.6.0
+   Compiling liblzma-sys v0.4.6
+   Compiling sync_wrapper v1.0.2
+   Compiling serde_core v1.0.228
+   Compiling better_io v0.2.0
+   Compiling bit-vec v0.9.1
+   Compiling tower-layer v0.3.3
+   Compiling openssl-probe v0.2.1
+   Compiling ipnet v2.12.0
+   Compiling zlib-rs v0.6.3
+   Compiling dtype_dispatch v0.2.1
+   Compiling rustls-native-certs v0.8.3
+   Compiling async-fs v2.2.0
+   Compiling async-executor v1.14.0
+   Compiling zigzag v0.1.0
+   Compiling fsst-rs v0.5.10
+   Compiling sketches-ddsketch v0.4.0
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.5
+   Compiling zerocopy-derive v0.8.48
+   Compiling tokio-macros v2.7.0
+   Compiling futures-macro v0.3.32
+   Compiling tracing-attributes v0.1.31
+   Compiling prost-derive v0.14.3
+   Compiling thiserror-impl v2.0.18
+   Compiling async-trait v0.1.89
+   Compiling multiversion-macros v0.8.0
+   Compiling enum-iterator-derive v1.5.0
+   Compiling num_enum_derive v0.7.6
+   Compiling vortex-array-macros v0.1.0 (/home/ubuntu/work/vortex-array-macros)
+   Compiling zerofrom v0.1.7
+   Compiling yoke v0.8.2
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling ext-trait-proc_macros v1.0.1
+   Compiling enum-iterator v2.3.0
+   Compiling num_enum v0.7.6
+   Compiling ext-trait v1.0.1
+   Compiling nougat-proc_macros v0.2.4
+   Compiling lending-iterator-proc_macros v0.1.7
+   Compiling tokio-util v0.7.18
+   Compiling extension-traits v1.0.1
+   Compiling tower v0.5.3
+   Compiling prost v0.14.3
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling multiversion v0.8.0
+   Compiling async-stream-impl v0.3.6
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling prost-types v0.14.3
+   Compiling polling v3.11.0
+   Compiling h2 v0.4.14
+   Compiling bytemuck v1.25.0
+   Compiling nougat v0.2.4
+   Compiling lending-iterator v0.1.7
+   Compiling roaring v0.11.4
+   Compiling async-stream v0.3.6
+   Compiling xattr v1.6.1
+   Compiling vortex-metrics v0.1.0 (/home/ubuntu/work/vortex-metrics)
+   Compiling http-body-util v0.1.3
+   Compiling async-signal v0.2.14
+   Compiling async-net v2.0.0
+   Compiling icu_provider v2.2.0
+   Compiling async-process v2.5.0
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling futures-executor v0.3.32
+   Compiling futures v0.3.32
+   Compiling vortex-proto v0.1.0 (/home/ubuntu/work/vortex-proto)
+   Compiling smol v2.0.2
+   Compiling filetime v0.2.28
+   Compiling encoding_rs v0.8.35
+   Compiling crossbeam-epoch v0.9.18
+   Compiling idna_adapter v1.2.2
+   Compiling kanal v0.1.1
+   Compiling idna v1.1.0
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling serde v1.0.228
+   Compiling hyper v1.9.0
+   Compiling url v2.5.8
+   Compiling custom-labels v0.4.6
+   Compiling tagptr v0.2.0
+   Compiling zmij v1.0.21
+   Compiling mime v0.3.17
+   Compiling oneshot v0.2.1
+   Compiling moka v0.12.15
+   Compiling alloc-stdlib v0.2.2
+   Compiling tar v0.4.45
+   Compiling ppv-lite86 v0.2.21
+   Compiling serde_derive v1.0.228
+   Compiling hashbrown v0.14.5
+   Compiling bstr v1.12.1
+   Compiling rand_chacha v0.9.0
+   Compiling tower-http v0.6.10
+   Compiling object_store v0.13.2
+   Compiling serde_json v1.0.149
+   Compiling rand v0.9.4
+   Compiling hyper-util v0.1.20
+   Compiling snap v1.1.1
+   Compiling dashmap v6.1.0
+   Compiling utf8parse v0.2.2
+   Compiling noodles-core v0.20.0
+   Compiling brotli-decompressor v5.0.0
+   Compiling anstyle-parse v1.0.0
+   Compiling noodles-bgzf v0.47.0
+   Compiling rand_distr v0.5.1
+   Compiling lasso v0.7.3
+   Compiling vortex-cub v0.1.0 (/home/ubuntu/work/vortex-cuda/cub)
+   Compiling vortex-cuda-macros v0.1.0 (/home/ubuntu/work/vortex-cuda/macros)
+   Compiling libmimalloc-sys v0.1.47
+   Compiling half v2.7.1
+   Compiling ordered-float v2.10.1
+   Compiling itertools v0.12.1
+   Compiling anstyle-query v1.1.5
+   Compiling lazy_static v1.5.0
+   Compiling anstyle v1.0.14
+   Compiling arrow-buffer v58.2.0
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling colorchoice v1.0.5
+   Compiling integer-encoding v3.0.4
+   Compiling twox-hash v2.1.2
+   Compiling lz4_flex v0.13.1
+   Compiling thrift v0.17.0
+   Compiling anstream v1.0.0
+   Compiling arrow-data v58.2.0
+   Compiling vortex-error v0.1.0 (/home/ubuntu/work/vortex-error)
+   Compiling prost-derive v0.12.6
+   Compiling vortex-buffer v0.1.0 (/home/ubuntu/work/vortex-buffer)
+   Compiling vortex-utils v0.1.0 (/home/ubuntu/work/vortex-utils)
+   Compiling vortex-session v0.1.0 (/home/ubuntu/work/vortex-session)
+   Compiling tracing-serde v0.2.0
+   Compiling vortex-flatbuffers v0.1.0 (/home/ubuntu/work/vortex-flatbuffers)
+   Compiling vortex-mask v0.1.0 (/home/ubuntu/work/vortex-mask)
+   Compiling sharded-slab v0.1.7
+   Compiling brotli v8.0.2
+   Compiling arrow-array v58.2.0
+   Compiling noodles-csi v0.56.0
+   Compiling liblzma v0.4.6
+   Compiling rand_chacha v0.3.1
+   Compiling tracing-log v0.2.0
+   Compiling flate2 v1.1.9
+   Compiling matchers v0.2.0
+   Compiling thread_local v1.1.9
+   Compiling nu-ansi-term v0.50.3
+   Compiling target-lexicon v0.13.5
+   Compiling tpchgen v2.0.2 (https://github.com/clflushopt/tpchgen-rs.git?rev=438e9c2dbc25b2fff82c0efc08b3f13b5707874f#438e9c2d)
+   Compiling strsim v0.11.1
+   Compiling bytecount v0.6.9
+   Compiling heck v0.5.0
+   Compiling clap_lex v1.1.0
+   Compiling papergrid v0.17.0
+   Compiling clap_derive v4.6.1
+   Compiling clap_builder v4.6.0
+   Compiling vortex-cuda v0.1.0 (/home/ubuntu/work/vortex-cuda)
+   Compiling tracing-subscriber v0.3.23
+   Compiling rand v0.8.6
+   Compiling noodles-tabix v0.62.0
+   Compiling arrow-select v58.2.0
+   Compiling arrow-arith v58.2.0
+   Compiling arrow-row v58.2.0
+   Compiling prost v0.12.6
+   Compiling thread-id v4.2.2
+   Compiling console v0.16.3
+   Compiling libbz2-rs-sys v0.2.3
+   Compiling unit-prefix v0.5.2
+   Compiling tracing-perfetto v0.1.5
+   Compiling indicatif v0.18.4
+   Compiling tabled v0.20.0
+   Compiling bzip2 v0.6.1
+   Compiling clap v4.6.1
+   Compiling noodles-vcf v0.88.0
+   Compiling tokio-stream v0.1.18
+   Compiling mimalloc v0.1.50
+   Compiling sysinfo v0.38.4
+   Compiling get_dir v0.5.0
+   Compiling arrow-ord v58.2.0
+   Compiling arrow-string v58.2.0
+   Compiling arrow-ipc v58.2.0
+   Compiling arrow-cast v58.2.0
+   Compiling vortex-array v0.1.0 (/home/ubuntu/work/vortex-array)
+   Compiling arrow v58.2.0
+   Compiling tpchgen-arrow v2.0.2 (https://github.com/clflushopt/tpchgen-rs.git?rev=438e9c2dbc25b2fff82c0efc08b3f13b5707874f#438e9c2d)
+   Compiling zstd v0.13.3
+   Compiling parquet v58.2.0
+   Compiling rustls-webpki v0.103.13
+   Compiling tokio-rustls v0.26.4
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling hyper-rustls v0.27.9
+   Compiling reqwest v0.13.3
+   Compiling vortex-nvcomp v0.1.0 (/home/ubuntu/work/vortex-cuda/nvcomp)
+   Compiling vortex-fastlanes v0.1.0 (/home/ubuntu/work/encodings/fastlanes)
+   Compiling vortex-compressor v0.1.0 (/home/ubuntu/work/vortex-compressor)
+   Compiling vortex-zstd v0.1.0 (/home/ubuntu/work/encodings/zstd)
+   Compiling vortex-runend v0.1.0 (/home/ubuntu/work/encodings/runend)
+   Compiling vortex-onpair v0.1.0 (/home/ubuntu/work/encodings/onpair)
+   Compiling vortex-datetime-parts v0.1.0 (/home/ubuntu/work/encodings/datetime-parts)
+   Compiling vortex-sequence v0.1.0 (/home/ubuntu/work/encodings/sequence)
+   Compiling vortex-pco v0.1.0 (/home/ubuntu/work/encodings/pco)
+   Compiling vortex-fsst v0.1.0 (/home/ubuntu/work/encodings/fsst)
+   Compiling vortex-zigzag v0.1.0 (/home/ubuntu/work/encodings/zigzag)
+   Compiling vortex-sparse v0.1.0 (/home/ubuntu/work/encodings/sparse)
+   Compiling vortex-decimal-byte-parts v0.1.0 (/home/ubuntu/work/encodings/decimal-byte-parts)
+   Compiling vortex-io v0.1.0 (/home/ubuntu/work/vortex-io)
+   Compiling vortex-alp v0.1.0 (/home/ubuntu/work/encodings/alp)
+   Compiling vortex-scan v0.1.0 (/home/ubuntu/work/vortex-scan)
+   Compiling vortex-bytebool v0.1.0 (/home/ubuntu/work/encodings/bytebool)
+   Compiling vortex-btrblocks v0.1.0 (/home/ubuntu/work/vortex-btrblocks)
+   Compiling vortex-ipc v0.1.0 (/home/ubuntu/work/vortex-ipc)
+   Compiling vortex-layout v0.1.0 (/home/ubuntu/work/vortex-layout)
+   Compiling vortex-tensor v0.1.0 (/home/ubuntu/work/vortex-tensor)
+   Compiling vortex-file v0.1.0 (/home/ubuntu/work/vortex-file)
+   Compiling vortex v0.1.0 (/home/ubuntu/work/vortex)
+   Compiling vortex-bench v0.1.0 (/home/ubuntu/work/vortex-bench)
+    Finished `release` profile [optimized] target(s) in 2m 36s
+
+[1;33m[job 22:48:53][0m build OK: /home/ubuntu/work/target/release/onpair-chunk-bench
+
+[1;33m[job 22:48:53][0m smoke: tpch-sf10/l_comment, 50 MB sample, bits12, 5 iters, validate
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> generating TPC-H sf=10.0 tables
+2026-07-17T22:48:54.036298Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="nation"
+2026-07-17T22:48:54.036355Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="region"
+2026-07-17T22:48:54.036360Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="part"
+2026-07-17T22:48:54.036363Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="supplier"
+2026-07-17T22:48:54.036366Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="customer"
+2026-07-17T22:48:54.036369Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="partsupp"
+2026-07-17T22:48:54.036372Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="orders"
+2026-07-17T22:48:54.036374Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:120: Generating TPC-H table scale_factor="10" format=parquet table="lineitem"
+2026-07-17T22:48:54.036896Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating region table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/region_0.parquet
+2026-07-17T22:48:54.036901Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating nation table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/nation_0.parquet
+2026-07-17T22:48:54.037170Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating orders table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/orders_0.parquet
+2026-07-17T22:48:54.037180Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating lineitem table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/lineitem_0.parquet
+2026-07-17T22:48:54.036909Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating part table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/part_0.parquet
+2026-07-17T22:48:54.037347Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating customer table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/customer_0.parquet
+2026-07-17T22:48:54.037195Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating partsupp table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/partsupp_0.parquet
+2026-07-17T22:48:54.037473Z  INFO vortex_bench::tpch::tpchgen: vortex-bench/src/tpch/tpchgen.rs:226: Generating supplier table as parquet, at /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet/supplier_0.parquet
+TPC-H (sf=10) ready under /home/ubuntu/work/vortex-bench/data/onpair-bench-src/tpch_sf10/parquet
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running tpch-sf10/l_comment
+[campaign-hb 22:49:44] gpu: 0, 626, 182.00
+[hb 22:49:44] gpu: 0, 626, 181.95
+
+| dataset/column | uniq% | b12/10.00 |
+| --- | --- | --- |
+| tpch-sf10/l_comment | 83.6% | 4.06 |
+
+[1;33m[job 22:49:53][0m smoke: run.py non-zero (per-kernel validation flag) — verifying the GPU path ran
+
+[1;33m[job 22:49:53][0m smoke OK — GPU decode path runs; proceeding to full sweep
+
+[1;33m[job 22:49:53][0m BUILD_ONLY=1: setup + build + smoke complete; skipping sweep/DE (caller runs those)
+
+[1;36m[campaign 22:49:53][0m nvCOMP SDK: inc=/home/ubuntu/work/target/release/build/vortex-nvcomp-a5f5cc6092d2b58e/out/nvcomp-sdk/include lib=/home/ubuntu/work/target/release/build/vortex-nvcomp-a5f5cc6092d2b58e/out/nvcomp-sdk/lib
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+1 cell(s) FAILED round-trip / onpair-only / GPU validation check
+smoke tpch-sf10/l_comment b12: 32 kernels validated OK; auto=onpair_shmem_4tpt_b128o12 best=onpair_shmem_4tpt_o6
+smoke: kernels FAILING validation on this GPU (sm_80): onpair_shmem_4tpt_ablate_nogather, onpair_shmem_4tpt_ablate_noemit, onpair_shmem_4tpt_ablate_nodrain, onpair_shmem_4tpt_ablate_noscan, onpair_shmem_4tpt_ablate_cfree
+
+[1;36m[campaign 22:50:03][0m step 1: novel legs on NO-DOWNLOAD columns
+
+[1;36m[campaign 22:50:03][0m OFFSET-COST (OP4/OP3): tpch-sf10:0:tpch-sf10:l_comment,ps_comment,s_comment,l_shipinstruct synthetic:0:synthetic:url dbtext:0:dbtext:email,hex,l_comment,ps_comment,yago
+[campaign-hb 22:54:44] gpu: 43, 2484, 195.45
+[campaign-hb 22:55:44] gpu: 25, 2484, 197.88
+
+[1;36m[campaign 22:57:25][0m   WARN: offset-cost tpch-sf10 nonzero (see offset_cost.runlog)
+
+[1;36m[campaign 22:58:23][0m   WARN: offset-cost synthetic nonzero (see offset_cost.runlog)
+
+[1;36m[campaign 22:58:32][0m   WARN: offset-cost dbtext nonzero (see offset_cost.runlog)
+
+[1;36m[campaign 22:58:32][0m #3 e2e + OP2 regen: tpch-sf10:0:tpch-sf10:l_comment,ps_comment,s_comment,l_shipinstruct synthetic:0:synthetic:url dbtext:0:dbtext:email,hex,l_comment,ps_comment,yago
+[campaign-hb 23:00:44] gpu: 100, 2672, 196.38
+
+[1;36m[campaign 23:02:50][0m #2 gANS + Bitcomp: tpch-sf10:0:tpch-sf10:l_comment,ps_comment,s_comment,l_shipinstruct synthetic:0:synthetic:url dbtext:0:dbtext:email,hex,l_comment,ps_comment,yago
+
+[1;36m[campaign 23:03:25][0m   (sw_bench) tpch-sf10/l_comment OK
+
+[1;36m[campaign 23:03:47][0m   (sw_bench) tpch-sf10/ps_comment OK
+
+[1;36m[campaign 23:03:48][0m   (sw_bench) tpch-sf10/s_comment OK
+
+[1;36m[campaign 23:04:25][0m   (sw_bench) tpch-sf10/l_shipinstruct OK
+[campaign-hb 23:04:45] gpu: 58, 2394, 279.36
+
+[1;36m[campaign 23:04:46][0m   (sw_bench) synthetic/url OK
+
+[1;36m[campaign 23:04:47][0m   (sw_bench) dbtext/email OK
+
+[1;36m[campaign 23:04:48][0m   (sw_bench) dbtext/hex OK
+
+[1;36m[campaign 23:04:49][0m   (sw_bench) dbtext/l_comment OK
+
+[1;36m[campaign 23:04:50][0m   (sw_bench) dbtext/ps_comment OK
+
+[1;36m[campaign 23:04:51][0m   (sw_bench) dbtext/yago OK
+
+[1;36m[campaign 23:04:51][0m step 2: novel legs on DOWNLOAD columns (run.py downloads them on demand; ClickBench 14 GB here)
+
+[1;36m[campaign 23:04:51][0m OFFSET-COST (OP4/OP3): clickbench:0:clickbench:URL fineweb:0:fineweb:text wikipedia:0:wikipedia:text
+
+[1;36m[campaign 23:08:54][0m   WARN: offset-cost clickbench nonzero (see offset_cost.runlog)
+[campaign-hb 23:10:45] gpu: 0, 0, 130.32
+
+[1;36m[campaign 23:13:00][0m   WARN: offset-cost fineweb nonzero (see offset_cost.runlog)
+[campaign-hb 23:13:45] gpu: 45, 1844, 204.45
+[campaign-hb 23:14:45] gpu: 12, 1684, 202.19
+
+[1;36m[campaign 23:15:09][0m   WARN: offset-cost wikipedia nonzero (see offset_cost.runlog)
+
+[1;36m[campaign 23:15:09][0m #3 e2e + OP2 regen: clickbench:0:clickbench:URL fineweb:0:fineweb:text wikipedia:0:wikipedia:text
+[campaign-hb 23:18:45] gpu: 100, 4660, 190.04
+
+[1;36m[campaign 23:18:59][0m #2 gANS + Bitcomp: clickbench:0:clickbench:URL fineweb:0:fineweb:text wikipedia:0:wikipedia:text
+
+[1;36m[campaign 23:19:25][0m   (sw_bench) clickbench/URL OK
+
+[1;36m[campaign 23:20:00][0m   (sw_bench) fineweb/text OK
+
+[1;36m[campaign 23:20:16][0m   (sw_bench) wikipedia/text OK
+
+[1;36m[campaign 23:20:16][0m step 3: full onpair-bench.sh (base reconfirmation sweep + hardware-DE)
+
+[1;33m[job 23:20:16][0m wrote run-env.txt
+# OnPair-GPU GPU-decode run environment
+date_utc:    2026-07-17T23:20:16Z
+host:        computeinstance-e03ygjyntx1j6rqgde
+vortex_rev:  fe4a84d65
+
+## GPU (name, mem, compute capability, driver)
+name, memory.total [MiB], compute_cap, driver_version
+NVIDIA B300 SXM6 AC, 275040 MiB, 10.3, 580.159.04
+
+## nvidia-smi
+Fri Jul 17 23:20:16 2026       
++-----------------------------------------------------------------------------------------+
+
+[1;33m[job 23:20:16][0m GPU heartbeat started (pid 24165; samples 60s, prints on GPU activity or 5-min keepalive)
+
+[1;33m[job 23:20:16][0m toolchain: cargo 1.91.0 (ea2d97820 2025-10-10) | Build cuda_13.0.r13.0/compiler.36424714_0 | python3 Python 3.12.3
+
+[1;33m[job 23:20:16][0m building onpair-chunk-bench (release, --features cuda) — long pole; compiles ~60 CUDA kernels via -arch=native
+   Compiling cudarc v0.19.4
+   Compiling bindgen v0.72.1
+   Compiling custom-labels v0.4.6
+   Compiling vortex-cub v0.1.0 (/home/ubuntu/work/vortex-cuda/cub)
+   Compiling vortex-nvcomp v0.1.0 (/home/ubuntu/work/vortex-cuda/nvcomp)
+   Compiling vortex-cuda v0.1.0 (/home/ubuntu/work/vortex-cuda)
+   Compiling vortex-array v0.1.0 (/home/ubuntu/work/vortex-array)
+   Compiling vortex-fastlanes v0.1.0 (/home/ubuntu/work/encodings/fastlanes)
+   Compiling vortex-compressor v0.1.0 (/home/ubuntu/work/vortex-compressor)
+   Compiling vortex-runend v0.1.0 (/home/ubuntu/work/encodings/runend)
+   Compiling vortex-pco v0.1.0 (/home/ubuntu/work/encodings/pco)
+   Compiling vortex-sequence v0.1.0 (/home/ubuntu/work/encodings/sequence)
+   Compiling vortex-decimal-byte-parts v0.1.0 (/home/ubuntu/work/encodings/decimal-byte-parts)
+   Compiling vortex-fsst v0.1.0 (/home/ubuntu/work/encodings/fsst)
+   Compiling vortex-sparse v0.1.0 (/home/ubuntu/work/encodings/sparse)
+   Compiling vortex-zigzag v0.1.0 (/home/ubuntu/work/encodings/zigzag)
+   Compiling vortex-zstd v0.1.0 (/home/ubuntu/work/encodings/zstd)
+   Compiling vortex-datetime-parts v0.1.0 (/home/ubuntu/work/encodings/datetime-parts)
+   Compiling vortex-onpair v0.1.0 (/home/ubuntu/work/encodings/onpair)
+   Compiling vortex-scan v0.1.0 (/home/ubuntu/work/vortex-scan)
+   Compiling vortex-io v0.1.0 (/home/ubuntu/work/vortex-io)
+   Compiling vortex-bytebool v0.1.0 (/home/ubuntu/work/encodings/bytebool)
+   Compiling vortex-ipc v0.1.0 (/home/ubuntu/work/vortex-ipc)
+   Compiling vortex-alp v0.1.0 (/home/ubuntu/work/encodings/alp)
+   Compiling vortex-tensor v0.1.0 (/home/ubuntu/work/vortex-tensor)
+   Compiling vortex-btrblocks v0.1.0 (/home/ubuntu/work/vortex-btrblocks)
+   Compiling vortex-layout v0.1.0 (/home/ubuntu/work/vortex-layout)
+   Compiling vortex-file v0.1.0 (/home/ubuntu/work/vortex-file)
+   Compiling vortex v0.1.0 (/home/ubuntu/work/vortex)
+   Compiling vortex-bench v0.1.0 (/home/ubuntu/work/vortex-bench)
+    Finished `release` profile [optimized] target(s) in 2m 05s
+
+[1;33m[job 23:22:21][0m build OK: /home/ubuntu/work/target/release/onpair-chunk-bench
+
+[1;33m[job 23:22:21][0m smoke: tpch-sf10/l_comment, 50 MB sample, bits12, 5 iters, validate
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running tpch-sf10/l_comment
+
+| dataset/column | uniq% | b12/10.00 |
+| --- | --- | --- |
+| tpch-sf10/l_comment | 83.6% | 4.07 |
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+1 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+[1;33m[job 23:22:24][0m smoke: run.py non-zero (per-kernel validation flag) — verifying the GPU path ran
+smoke tpch-sf10/l_comment b12: 32 kernels validated OK; auto=onpair_shmem_4tpt_b128o12 best=onpair_shmem_4tpt_b128o12
+smoke: kernels FAILING validation on this GPU (sm_80): onpair_shmem_4tpt_ablate_nogather, onpair_shmem_4tpt_ablate_noemit, onpair_shmem_4tpt_ablate_nodrain, onpair_shmem_4tpt_ablate_noscan, onpair_shmem_4tpt_ablate_cfree
+
+[1;33m[job 23:22:24][0m smoke OK — GPU decode path runs; proceeding to full sweep
+==> removing /home/ubuntu/work/vortex-bench/data/onpair-bench
+
+[1;33m[job 23:22:24][0m WARN: no HF token in job secrets; fineweb/wikipedia will download anonymously (may be rate-limited)
+
+[1;33m[job 23:22:24][0m clocks: floating (CLOCK_LOCK=0) — absolute throughput carries boost variance
+
+[1;33m[job 23:22:24][0m sweep[tpch-sf10]: tpch-sf10 [l_comment,ps_comment,s_comment]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.25s
+==> 3/3 columns selected
+==> running with 1 column worker(s)
+==> running tpch-sf10/s_comment
+==> running tpch-sf10/ps_comment
+[campaign-hb 23:22:45] gpu: 27, 1940, 357.02
+[hb 23:24:16] gpu: 44, 6196, 230.40
+==> running tpch-sf10/l_comment
+[campaign-hb 23:25:45] gpu: 42, 7156, 206.73
+[hb 23:26:16] gpu: 37, 7412, 211.04
+[campaign-hb 23:26:45] gpu: 37, 7412, 210.12
+[hb 23:27:16] gpu: 73, 2484, 346.88
+[campaign-hb 23:27:45] gpu: 42, 7540, 204.98
+[hb 23:28:16] gpu: 39, 7348, 213.69
+[campaign-hb 23:28:45] gpu: 37, 7316, 210.06
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| tpch-sf10/l_comment | 61.9% | 4.17 | 4.19 |
+| tpch-sf10/ps_comment | 98.9% | 6.16 | 5.82 |
+| tpch-sf10/s_comment | 100.0% | 5.15 | 4.67 |
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+6 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+[1;33m[job 23:28:46][0m WARN: tpch-sf10 returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:28:46][0m   -> saved onpair_summary_tpch-sf10.json (634146 B)
+
+[1;33m[job 23:28:46][0m sweep[dbtext]: dbtext [email,hex,l_comment,ps_comment,yago]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.28s
+==> 5/5 columns selected
+==> running with 1 column worker(s)
+==> running dbtext/hex
+==> running dbtext/yago
+==> running dbtext/email
+==> running dbtext/l_comment
+==> running dbtext/ps_comment
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+10 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| dbtext/email | 100.0% | 2.08 | 1.95 |
+| dbtext/hex | 100.0% | 1.22 | 1.12 |
+| dbtext/l_comment | 96.3% | 3.83 | 3.63 |
+| dbtext/ps_comment | 100.0% | 5.44 | 5.07 |
+| dbtext/yago | 100.0% | 1.59 | 1.62 |
+
+[1;33m[job 23:29:07][0m WARN: dbtext returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:29:07][0m   -> saved onpair_summary_dbtext.json (1064321 B)
+
+[1;33m[job 23:29:07][0m sweep[clickbench]: clickbench [URL]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running clickbench/URL
+[campaign-hb 23:29:45] gpu: 51, 2292, 334.80
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| clickbench/URL | 24.1% | 2.87 | 3.86 |
+
+[1;33m[job 23:31:37][0m WARN: clickbench returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:31:37][0m   -> saved onpair_summary_clickbench.json (215700 B)
+
+[1;33m[job 23:31:38][0m sweep[synthetic]: synthetic [url]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.25s
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running synthetic/url
+[hb 23:32:16] gpu: 59, 5748, 234.85
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| synthetic/url | 0.1% | 9.50 | 9.69 |
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+[1;33m[job 23:33:11][0m WARN: synthetic returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:33:11][0m   -> saved onpair_summary_synthetic.json (218144 B)
+
+[1;33m[job 23:33:11][0m sweep[lship]: tpch-sf10 [l_shipinstruct]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running tpch-sf10/l_shipinstruct
+[campaign-hb 23:34:45] gpu: 26, 6420, 198.57
+[campaign-hb 23:35:45] gpu: 25, 2580, 196.02
+[hb 23:36:17] gpu: 26, 2580, 197.14
+[campaign-hb 23:36:46] gpu: 30, 6420, 200.06
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| tpch-sf10/l_shipinstruct | 0.0% | 11.16 | 11.16 |
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+[1;33m[job 23:36:52][0m WARN: lship returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:36:52][0m   -> saved onpair_summary_lship.json (217388 B)
+
+[1;33m[job 23:36:52][0m sweep[fineweb]: fineweb [text]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.28s
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running fineweb/text
+[campaign-hb 23:37:46] gpu: 100, 2452, 243.34
+[hb 23:38:17] gpu: 44, 2326, 379.98
+[campaign-hb 23:38:46] gpu: 85, 6676, 218.26
+[hb 23:39:17] gpu: 67, 6612, 218.34
+[hb 23:40:17] gpu: 100, 2292, 235.51
+[campaign-hb 23:40:46] gpu: 61, 6708, 209.29
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| fineweb/text | 100.0% | 2.24 | 2.88 |
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+[1;33m[job 23:41:37][0m WARN: fineweb returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:41:37][0m   -> saved onpair_summary_fineweb.json (219112 B)
+
+[1;33m[job 23:41:37][0m sweep[wikipedia]: wikipedia [text]  (ONPAIR_FAST=0)
+==> building onpair-chunk-bench (release, cuda)
+    Finished `release` profile [optimized] target(s) in 0.24s
+==> 1/1 columns selected
+==> running with 1 column worker(s)
+==> running wikipedia/text
+[hb 23:42:17] gpu: 99, 1972, 204.13
+[campaign-hb 23:42:46] gpu: 99, 1972, 201.14
+[hb 23:43:17] gpu: 100, 1972, 198.99
+[campaign-hb 23:43:46] gpu: 100, 5108, 189.61
+[hb 23:44:17] gpu: 100, 4884, 189.46
+[campaign-hb 23:44:46] gpu: 100, 4884, 188.64
+[hb 23:45:17] gpu: 100, 4852, 190.02
+[campaign-hb 23:45:46] gpu: 100, 4852, 190.54
+[campaign-hb 23:46:46] gpu: 100, 1812, 194.18
+[hb 23:47:17] gpu: 100, 1812, 202.11
+[campaign-hb 23:47:46] gpu: 11, 1684, 258.61
+[hb 23:48:17] gpu: 100, 4916, 193.04
+[campaign-hb 23:48:46] gpu: 100, 4692, 189.14
+[hb 23:49:17] gpu: 86, 4692, 190.39
+[campaign-hb 23:49:46] gpu: 93, 4660, 189.48
+[hb 23:50:17] gpu: 100, 4660, 190.21
+
+| dataset/column | uniq% | b12/1000.00 | b16/1000.00 |
+| --- | --- | --- | --- |
+| wikipedia/text | 100.0% | 2.16 | 2.79 |
+
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/SUMMARY.md (everything in one place)
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.json
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary.md
+Wrote /home/ubuntu/work/vortex-bench/data/onpair-bench/summary_pivot.md
+
+2 cell(s) FAILED round-trip / onpair-only / GPU validation check
+
+[1;33m[job 23:50:32][0m WARN: wikipedia returned non-zero (aggregate validation flag) — per-kernel results still written
+
+[1;33m[job 23:50:32][0m   -> saved onpair_summary_wikipedia.json (218449 B)
+
+[1;33m[job 23:50:32][0m nvCOMP-HW: locating nvCOMP SDK (fetched by the vortex-nvcomp build) + building nvbench
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_hw_bench.cu(272): warning #1650-D: result of call is not used
+      std::vector<unsigned char> host(sz); fread(host.data(),1,sz,f); fclose(f);
+                                           ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_hw_bench.cu(272): warning #1650-D: result of call is not used
+      std::vector<unsigned char> host(sz); fread(host.data(),1,sz,f); fclose(f);
+                                           ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_hw_bench.cu(46): warning #550-D: variable "CHUNK" was set but never used
+  static size_t CHUNK = 262144;
+                ^
+
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_hw_bench.cu: In function ‘int main(int, char**)’:
+/home/ubuntu/work/benchmarks/onpair-bench/nvcomp_hw_bench.cu:272:45: warning: ignoring return value of ‘size_t fread(void*, size_t, size_t, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+  272 |     std::vector<unsigned char> host(sz); fread(host.data(),1,sz,f); fclose(f);
+      |                                        ~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+
+[1;33m[job 23:50:34][0m nvCOMP-HW: nvbench built (inc=/home/ubuntu/work/target/release/build/vortex-nvcomp-a5f5cc6092d2b58e/out/nvcomp-sdk/include lib=/home/ubuntu/work/target/release/build/vortex-nvcomp-a5f5cc6092d2b58e/out/nvcomp-sdk/lib)
+[hb 23:51:17] gpu: 100, 20914, 514.94
+[campaign-hb 23:51:46] gpu: 100, 20912, 516.44
+[hb 23:52:17] gpu: 100, 36174, 559.93
+[campaign-hb 23:52:46] gpu: 100, 36174, 648.33
+[hb 23:53:17] gpu: 100, 36172, 482.85
+[campaign-hb 23:53:46] gpu: 60, 2664, 231.42
+[hb 23:54:17] gpu: 100, 36182, 537.88
+[campaign-hb 23:54:46] gpu: 100, 36182, 431.12
+[hb 23:55:17] gpu: 100, 20670, 519.38
+[campaign-hb 23:55:46] gpu: 100, 20670, 462.46
+[hb 23:56:17] gpu: 100, 35746, 609.79
+[campaign-hb 23:56:46] gpu: 100, 35746, 503.68
+[hb 23:57:17] gpu: 100, 35746, 661.45
+[campaign-hb 23:57:46] gpu: 100, 35754, 385.89
+[hb 23:58:17] gpu: 100, 35754, 408.43
+[campaign-hb 23:58:46] gpu: 90, 646, 213.99
+[campaign-hb 23:59:46] gpu: 100, 15232, 480.47
+[hb 00:00:17] gpu: 100, 15232, 481.66
+[campaign-hb 00:00:46] gpu: 100, 26216, 557.58
+[hb 00:01:17] gpu: 100, 26216, 487.43
+[campaign-hb 00:01:46] gpu: 100, 26216, 542.91
+[hb 00:02:17] gpu: 100, 26216, 539.24
+[campaign-hb 00:02:46] gpu: 100, 20914, 491.81
+[hb 00:03:17] gpu: 38, 3654, 291.67
+[campaign-hb 00:03:46] gpu: 100, 20912, 480.52
+[hb 00:04:17] gpu: 100, 36174, 488.14
+[campaign-hb 00:04:46] gpu: 100, 36174, 531.65
+[hb 00:05:17] gpu: 100, 36172, 416.05
+[campaign-hb 00:05:46] gpu: 100, 36172, 419.55
+[hb 00:06:17] gpu: 100, 36182, 554.28
+[campaign-hb 00:06:46] gpu: 100, 36182, 574.69
+[hb 00:07:18] gpu: 100, 36182, 378.14
+[campaign-hb 00:07:46] gpu: 100, 20914, 262.19
+[hb 00:08:18] gpu: 39, 3654, 313.24
+[campaign-hb 00:08:47] gpu: 93, 1584, 204.92
+[hb 00:09:18] gpu: 100, 36174, 495.94
+[campaign-hb 00:09:47] gpu: 100, 36172, 443.67
+[hb 00:10:18] gpu: 98, 37126, 218.73
+[campaign-hb 00:10:47] gpu: 100, 36182, 434.01
+[campaign-hb 00:11:47] gpu: 100, 14894, 493.03
+[hb 00:12:18] gpu: 100, 2314, 400.03
+[campaign-hb 00:12:47] gpu: 100, 25620, 571.33
+[hb 00:13:18] gpu: 100, 25620, 564.67
+[campaign-hb 00:13:47] gpu: 100, 25620, 346.69
+[hb 00:14:18] gpu: 100, 2088, 326.03
+[campaign-hb 00:14:47] gpu: 100, 664, 187.42
+[hb 00:15:18] gpu: 100, 738, 190.67
+[campaign-hb 00:15:47] gpu: 100, 728, 188.84
+[hb 00:16:18] gpu: 100, 708, 185.27
+[campaign-hb 00:16:47] gpu: 100, 19426, 506.45
+[hb 00:17:18] gpu: 100, 19424, 449.67
+[campaign-hb 00:17:47] gpu: 100, 33520, 472.44
+[hb 00:18:18] gpu: 100, 4450, 255.79
+[campaign-hb 00:18:47] gpu: 100, 33524, 626.07
+[hb 00:19:18] gpu: 100, 33524, 354.11
+[campaign-hb 00:19:47] gpu: 100, 33524, 479.89
+
+[1;33m[job 00:20:00][0m nvCOMP-HW: wrote onpair_nvcomp_hw.json (740613 B)
+
+[1;33m[job 00:20:00][0m bundled 26 per-cell meta.json -> onpair_metas.tar.gz
+
+[1;33m[job 00:20:00][0m DONE. Collected at ~/work:
+-rw-rw-r-- 1 ubuntu ubuntu  420247 Jul 18 00:20 /home/ubuntu/work/onpair_metas.tar.gz
+-rw-rw-r-- 1 ubuntu ubuntu   18000 Jul 17 23:22 /home/ubuntu/work/onpair_smoke_summary.json
+-rw-rw-r-- 1 ubuntu ubuntu  215700 Jul 17 23:31 /home/ubuntu/work/onpair_summary_clickbench.json
+-rw-rw-r-- 1 ubuntu ubuntu 1064321 Jul 17 23:29 /home/ubuntu/work/onpair_summary_dbtext.json
+-rw-rw-r-- 1 ubuntu ubuntu  219112 Jul 17 23:41 /home/ubuntu/work/onpair_summary_fineweb.json
+-rw-rw-r-- 1 ubuntu ubuntu  217388 Jul 17 23:36 /home/ubuntu/work/onpair_summary_lship.json
+-rw-rw-r-- 1 ubuntu ubuntu  218144 Jul 17 23:33 /home/ubuntu/work/onpair_summary_synthetic.json
+-rw-rw-r-- 1 ubuntu ubuntu  634146 Jul 17 23:28 /home/ubuntu/work/onpair_summary_tpch-sf10.json
+-rw-rw-r-- 1 ubuntu ubuntu  218449 Jul 17 23:50 /home/ubuntu/work/onpair_summary_wikipedia.json
+-rw-rw-r-- 1 ubuntu ubuntu    2557 Jul 17 23:20 /home/ubuntu/work/run-env.txt
+
+[1;36m[campaign 00:20:00][0m step 4: OnPair chunk-size steelman sweep (trimmed) — all columns
+==> building onpair-chunk-bench (release, cuda)
+   Compiling cudarc v0.19.4
+   Compiling bindgen v0.72.1
+   Compiling custom-labels v0.4.6
+   Compiling vortex-nvcomp v0.1.0 (/home/ubuntu/work/vortex-cuda/nvcomp)
+   Compiling vortex-cub v0.1.0 (/home/ubuntu/work/vortex-cuda/cub)
+   Compiling vortex-cuda v0.1.0 (/home/ubuntu/work/vortex-cuda)
+   Compiling vortex-array v0.1.0 (/home/ubuntu/work/vortex-array)
+   Compiling vortex-fastlanes v0.1.0 (/home/ubuntu/work/encodings/fastlanes)
+   Compiling vortex-compressor v0.1.0 (/home/ubuntu/work/vortex-compressor)
+   Compiling vortex-decimal-byte-parts v0.1.0 (/home/ubuntu/work/encodings/decimal-byte-parts)
+   Compiling vortex-onpair v0.1.0 (/home/ubuntu/work/encodings/onpair)
+   Compiling vortex-zstd v0.1.0 (/home/ubuntu/work/encodings/zstd)
+   Compiling vortex-sequence v0.1.0 (/home/ubuntu/work/encodings/sequence)
+   Compiling vortex-runend v0.1.0 (/home/ubuntu/work/encodings/runend)
+   Compiling vortex-datetime-parts v0.1.0 (/home/ubuntu/work/encodings/datetime-parts)
+   Compiling vortex-sparse v0.1.0 (/home/ubuntu/work/encodings/sparse)
+   Compiling vortex-zigzag v0.1.0 (/home/ubuntu/work/encodings/zigzag)
+   Compiling vortex-fsst v0.1.0 (/home/ubuntu/work/encodings/fsst)
+   Compiling vortex-pco v0.1.0 (/home/ubuntu/work/encodings/pco)
+   Compiling vortex-io v0.1.0 (/home/ubuntu/work/vortex-io)
+   Compiling vortex-scan v0.1.0 (/home/ubuntu/work/vortex-scan)
+   Compiling vortex-bytebool v0.1.0 (/home/ubuntu/work/encodings/bytebool)
+   Compiling vortex-ipc v0.1.0 (/home/ubuntu/work/vortex-ipc)
+   Compiling vortex-alp v0.1.0 (/home/ubuntu/work/encodings/alp)
+   Compiling vortex-tensor v0.1.0 (/home/ubuntu/work/vortex-tensor)
+   Compiling vortex-btrblocks v0.1.0 (/home/ubuntu/work/vortex-btrblocks)
+   Compiling vortex-layout v0.1.0 (/home/ubuntu/work/vortex-layout)
+   Compiling vortex-file v0.1.0 (/home/ubuntu/work/vortex-file)
+   Compiling vortex v0.1.0 (/home/ubuntu/work/vortex)
+   Compiling vortex-bench v0.1.0 (/home/ubuntu/work/vortex-bench)
+    Finished `release` profile [optimized] target(s) in 2m 07s
+==> 4/4 columns selected
+==> running with 1 column worker(s)
+==> running tpch-sf10/s_comment
+==> running tpch-sf10/ps_comment
+[campaign-hb 00:22:47] gpu: 3, 1942, 182.87
+[campaign-hb 00:23:47] gpu: 14, 2134, 185.62
+[campaign-hb 00:24:47] gpu: 22, 2134, 185.66
+[campaign-hb 00:26:47] gpu: 13, 2838, 184.72
+[campaign-hb 00:27:47] gpu: 10, 2710, 184.47
+[campaign-hb 00:28:47] gpu: 13, 2710, 183.98
+[campaign-hb 00:29:47] gpu: 21, 2710, 184.81
+[campaign-hb 00:30:47] gpu: 15, 2710, 183.75
+[campaign-hb 00:31:47] gpu: 18, 2710, 184.26
+[campaign-hb 00:32:47] gpu: 24, 2710, 184.77
+[campaign-hb 00:34:47] gpu: 18, 2710, 184.86
+[campaign-hb 00:35:47] gpu: 25, 2710, 184.79
+[campaign-hb 00:36:47] gpu: 12, 2710, 182.95
+[campaign-hb 00:38:47] gpu: 15, 2134, 186.46
+[campaign-hb 00:39:47] gpu: 22, 2134, 190.05
+[campaign-hb 00:42:48] gpu: 11, 2710, 184.52
+[campaign-hb 00:43:48] gpu: 13, 2710, 184.70
+[campaign-hb 00:44:48] gpu: 13, 2710, 184.73
+[campaign-hb 00:45:48] gpu: 15, 2710, 184.48
+[campaign-hb 00:46:48] gpu: 22, 2710, 184.76
+[campaign-hb 00:47:48] gpu: 23, 2710, 184.78
+[campaign-hb 00:48:48] gpu: 22, 2710, 184.77
+[campaign-hb 00:49:48] gpu: 21, 2710, 184.72
+[campaign-hb 00:50:48] gpu: 15, 2710, 184.75
+[campaign-hb 00:51:48] gpu: 20, 2710, 184.80
+[campaign-hb 00:52:48] gpu: 12, 2710, 184.09
+==> running tpch-sf10/l_shipinstruct
+[campaign-hb 00:54:48] gpu: 15, 2454, 188.11
+[campaign-hb 00:56:48] gpu: 13, 2710, 183.27
+[campaign-hb 00:57:48] gpu: 13, 2582, 184.63
+[campaign-hb 00:58:48] gpu: 5, 2582, 184.15
+[campaign-hb 00:59:48] gpu: 15, 2582, 183.64
+[campaign-hb 01:00:48] gpu: 15, 2582, 183.78
+[campaign-hb 01:01:48] gpu: 13, 2582, 182.94
+[campaign-hb 01:02:48] gpu: 17, 2582, 184.76
+[campaign-hb 01:03:48] gpu: 13, 2582, 182.89
+[campaign-hb 01:06:48] gpu: 14, 2454, 187.06
+[campaign-hb 01:08:48] gpu: 15, 2582, 182.96
+[campaign-hb 01:09:48] gpu: 15, 2582, 182.92
+[campaign-hb 01:10:48] gpu: 14, 2582, 183.94
+[campaign-hb 01:11:49] gpu: 23, 2582, 183.25
+[campaign-hb 01:12:49] gpu: 26, 2582, 184.82
+[campaign-hb 01:13:49] gpu: 17, 2582, 182.94
+[campaign-hb 01:14:49] gpu: 12, 2582, 184.20
+[campaign-hb 01:15:49] gpu: 13, 2582, 182.83
+==> running tpch-sf10/l_comment
+[campaign-hb 01:16:49] gpu: 29, 2518, 205.12
+[campaign-hb 01:17:49] gpu: 3, 2710, 193.52
+[campaign-hb 01:18:49] gpu: 14, 2710, 188.51
+[campaign-hb 01:21:49] gpu: 13, 3350, 184.27
+[campaign-hb 01:22:49] gpu: 21, 3350, 184.76
+[campaign-hb 01:23:49] gpu: 13, 3350, 184.66
+[campaign-hb 01:24:49] gpu: 5, 3350, 183.00
+[campaign-hb 01:25:49] gpu: 30, 3350, 184.26
+[campaign-hb 01:26:49] gpu: 23, 3350, 184.73
+[campaign-hb 01:27:49] gpu: 14, 3350, 184.67
+[campaign-hb 01:28:49] gpu: 14, 3350, 183.78
+[campaign-hb 01:29:49] gpu: 16, 3350, 184.63
+[campaign-hb 01:30:49] gpu: 13, 3350, 183.11
+[campaign-hb 01:31:49] gpu: 13, 3350, 184.31
+[campaign-hb 01:32:49] gpu: 27, 2454, 241.26
+[campaign-hb 01:33:49] gpu: 16, 2742, 186.71
+[campaign-hb 01:34:49] gpu: 15, 2742, 190.56
+[campaign-hb 01:37:49] gpu: 14, 3350, 183.68
+[campaign-hb 01:38:49] gpu: 20, 3350, 184.79
+[campaign-hb 01:39:49] gpu: 14, 3350, 184.74
+[campaign-hb 01:40:49] gpu: 24, 3350, 184.73
+[campaign-hb 01:41:49] gpu: 19, 3350, 184.42
+[campaign-hb 01:42:50] gpu: 24, 3350, 184.09
+[campaign-hb 01:43:50] gpu: 12, 3350, 184.60
+[1;36m[harness][0m WARN: job exited non-zero — still collecting + tearing down
+[1;36m[harness][0m collecting results -> /Users/martin/agents/harness/runs/b300-campaign-job1-20260717-184226
+[1;36m[harness][0m   got offset_cost.jsonl
+[1;36m[harness][0m   got e2e_v2.jsonl
+[1;36m[harness][0m   got op_gpu_regen.jsonl
+[1;36m[harness][0m   got gans_bitcomp.jsonl
+[1;36m[harness][0m   WARN: missing result onpair_chunk_sweep.json
+[1;36m[harness][0m   WARN: missing result onpair_chunk_sweep_*.json
+[1;36m[harness][0m   got onpair_summary_*.json
+[1;36m[harness][0m   got onpair_nvcomp_hw.json
+[1;36m[harness][0m   got onpair_metas.tar.gz
+[1;36m[harness][0m   WARN: missing result CAMPAIGN_CENSUS.txt
+[1;36m[harness][0m   got run-env.txt
+[1;36m[harness][0m   got *_build.log
+[1;36m[harness][0m   got *.log
+[1;36m[harness][0m   got *.runlog
+[1;36m[harness][0m   WARN: missing result RESULTS.md
+[1;36m[harness][0m   archived collected stats -> /Users/martin/data/harness-archive/b300-campaign-job1-20260717-184226-orch-martin-1784328146-66003
+[1;36m[harness][0m done — results in /Users/martin/agents/harness/runs/b300-campaign-job1-20260717-184226. Teardown fires on exit.
+[1;36m[harness][0m TEARDOWN: terminating OUR instance computeinstance-e03ygjyntx1j6rqgde (exit=0)
+[1;36m[harness][0m teardown confirmed for computeinstance-e03ygjyntx1j6rqgde (status: terminated)

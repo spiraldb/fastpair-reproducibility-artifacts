@@ -1,0 +1,9 @@
+label=arm-graviton4
+instance_type=m8g.2xlarge
+ddr=DDR5
+region=us-east-1
+bench_mb=256
+pin_cores=4
+threads=1,2,4
+bits=12,16
+job=onpair-cpu

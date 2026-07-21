@@ -1,0 +1,9 @@
+label=amd-turin
+instance_type=m8a.2xlarge
+ddr=DDR5
+region=us-east-1
+bench_mb=256
+pin_cores=4
+threads=1
+bits=9,10,11,12,13,14,15,16
+job=onpair-cpu-bitsweep
