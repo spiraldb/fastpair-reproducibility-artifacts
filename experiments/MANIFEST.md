@@ -179,6 +179,33 @@ changes NO headline number (reported decode always uses the shipped staged coale
 | `onpair_summary_directstore_{clickbench,tpch-sf10}.json` | E3: byte-exact direct-store drain counterfactual (same gather+scan; per-byte scattered global stores vs the staged coalesced drain), both `verified:true` | best shipped = min(decode_ns_iters); `X = directstore/4tpt` | §5.2/§4.2 `tab:drain` — the staged drain is **1.8–3.3×** faster than the naive byte-exact alternative (write amplification, the write-side mirror of the gather's read amplification) |
 | `batch_multidict.jsonl` | E1: batched many-small-row-group decode (239 ~4 MB independently-dicted RGs), 4 launch strategies, all byte-exact | min-of-100, aggregate GB/s | §6.4 launch-bound — streams/multidict recover **~2×** over naive sequential (tpch 413→901/890, ClickBench 453→916/876). Pilot scope (hardcoded 512-thread kernel, synthetic sliced corpus, whole-sequence makespan) |
 
+## Staged-dictionary counterfactual — `results/{a100,h100}-shdict/`
+
+Answers the 2026-07-27 preprint review's central question: *would a GSST variant adapted to
+OnPair match or surpass FastPair, so the gains are purely OnPair's format?* Staging the
+dictionary in shared memory is GSST's central design move; these runs test it directly on
+OnPair's larger table. Rev `9b4714c2a` (`mp/fastpair`, the rev this MANIFEST pins) with **no
+kernel changes** — `onpair_shmem_4tpt_{shdict8,pdict,vdict}` were already registered
+`KernelVariant`s. A100 on Lambda us-east-1, H100 on Nebius eu-north1. Protocol identical to
+the GPU decode matrix (1 GB chunk, 100 iters, min-of-100, `--gpu-validate`). **B300 leg
+still owed** (uk-south1 capacity outage 2026-07-27); every range below is over two chips.
+
+Baseline per cell = best applicable byte-exact **non-staging** kernel, i.e. the same
+best-kernel-per-cell rule the evaluation uses, so this is best-vs-best. `applicable:false`
+means the variant's shared-memory request exceeded the cap and it never launched: that is
+the capacity result, not a missing measurement.
+
+| Result | Experiment | Reduction | Headline / consumed by |
+|---|---|---|---|
+| `shdict_summary_{clickbench,lcomment,pscomment,fineweb}.json` (per chip) | 3 shared-memory dictionary-staging variants vs the shipped L1-served gather, 4 columns × bits 12/14/16, every reported cell `verified:true` | `figures/extract_shdict.py` → `results/shdict_summary.csv`; per cell, best staging variant vs best non-staging baseline | §5 staged-dictionary subsection + §7 GSST paragraph — **16 cells where staging is possible, 32 byte-exact variant measurements, 0 wins.** Best case **−19.3%** (H100 `ps_comment` b12 `pdict`), median **−49.9%**, worst **−68.2%**. Loss *deepens* with dictionary size: −19 to −50% at bits12, −50 to −68% at bits14. At bits16 staging is impossible on every chip (592 KB–1 MB vs 164/227 KB hardware limits) |
+| `SHDICT_CENSUS.txt`, `run-env.txt` | box identity + per-cell completion | — | provenance |
+
+Caveat to carry into prose: no single staging layout is strongest, so the fair comparison is
+best-staging-variant-per-cell. `shdict8` wins among staging variants on the A100; `pdict`
+wins on the H100 by a wide margin (−19 to −46% vs `shdict8`'s −39 to −61%). The bits14 gates
+(100 KB for `pdict`/`vdict`, 224 KB for `shdict8`) are harness design-sanity caps, not
+hardware maxima; only the bits16 verdict rests on hardware.
+
 ## Not in git (too large; on the orchestrating laptop / regenerable)
 - Raw `.ncu-rep` archives → `~/data/onpair-ncu-archive/`, `~/agents/harness/runs/`.
 - Full CPU `perf` text → inside the `cpu-tma/*_raw.tar.gz`.
