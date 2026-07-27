@@ -200,6 +200,40 @@ the capacity result, not a missing measurement.
 | `shdict_summary_{clickbench,lcomment,pscomment,fineweb}.json` (per chip) | 3 shared-memory dictionary-staging variants vs the shipped L1-served gather, 4 columns × bits 12/14/16, every reported cell `verified:true` | `figures/extract_shdict.py` → `results/shdict_summary.csv`; per cell, best staging variant vs best non-staging baseline | §5 staged-dictionary subsection + §7 GSST paragraph — **16 cells where staging is possible, 32 byte-exact variant measurements, 0 wins.** Best case **−19.3%** (H100 `ps_comment` b12 `pdict`), median **−49.9%**, worst **−68.2%**. Loss *deepens* with dictionary size: −19 to −50% at bits12, −50 to −68% at bits14. At bits16 staging is impossible on every chip (592 KB–1 MB vs 164/227 KB hardware limits) |
 | `SHDICT_CENSUS.txt`, `run-env.txt` | box identity + per-cell completion | — | provenance |
 
+### Mechanism capture — `results/h100-shdict-ncu/`
+
+Timing says staging loses; this says **why**, which is what makes the result on-thesis. 16
+`--set full` captures on the H100 (Nebius eu-north1, profiling needs
+`RmProfilingAdminOnly=0`, so Lambda boxes cannot do this), same metric set as the NCU cost
+surface. **All 16 `CAPTURE-VERIFIED`**: kernel symbol matched and shared-memory footprint
+nonzero, asserted against *dynamic* shared memory for the staging variants (they use
+`extern __shared__`) and *static* for the shipped `split8read` (fixed array). Measured
+footprints confirm the predicted sizes: `shdict8` 53.5 KB at bits12 and 164.1 KB at bits14,
+`pdict` 86.3 KB, `vdict` 38.0 KB.
+
+Reduced by `figures/extract_shdict_ncu.py`. ClickBench `URL` at bits12:
+
+| kernel | global ld sectors | B/sector | shared ld conflicts | achieved occ % | L1 SoL % |
+|---|---|---|---|---|---|
+| `split8read` (shipped) | 362,438,732 | 6.2 | 67,686 | 43.8 | 86.9 |
+| `pdict` | 15,578,991 (−96%) | 29.4 | 57,001,584 (**842×**) | 24.0 | 69.5 |
+| `shdict8` | 43,234,364 (−88%) | 15.6 | 38,966,381 (576×) | 24.6 | 49.8 |
+| `vdict` | 186,800,798 (−48%) | 9.9 | 55,942,473 (826×) | 24.9 | 67.6 |
+
+**The move worked on the read side and still lost.** Global-load sectors collapse by up to
+96% and bytes per sector rises from 6.2 to 29.4 of a 32 B maximum, so the scattered gather
+really did become a near-perfectly-coalesced stream: the hypothesis held. What it cost
+instead is shared-memory bank conflicts up to 842× and achieved occupancy halved from ~44%
+to ~24%. L1 SoL *falls* (86.9 → 49.8–69.5), so the pipe is no longer what saturates; DRAM
+read SoL stays at 2.4–9% throughout, so nothing became bandwidth-bound. At bits14 the
+164 KB table allows about one block per SM and occupancy drops to **12.5%** against the
+baseline's 44.5%, which is why the bits14 loss (−50 to −68%) is deeper than bits12's.
+
+Reading for the paper: a random gather stays a random gather. Shared memory does not escape
+the access-rate bound, it re-denominates wavefront pressure as bank-conflict pressure and
+adds an occupancy penalty. Consistent with the pre-paper lab notebook (712× conflicts,
+47%→24% occupancy) now reproduced on a paper chip through the paper's own reduction.
+
 Caveat to carry into prose: no single staging layout is strongest, so the fair comparison is
 best-staging-variant-per-cell. `shdict8` wins among staging variants on the A100; `pdict`
 wins on the H100 by a wide margin (−19 to −46% vs `shdict8`'s −39 to −61%). The bits14 gates
