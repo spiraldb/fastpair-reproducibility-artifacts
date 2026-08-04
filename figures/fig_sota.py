@@ -49,13 +49,14 @@ COLS = [
 CFG = {
     "FastPair-12": "#6baed6", "FastPair-16": "#08519c",
     # Four engine codecs share the square, so the shade ramp is the only thing separating
-    # them: spread across the full ColorBrewer Oranges range rather than the middle of it,
-    # where Snappy (#fd8d3c) and Deflate-fast (#f16913) were nearly the same orange.
-    # fig_crossarch draws each column's WINNING codec as a rule in these same shades, so the
-    # three that ever win (Deflate (5), LZ4, Snappy) must stay legible as a thin line.
-    # Deflate-fast wins no column anywhere, so it takes the faintest slot.
-    "DE Deflate (5)": "#e08214", "DE Deflate (0)": "#fdd0a2", "DE LZ4": "#e6550d",
-    "DE Snappy": "#a63603",
+    # them. It spans the full ColorBrewer Oranges range, roughly even in lightness, after two
+    # narrower attempts: the original clustered three of four steps mid-ramp, and the next put
+    # Deflate (5) and LZ4 within one step of each other. fig_crossarch draws each column's
+    # WINNING codec as a rule in these same shades, so the codecs that win (Deflate (5) on 5
+    # columns, LZ4 on 5) must stay legible and mutually distinct as thin lines. Deflate-fast
+    # wins no column anywhere, so it takes the faintest slot.
+    "DE Deflate (5)": "#fd8d3c", "DE Deflate (0)": "#fdd0a2", "DE LZ4": "#d94801",
+    "DE Snappy": "#7f2704",
     "Zstd (-10)": "#cccccc", "Zstd (1)": "#969696", "Zstd (3)": "#525252",
     # nvCOMP's speed-first software codecs (B300, campaign run): they reach FastPair-class
     # decode rate only by nearly abandoning compression (Bitcomp-sparse ~1.0x, gANS ~1.4-2x).

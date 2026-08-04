@@ -5,9 +5,10 @@
 """Fig. crossarch: per-column decode rate on all four GPUs against that column's engine rate.
 
 The companion to fig_sota, which fixes the device and varies the codec; this fixes the codec
-and varies the device. One strip per column: four dots, one per GPU, shaded so the chip is
-readable without a leader, joined by a thin rule to group them, plus an orange tick at THAT
-column's B300 Decompression Engine rate. Two panels, one per preset.
+and varies the device. One slot per column: four dots, one per GPU, shaded so the chip is
+readable without a leader, dodged and joined so the slot shows that column's scaling, plus a
+rule at THAT column's B300 Decompression Engine rate, coloured by the winning engine codec.
+Two panels, one per preset.
 
 This replaced a slopegraph (GPUs on x, one line per column). That form could not work on this
 data: at the L40S the eight real columns span just 30%, about 0.11 decades, so ten lines
@@ -15,7 +16,7 @@ entered the panel almost coincident, needed decluttered labels with leaders to b
 at all, and crossed a fan of engine connectors on the way out. The strip form removes the
 demand that a reader track a line, because neither of the figure's jobs needs it:
 
-- Absolute rates across four architectures, so 1,689 GB/s and the 1 TB/s line stay readable.
+- Absolute rates across four architectures, so 1,689 GB/s stays readable.
 - Whether a column's whole strip clears its own engine tick. That is the paper's cross-device
   result, and it is now a single local comparison repeated ten times rather than something
   recovered from a fan.
@@ -26,7 +27,7 @@ GDDR6 part; the three HBM chips take a light-to-dark blue ramp in bandwidth orde
 its neighbours breaks the ramp visibly, which is the honest rendering of a non-monotonicity
 (ClickBench URL is faster on the L40S than on the A100 at FastPair-12).
 Source: results/{a100,l40s,h100,b300}/onpair_summary_*.json + b300/onpair_nvcomp_hw.json
-+ b300-campaign-0717/onpair_nvcomp_hw.json (the DE Snappy overlay).
+(engine rates via common.de_map, best codec and chunk size per column).
 """
 import json
 
@@ -57,10 +58,10 @@ COLS = [
     ("amazon-electronics", "text", "amazon-electronics", "R"),
 ]
 
-# Which engine codec actually wins varies by column: Deflate-hi on the synthetics and
-# ClickBench URL, LZ4 or Snappy on the long-text columns. So the rule is drawn in that
-# codec's own shade, reusing fig_sota's DE ramp verbatim, and the legend names the three
-# winners instead of an anonymous "engine". Shades must track fig_sota.CFG.
+# Which engine codec wins varies by column: Deflate-hi on the four synthetics and ClickBench
+# URL, LZ4 on the five long-text columns. So the rule is drawn in that codec's own shade,
+# reusing fig_sota's DE ramp verbatim, and the legend names the winners instead of showing an
+# anonymous "engine" swatch. Shades MUST track fig_sota.CFG.
 # Short tick labels. At 0.75x height the rotated label block is a fixed cost that competes
 # directly with the plot area: full names squeezed the panels to ~0.8 in, where the L40S/A100
 # and H100/B300 dots merged. The dataset family stays recoverable from the group label plus
@@ -75,8 +76,8 @@ SHORT = {
 
 DE_CODEC_NAME = {"DEFLATE-hi": "Deflate (5)", "DEFLATE-fast": "Deflate (0)",
                  "LZ4": "LZ4", "Snappy": "Snappy"}
-DE_CODEC_COLOR = {"Deflate (5)": "#e08214", "Deflate (0)": "#fdd0a2",
-                  "LZ4": "#e6550d", "Snappy": "#a63603"}
+DE_CODEC_COLOR = {"Deflate (5)": "#fd8d3c", "Deflate (0)": "#fdd0a2",
+                  "LZ4": "#d94801", "Snappy": "#7f2704"}
 
 
 def rates(dataset, column, bits):
