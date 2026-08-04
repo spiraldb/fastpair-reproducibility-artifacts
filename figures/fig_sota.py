@@ -134,7 +134,7 @@ def _edge(color, f=0.7):
     return (r * f, g * f, b * f)
 
 
-YLO, YHI = 10.0, 2600.0
+YLO, YHI = 100.0, 2600.0
 # Below YLO there is nothing but dominated nvCOMP-Zstd levels, and on a log axis that dead
 # band ate ~2.5 of 4 decades, compressing the whole competitive region (and the margin over
 # the frontier) into a sliver. Points below the floor are pinned to it as hollow down-
@@ -235,7 +235,7 @@ def main():
     except FileNotFoundError:
         pass
     plt = C.apply_theme()
-    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 3.3), sharey=True)
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.9), sharey=True)
     panel(axR, "R", "Real-world columns", de, gb)
     panel(axS, "S", "Synthetic columns", de, gb)
     # Assert the claim the frontier draws: every FastPair mark clears the best baseline
@@ -259,6 +259,13 @@ def main():
     axR.set_yscale("log")
     axR.set_ylim(YLO, YHI)
     axR.set_ylabel("decode (GB/s, log)")
+    # Label the decades 100 / 1000, not 10^2 / 10^3. The axis carries GB/s values a reader
+    # compares against rates quoted in the prose, and exponent notation adds a step to that.
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
+    axR.yaxis.set_major_locator(FixedLocator([100, 1000]))
+    axR.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
+    axR.yaxis.set_minor_locator(FixedLocator([]))
+    axR.yaxis.set_minor_formatter(NullFormatter())
     if OFFSCALE:
         lo, hi = min(t for _, t in OFFSCALE), max(t for _, t in OFFSCALE)
         fams = sorted({(l or "?").split(" (")[0] for l, _ in OFFSCALE})
