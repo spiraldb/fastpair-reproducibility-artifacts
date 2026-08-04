@@ -134,7 +134,7 @@ def _edge(color, f=0.7):
     return (r * f, g * f, b * f)
 
 
-YLO, YHI = 100.0, 2600.0
+YLO, YHI = 10.0, 2600.0
 # Below YLO there is nothing but dominated nvCOMP-Zstd levels, and on a log axis that dead
 # band ate ~2.5 of 4 decades, compressing the whole competitive region (and the margin over
 # the frontier) into a sliver. Points below the floor are pinned to it as hollow down-
@@ -235,7 +235,7 @@ def main():
     except FileNotFoundError:
         pass
     plt = C.apply_theme()
-    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.35), sharey=True)
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 3.3), sharey=True)
     panel(axR, "R", "Real-world columns", de, gb)
     panel(axS, "S", "Synthetic columns", de, gb)
     # Assert the claim the frontier draws: every FastPair mark clears the best baseline
@@ -289,9 +289,9 @@ def main():
     # Span the full figure width: a 4-tuple bbox (x0, y0, w, h) with mode="expand"
     # stretches the legend columns edge to edge rather than clustering them centered.
     fig.legend(handles=flip(leg, 5), frameon=False, fontsize=6.3, ncol=5, loc="lower center",
-               bbox_to_anchor=(0.0, -0.05, 1.0, 0.16), mode="expand",
+               bbox_to_anchor=(0.0, -0.005, 1.0, 0.10), mode="expand",
                columnspacing=1.0, handlelength=1.4, handletextpad=0.7, borderaxespad=0.0)
-    fig.tight_layout(rect=(0, 0.17, 1, 1))
+    fig.tight_layout(rect=(0, 0.11, 1, 1))
     C.save(fig, "fig_sota")
 
 
