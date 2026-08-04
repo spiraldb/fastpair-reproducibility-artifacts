@@ -48,8 +48,11 @@ COLS = [
 # configuration -> shade, in technique-family families (FastPair blues / DE oranges / Zstd grays).
 CFG = {
     "FastPair-12": "#6baed6", "FastPair-16": "#08519c",
-    "DE Deflate (5)": "#fdae61", "DE Deflate (0)": "#f16913", "DE LZ4": "#a63603",
-    "DE Snappy": "#fd8d3c",
+    # Four engine codecs now share the square, so the shade ramp is the only thing separating
+    # them: spread across the full ColorBrewer Oranges range rather than the middle of it,
+    # where Snappy (#fd8d3c) and Deflate-fast (#f16913) were nearly the same orange.
+    "DE Deflate (5)": "#fdd0a2", "DE Deflate (0)": "#fdae6b", "DE LZ4": "#e6550d",
+    "DE Snappy": "#a63603",
     "Zstd (-10)": "#cccccc", "Zstd (1)": "#969696", "Zstd (3)": "#525252",
     # nvCOMP's speed-first software codecs (B300, campaign run): they reach FastPair-class
     # decode rate only by nearly abandoning compression (Bitcomp-sparse ~1.0x, gANS ~1.4-2x).
@@ -58,13 +61,21 @@ CFG = {
 }
 DE_NAME = {"DEFLATE-hi": "DE Deflate (5)", "DEFLATE-fast": "DE Deflate (0)", "LZ4": "DE LZ4",
            "Snappy": "DE Snappy"}
-# Single-GPU configs (B300-only: the hardware DE + nvCOMP speed-first software codecs) are one
-# point each, not a per-GPU range, so give each a distinct marker shape. Multi-GPU configs
-# (FastPair, Zstd) stay as circle clouds behind a range bar.
-MARKER = {
-    "DE Deflate (5)": "s", "DE Deflate (0)": "D", "DE LZ4": "^", "DE Snappy": "v",
-    "gANS": "P", "Bitcomp-default": "X", "Bitcomp-sparse": "h",
+# SHAPE = family, SHADE = variant within family, FILL = on/off-scale. Every mark is one B300
+# point now, so shape is free to carry the grouping that the reader actually needs: which
+# technique family a mark belongs to. The previous assignment spent four shapes inside the DE
+# family alone (square, diamond, up- and down-triangle) while circles were shared between
+# FastPair and Zstd, so shape separated variants and merged families, which is backwards for a
+# figure whose claim is about families. Within-family identity now rests on the shade ramp; the
+# frontier, not the codec label, is what carries the dominance claim.
+FAMILY_MARKER = {"FastPair": "o", "DE": "s", "Zstd": "^", "nvCOMP-sw": "D"}
+FAMILY = {
+    "FastPair-12": "FastPair", "FastPair-16": "FastPair",
+    "DE Deflate (5)": "DE", "DE Deflate (0)": "DE", "DE LZ4": "DE", "DE Snappy": "DE",
+    "Zstd (-10)": "Zstd", "Zstd (1)": "Zstd", "Zstd (3)": "Zstd",
+    "gANS": "nvCOMP-sw", "Bitcomp-default": "nvCOMP-sw", "Bitcomp-sparse": "nvCOMP-sw",
 }
+MARKER = {k: FAMILY_MARKER[v] for k, v in FAMILY.items()}
 
 
 DEV = "b300"   # the one device this figure reports; see the module docstring.
@@ -147,9 +158,12 @@ def mark(ax, r, t, color, marker="o", s=20, label=None):
     if not (r and t):
         return
     if t < YLO:
+        # Off-scale keeps its family's shape and its own color, hollow and pinned to the
+        # floor, so it reads as "this series, below the axis" rather than as a fourth
+        # family. A dedicated off-scale shape would collide with whichever family it borrowed.
         OFFSCALE.append((label, t))
-        ax.scatter([r], [YLO * 1.04], s=s * 0.7, facecolors="none", marker="v",
-                   edgecolors=color, linewidths=0.6, zorder=4, alpha=0.9)
+        ax.scatter([r], [YLO * 1.04], s=s * 0.8, facecolors="none", marker=marker,
+                   edgecolors=_edge(color), linewidths=0.7, zorder=4, alpha=0.95)
         return
     ax.scatter([r], [t], s=s, color=color, marker=marker, zorder=5,
                edgecolors=_edge(color), linewidths=0.3, alpha=0.95)
@@ -287,10 +301,14 @@ def main():
                   label="GSST (A100, cross-paper)")
     # Place GSST (a GPU decoder) right after the DE marks so row 1 groups the fast
     # decoders (FastPair + DE + GSST) and Zstd(-10) falls to row 2 with the software field.
+    # The off-scale swatch borrows the Zstd triangle because every off-scale mark is Zstd
+    # today; the label says "open" so the convention still reads correctly if another
+    # family ever falls below the floor.
+    offscale_shape = FAMILY_MARKER[FAMILY.get(OFFSCALE[0][0], "Zstd")] if OFFSCALE else "^"
     extra = [
         Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="best baseline at this ratio or better"),
-        Line2D([], [], color=C.INK, marker="v", ls="", ms=5, markerfacecolor="none",
-               label="off-scale (below %d GB/s)" % YLO),
+        Line2D([], [], color=C.INK, marker=offscale_shape, ls="", ms=5, markerfacecolor="none",
+               label="open: off-scale (below %d GB/s)" % YLO),
     ]
     leg = codec_handles[:6] + [gsst] + codec_handles[6:] + extra
     # Span the full figure width: a 4-tuple bbox (x0, y0, w, h) with mode="expand"
