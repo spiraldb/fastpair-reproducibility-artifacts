@@ -276,7 +276,7 @@ def main():
     # Label the decades 100 / 1000, not 10^2 / 10^3. The axis carries GB/s values a reader
     # compares against rates quoted in the prose, and exponent notation adds a step to that.
     from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
-    axR.yaxis.set_major_locator(FixedLocator([100, 300, 1000, 1300]))
+    axR.yaxis.set_major_locator(FixedLocator([100, 300, 1000]))
     axR.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
     axR.yaxis.set_minor_locator(FixedLocator([]))
     axR.yaxis.set_minor_formatter(NullFormatter())
