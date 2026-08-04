@@ -90,36 +90,32 @@ def rates(dataset, column, bits):
 
 
 def de_rates():
-    """{(dataset, column): best valid B300 engine codec rate in GB/s}, Snappy included.
+    """{(dataset, column): (GB/s, winning codec)} for the B300 engine, via common.de_map().
 
-    Mirrors fig_sota: canonical b300 carries Deflate/LZ4 and the all-codec campaign run adds
-    Snappy on the same B300 class. Best-over-codecs is the strong reading of the baseline and
-    matches how the paper reports the engine. Per column is the only fair form: the engine
-    spans 202 to 662 GB/s here, so one line for all columns would compare one column's
-    software against another column's hardware.
+    MUST go through de_map(), which reads the JSON's top-level best_decode_gib_s. That field
+    is the best over codec AND chunk size, which is the baseline Section 6.1 declares: "its
+    best Deflate, LZ4, or Snappy codec and chunk size per column across five sizes". The
+    per-codec `codecs` block is measured at the DEFAULT chunk only, so a max over it
+    understates the engine, 419.7 against de_map's 432.2 GB/s on ClickBench URL.
+
+    An earlier version of this figure took that max, which made the engine look weaker and
+    our margins look better than they are, and briefly propagated into the paper's multiples.
+    Every DE number in the paper comes from de_map, so this figure must agree with it.
+
+    Per column is the only fair form: the engine spans 205 to 692 GB/s here, so a single rule
+    across all columns would compare one column's software against another's hardware.
     """
-    de = {(e["dataset_id"], e["column"]): e
-          for e in json.load(open(C.RESULTS / "b300" / "onpair_nvcomp_hw.json"))}
-    try:
-        snap = {(e["dataset_id"], e["column"]): e
-                for e in json.load(open(C.RESULTS / "b300-campaign-0717" / "onpair_nvcomp_hw.json"))}
-        for k, e in de.items():
-            s = snap.get(k, {}).get("codecs", {}).get("Snappy")
-            if s and s.get("valid"):
-                e["codecs"]["Snappy"] = s
-    except FileNotFoundError:
-        pass
+    dm = C.de_map()
+    raw = {(e["dataset_id"], e["column"]): e
+           for e in json.load(open(C.RESULTS / "b300" / "onpair_nvcomp_hw.json"))}
     out = {}
     for dataset, column, _, _ in COLS:
         did = "tpch-sf10" if dataset in ("tpch-sf10", "lship") else dataset
-        e = de.get((did, column))
-        if not e:
+        rate = dm.get((did, column))
+        if not rate:
             continue
-        best = [(v["decode_gib_s"] * C.GIB_TO_GB, DE_CODEC_NAME.get(n, n))
-                for n, v in (e.get("codecs") or {}).items()
-                if v.get("decode_gib_s") and v.get("ratio")]
-        if best:
-            out[(dataset, column)] = max(best)   # (rate, winning codec name)
+        codec = (raw.get((did, column)) or {}).get("best_codec")
+        out[(dataset, column)] = (rate, DE_CODEC_NAME.get(codec, codec or "best"))
     return out
 
 

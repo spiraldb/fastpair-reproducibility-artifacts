@@ -194,6 +194,14 @@ def collect(origin, de, gb):
                 lbl = DE_NAME.get(name, "DE %s" % name)
                 if lbl in CFG and eng.get("ratio") and eng.get("decode_gib_s"):
                     bases.append((eng["ratio"], eng["decode_gib_s"] * C.GIB_TO_GB, lbl))
+            # Those per-codec entries are measured at the DEFAULT chunk size. The engine's
+            # declared baseline (Section 6.1) is its best codec AND chunk size per column,
+            # carried in top-level best_decode_gib_s/best_ratio and read by common.de_map.
+            # It runs up to ~3% faster than any per-codec entry, so the frontier must include
+            # it or the envelope understates the engine and flatters the dominance claim.
+            blbl = DE_NAME.get(d.get("best_codec"), "DE %s" % d.get("best_codec"))
+            if blbl in CFG and d.get("best_ratio") and d.get("best_decode_gib_s"):
+                bases.append((d["best_ratio"], d["best_decode_gib_s"] * C.GIB_TO_GB, blbl))
         zs = [(r, t, "Zstd (%s)" % lvl) for lvl in ("-10", "1", "3")
               for r, t in [zstd_cfg(fn, col, lvl)] if r]
         bases.extend(undominated(zs))   # dominated levels add marks, never information
