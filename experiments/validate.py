@@ -123,6 +123,40 @@ def main():
         check("DE multiple: clickbench URL", mult.get(("clickbench", "URL")), 2.5, 2.75, "x")
         check("DE multiple: # columns covered", float(len(mult)), 9, 11, "cols")
 
+    # 1c. The DE DENOMINATOR itself, absolutely and by definition.
+    #
+    # The multiples above were already asserted, but the engine rates underneath them were not,
+    # and that gap cost real time: on 2026-08-03 the 432 GB/s ClickBench URL figure was declared
+    # underivable and the paper's multiples were "corrected" upward, because the reduction used
+    # was a max over the per-codec `codecs` block instead of de_map(). Those are different
+    # baselines. The `codecs` entries are measured at the DEFAULT chunk size; top-level
+    # best_decode_gib_s is the best over codec AND chunk size, which is the baseline Section 6.1
+    # declares. So assert the absolute rates the prose quotes, and assert the definitional
+    # relation that makes de_map the authoritative one, so a future reader cannot mistake a
+    # weaker denominator for a data defect.
+    de = C.de_map()
+    check("DE rate: clickbench URL", de.get(("clickbench", "URL")), 430, 434, "GB/s",
+          "prose quotes 432 GB/s in sec:eval:arch and the overlap bound")
+    de_ten = [de[(did, col)] for _, col, did in COLS if de.get((did, col))]
+    if de_ten:
+        check("DE rate: min over the ten columns", min(de_ten), 203, 208, "GB/s", "prose: 205 to 692 GB/s")
+        check("DE rate: max over the ten columns", max(de_ten), 690, 695, "GB/s")
+    raw = {(e["dataset_id"], e["column"]): e
+           for e in json.load(open(C.RESULTS / "b300" / "onpair_nvcomp_hw.json"))}
+    slack = []
+    for _, col, did in COLS:
+        e = raw.get((did, col)) or {}
+        per = [v["decode_gib_s"] for v in (e.get("codecs") or {}).values()
+               if v.get("decode_gib_s") and v.get("ratio")]
+        if per and e.get("best_decode_gib_s"):
+            slack.append(e["best_decode_gib_s"] / max(per))
+    if slack:
+        # >= 1 by construction: the chunk-swept best cannot lose to a single-chunk measurement.
+        # If this ever dips below 1, best_decode_gib_s is NOT the strongest engine configuration
+        # and de_map would be understating the baseline.
+        check("DE: chunk-swept best >= best per-codec entry", min(slack), 1.0, 1.10, "x",
+              "de_map is the authoritative, stronger denominator (~3% above per-codec on URL)")
+
     # 2. GSST: A100 l_comment FastPair / GSST's 191 GB/s. Paper: ~3.3x.
     a100_lc = C.best_shipped(C.cell("a100", "tpch-sf10", "l_comment", 12))
     if a100_lc:

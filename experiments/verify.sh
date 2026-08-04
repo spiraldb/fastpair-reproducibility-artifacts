@@ -20,12 +20,17 @@ LIVE_FIGS=(
   # the 12 figures in the main paper. fig_sota also ASSERTS its own claim: it exits nonzero
   # if any FastPair mark fails to clear the same-device baseline frontier, so a data change
   # that broke the dominance claim fails this run rather than shipping quietly.
-  fig_teaser fig_sota fig_crossarch fig_sota_cpu fig_scaling fig_stagecost fig_costsurface
+  fig_teaser fig_sota fig_crossarch fig_sota_cpu fig_stagecost fig_costsurface
   fig_gatherwidth fig_ablation fig_compressibility fig_hierarchy fig_offtrade
-  # extended-version figures (CPU deep-dive + per-dataset breakdown), regenerated
-  # for completeness; not referenced in the main paper
-  fig_crossstack fig_bitsweep fig_cputma fig_b300_datasets
+  # extended-version figures (CPU deep-dive), regenerated for completeness; not referenced
+  # in the main paper
+  fig_crossstack fig_bitsweep fig_cputma
 )
+# RETIRED 2026-08-04, superseded by fig_crossarch: fig_b300_datasets (per-column B300 bars
+# against the DE) and fig_scaling (three GPUs, one column). Both were earlier attempts at the
+# per-column cross-architecture view that fig_crossarch now carries for all four GPUs and all
+# ten columns, and neither is referenced by the paper. The scripts stay in figures/ as history;
+# they are no longer rebuilt, so they are no longer held to current data.
 
 command -v uv >/dev/null 2>&1 || { echo "FATAL: need 'uv' (https://docs.astral.sh/uv/)"; exit 2; }
 
