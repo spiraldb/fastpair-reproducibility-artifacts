@@ -2,26 +2,29 @@
 # requires-python = ">=3.9"
 # dependencies = ["matplotlib", "numpy"]
 # ///
-"""Fig. crossarch: decode throughput across the four GPUs, one labeled line per column.
+"""Fig. crossarch: per-column decode rate on all four GPUs against that column's engine rate.
 
-The companion to fig_sota, which fixes the device and varies the codec; this fixes the
-codec and varies the device. Two panels, one per preset (FastPair-12 | FastPair-16). x is
-the four GPUs ordered by VENDOR-RATED peak memory bandwidth (L40S 0.86 -> A100 1.56 ->
-H100 3.35 -> B300 8.0 TB/s, Sec. 2's architecture table), a spec ordering independent of
-anything we measured; y is absolute decode rate, log, so the 1 TB/s crossing is readable.
-Every column is named at the right edge, which the range-bar form could not do.
+The companion to fig_sota, which fixes the device and varies the codec; this fixes the codec
+and varies the device. One strip per column: four dots, one per GPU, shaded so the chip is
+readable without a leader, joined by a thin rule to group them, plus an orange tick at THAT
+column's B300 Decompression Engine rate. Two panels, one per preset.
 
-A fifth x slot, set off by a gap, carries THAT COLUMN'S B300 Decompression Engine rate
-(best valid engine codec, Snappy overlay included), joined to the B300 FastPair point by a
-dotted segment. Per-column is the only fair way to draw the engine: its rate varies 202 to
-662 GB/s across these columns, so a single band would compare one column's software
-against another column's hardware. With the endpoint drawn per column, a FastPair marker
-sitting above its own dotted endpoint at the L40S or A100 position is the cross-device
-result: decode on an older or GDDR6 part beating Blackwell's dedicated decompression
-silicon on the same data. That comparison is across devices, and the caption says so.
+This replaced a slopegraph (GPUs on x, one line per column). That form could not work on this
+data: at the L40S the eight real columns span just 30%, about 0.11 decades, so ten lines
+entered the panel almost coincident, needed decluttered labels with leaders to be identified
+at all, and crossed a fan of engine connectors on the way out. The strip form removes the
+demand that a reader track a line, because neither of the figure's jobs needs it:
 
-Launch-bound columns (C.LAUNCH_BOUND: the 1-6 MB dbtext set and TPC-H s_comment) are
-absent, as in fig_sota: their cells are launch- and latency-bound, not throughput.
+- Absolute rates across four architectures, so 1,689 GB/s and the 1 TB/s line stay readable.
+- Whether a column's whole strip clears its own engine tick. That is the paper's cross-device
+  result, and it is now a single local comparison repeated ten times rather than something
+  recovered from a fan.
+
+Ordering is by B300 FastPair-12 rate, descending, and the SAME order is used in both panels so
+a column sits at one x position throughout. The L40S keeps a separate hue because it is the one
+GDDR6 part; the three HBM chips take a light-to-dark blue ramp in bandwidth order. A dot below
+its neighbours breaks the ramp visibly, which is the honest rendering of a non-monotonicity
+(ClickBench URL is faster on the L40S than on the A100 at FastPair-12).
 Source: results/{a100,l40s,h100,b300}/onpair_summary_*.json + b300/onpair_nvcomp_hw.json
 + b300-campaign-0717/onpair_nvcomp_hw.json (the DE Snappy overlay).
 """
@@ -31,15 +34,14 @@ import numpy as np
 
 import common as C
 
-# Chips left to right by vendor peak bandwidth (TB/s), NOT by our measurements.
+# Ordered by vendor peak bandwidth: L40S 0.86, A100 1.56, H100 3.35, B300 8.0 TB/s.
 ORDER = ["l40s", "a100", "h100", "b300"]
-PEAK_TBS = {"l40s": 0.86, "a100": 1.56, "h100": 3.35, "b300": 8.0}
-DE_X = len(ORDER) + 0.55          # the engine slot, set off by a gap
-# Names go in a LEFT margin, anchored to each column's L40S rate. The right side is
-# occupied by the engine connectors, and ten labels among them was unreadable.
-LABEL_X = -0.45
+# The L40S is the one GDDR6 part and the paper leans on that; give it its own hue and put the
+# three HBM chips on a light-to-dark blue ramp so their order reads as a ramp.
+GPU_COLOR = {"l40s": "#74c476", "a100": "#9ecae1", "h100": "#3182bd", "b300": "#08519c"}
+# x offsets within a column slot, in ORDER (bandwidth) order.
+DODGE = [-0.20, -0.067, 0.067, 0.20]
 
-# (dataset, column, right-edge label). Same 10 columns as fig_sota.
 COLS = [
     ("tpch-sf10", "l_comment", "TPC-H l_comment"),
     ("tpch-sf10", "ps_comment", "TPC-H ps_comment"),
@@ -52,28 +54,26 @@ COLS = [
     ("amazon-movies", "text", "amazon-movies"),
     ("amazon-electronics", "text", "amazon-electronics"),
 ]
-# Synthetic columns (low cardinality) vs real text columns: one hue each, so the two
-# families stay separable among ten lines without a ten-entry color legend.
-SYNTH = {("lship", "l_shipinstruct"), ("synthetic", "url")}
 
 
-def series(dataset, column, bits):
-    """(x indices, GB/s) across ORDER, skipping chips with no cell for this column."""
-    xs, ys = [], []
-    for i, g in enumerate(ORDER):
+def rates(dataset, column, bits):
+    """{gpu: GB/s} for one column and preset, omitting GPUs with no cell."""
+    out = {}
+    for g in ORDER:
         t = C.best_shipped(C.cell(g, dataset, column, bits))
         if t:
-            xs.append(i)
-            ys.append(t)
-    return xs, ys
+            out[g] = t
+    return out
 
 
 def de_rates():
     """{(dataset, column): best valid B300 engine codec rate in GB/s}, Snappy included.
 
-    Mirrors fig_sota's treatment: canonical b300 carries Deflate/LZ4, and the all-codec
-    campaign run adds Snappy on the same B300 class. Taking the best over codecs is the
-    strong reading of the baseline, matching how the paper reports the engine.
+    Mirrors fig_sota: canonical b300 carries Deflate/LZ4 and the all-codec campaign run adds
+    Snappy on the same B300 class. Best-over-codecs is the strong reading of the baseline and
+    matches how the paper reports the engine. Per column is the only fair form: the engine
+    spans 202 to 662 GB/s here, so one line for all columns would compare one column's
+    software against another column's hardware.
     """
     de = {(e["dataset_id"], e["column"]): e
           for e in json.load(open(C.RESULTS / "b300" / "onpair_nvcomp_hw.json"))}
@@ -99,55 +99,38 @@ def de_rates():
     return out
 
 
-def _declutter(ys, lo, hi, gap=0.050):
-    """Nudge right-edge label positions apart in log space, preserving their order.
-
-    The long-text columns land within ~10% of each other on the B300, so their labels
-    would overlap at 5.4 pt. Sweep up then down enforcing a minimum log10 separation.
-    """
-    idx = sorted(range(len(ys)), key=lambda i: ys[i])
-    pos = {i: np.log10(ys[i]) for i in idx}
-    for a, b in zip(idx, idx[1:]):
-        if pos[b] - pos[a] < gap:
-            pos[b] = pos[a] + gap
-    for a, b in zip(idx[::-1], idx[::-1][1:]):
-        if pos[a] - pos[b] < gap:
-            pos[b] = pos[a] - gap
-    return {i: float(np.clip(10 ** p, lo, hi)) for i, p in pos.items()}
-
-
-def panel(ax, bits, de, show_ylabel, ylim):
-    ax.axhline(1000.0, color=C.INK, lw=0.5, ls=(0, (4, 3)), alpha=0.55, zorder=2)
-    ends, drawn = {}, []
-    for k, (dataset, column, label) in enumerate(COLS):
-        xs, ys = series(dataset, column, bits)
-        if len(xs) < 2:
+def panel(ax, bits, order, de, show_ylabel, ylim):
+    ax.axhline(1000.0, color=C.INK, lw=0.5, ls=(0, (4, 3)), alpha=0.5, zorder=1)
+    for x, (dataset, column, label) in enumerate(order):
+        rs = rates(dataset, column, bits)
+        if not rs:
             continue
-        color = "#74c476" if (dataset, column) in SYNTH else C.PRIMARY
-        ax.plot(xs, ys, color=color, lw=1.0, marker="o", ms=2.6, alpha=0.9, zorder=4)
+        # Dodge the four chips along x, in bandwidth order. Two purposes: the L40S and A100
+        # land within a few percent on several columns (425 against 413 on amazon-electronics)
+        # and would overplot at a single x; and once dodged, the connected dots read left to
+        # right as chip order, so each column carries its own scaling shape while no line ever
+        # crosses into a neighbouring column.
+        xs = [x + d for d, g in zip(DODGE, ORDER) if g in rs]
+        ys = [rs[g] for g in ORDER if g in rs]
+        ax.plot(xs, ys, color="#c8ccd0", lw=0.8, zorder=2)
+        for xi, g in zip(xs, [g for g in ORDER if g in rs]):
+            ax.scatter([xi], [rs[g]], s=17, color=GPU_COLOR[g], zorder=4,
+                       edgecolors="white", linewidths=0.3)
         d = de.get((dataset, column))
         if d:
-            # This column's own engine rate, joined to its own B300 point. Kept faint:
-            # ten connectors at full weight read as a solid fan and buried the data.
-            ax.plot([xs[-1], DE_X], [ys[-1], d], color=C.WARM, lw=0.4, ls=":",
-                    alpha=0.45, zorder=3)
-            ax.plot([DE_X], [d], color=C.WARM, marker="_", ms=7, mew=1.4, zorder=5)
-        ends[k] = ys[0]
-        drawn.append((k, label, color))
-    at = _declutter(ends, ylim[0] * 1.02, ylim[1] * 0.98)
-    for k, label, color in drawn:
-        # Decluttering moves a label off its line's height, so a leader restores the
-        # mapping: without it the stack order is the only cue, and the L40S rates are close.
-        ax.plot([LABEL_X + 0.06, 0.0], [at[k], ends[k]], color=color, lw=0.35,
-                alpha=0.45, zorder=3, clip_on=False)
-        ax.annotate(label, (LABEL_X, at[k]), xytext=(0, 0), textcoords="offset points",
-                    fontsize=5.4, color=color, va="center", ha="right", zorder=6)
-    ax.set_xticks(list(range(len(ORDER))) + [DE_X])
-    ax.set_xticklabels(["%s\n%.2f TB/s" % (C.GPU_LABEL[g], PEAK_TBS[g]) for g in ORDER]
-                       + ["B300\nengine"], fontsize=5.8)
-    ax.set_xlim(LABEL_X - 2.05, DE_X + 0.3)
+            ax.plot([x - 0.30, x + 0.30], [d, d], color=C.WARM, lw=1.5,
+                    solid_capstyle="butt", zorder=3)
+    ax.set_xticks(range(len(order)))
+    ax.set_xticklabels([l for _, _, l in order], fontsize=5.4, rotation=38,
+                       ha="right", rotation_mode="anchor")
+    ax.set_xlim(-0.6, len(order) - 0.4)
     ax.set_yscale("log")
     ax.set_ylim(*ylim)
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
+    ax.yaxis.set_major_locator(FixedLocator([200, 500, 1000, 2000]))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
+    ax.yaxis.set_minor_locator(FixedLocator([]))
+    ax.yaxis.set_minor_formatter(NullFormatter())
     ax.set_title("FastPair-%d" % bits, fontsize=8)
     if show_ylabel:
         ax.set_ylabel("decode (GB/s, log)")
@@ -155,40 +138,42 @@ def panel(ax, bits, de, show_ylabel, ylim):
 
 def main():
     de = de_rates()
-    ylim = (150, 2600)
+    # One x order for both panels, by B300 FastPair-12 rate descending, so a column keeps
+    # its position between the panels and the profile reads as a descent.
+    order = sorted(COLS, key=lambda c: -(rates(c[0], c[1], 12).get("b300") or 0))
     plt = C.apply_theme()
-    fig, (ax12, ax16) = plt.subplots(1, 2, figsize=(7.0, 2.8), sharey=True)
-    panel(ax12, 12, de, True, ylim)
-    panel(ax16, 16, de, False, ylim)
+    fig, (ax12, ax16) = plt.subplots(1, 2, figsize=(7.0, 2.6), sharey=True)
+    panel(ax12, 12, order, de, True, (170, 2300))
+    panel(ax16, 16, order, de, False, (170, 2300))
     from matplotlib.lines import Line2D
-    handles = [
-        Line2D([], [], color=C.PRIMARY, lw=1.0, marker="o", ms=3, label="real column"),
-        Line2D([], [], color="#74c476", lw=1.0, marker="o", ms=3, label="synthetic (low cardinality)"),
-        Line2D([], [], color=C.WARM, lw=0.6, ls=":", marker="_", ms=6, mew=1.4,
-               label="same column on the B300 Decompression Engine"),
-        Line2D([], [], color=C.INK, lw=0.5, ls=(0, (4, 3)), alpha=0.55, label="1 TB/s"),
+    handles = [Line2D([], [], color=GPU_COLOR[g], marker="o", ls="", ms=4.5,
+                      label=C.GPU_LABEL[g] + (" (GDDR6)" if g == "l40s" else ""))
+               for g in ORDER]
+    handles += [
+        Line2D([], [], color=C.WARM, lw=1.5, label="same column, B300 engine"),
+        Line2D([], [], color=C.INK, lw=0.5, ls=(0, (4, 3)), alpha=0.5, label="1 TB/s"),
     ]
-    fig.legend(handles=handles, frameon=False, fontsize=6.3, ncol=4, loc="lower center",
-               bbox_to_anchor=(0.0, -0.03, 1.0, 0.1), mode="expand",
-               columnspacing=1.0, handlelength=1.8, handletextpad=0.6, borderaxespad=0.0)
-    fig.tight_layout(rect=(0, 0.1, 1, 1))
+    fig.legend(handles=handles, frameon=False, fontsize=6.3, ncol=6, loc="lower center",
+               bbox_to_anchor=(0.0, -0.01, 1.0, 0.09), mode="expand",
+               columnspacing=0.8, handlelength=1.3, handletextpad=0.5, borderaxespad=0.0)
+    fig.tight_layout(rect=(0, 0.11, 1, 1))
     C.save(fig, "fig_crossarch")
 
-    # Report what the figure asserts, so the prose quotes derived numbers rather than eyeballed ones.
+    # Report what the figure asserts so the prose quotes derived numbers, not eyeballed ones.
     for bits in (12, 16):
-        n_all = 0
+        clean = 0
         for dataset, column, label in COLS:
             d = de.get((dataset, column))
-            xs, ys = series(dataset, column, bits)
-            if not d or not xs:
+            rs = rates(dataset, column, bits)
+            if not d or not rs:
                 continue
-            short = [C.GPU_LABEL[ORDER[i]] for i, y in zip(xs, ys) if y <= d]
-            if not short:
-                n_all += 1
+            below = [C.GPU_LABEL[g] for g, t in rs.items() if t <= d]
+            if below:
+                print("FastPair-%d %-22s engine=%4.0f  below: %s" % (bits, label, d, ",".join(below)))
             else:
-                print("FastPair-%d %-22s DE=%4.0f  below-DE: %s" % (bits, label, d, ",".join(short)))
-        print("FastPair-%d: %d of %d columns where ALL FOUR GPUs beat the B300 engine"
-              % (bits, n_all, len([1 for c in COLS if (c[0], c[1]) in de])))
+                clean += 1
+        print("FastPair-%d: %d of %d columns where all four GPUs clear the engine"
+              % (bits, clean, len([1 for c in COLS if (c[0], c[1]) in de])))
 
 
 if __name__ == "__main__":
