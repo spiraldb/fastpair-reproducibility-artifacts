@@ -48,10 +48,13 @@ COLS = [
 # configuration -> shade, in technique-family families (FastPair blues / DE oranges / Zstd grays).
 CFG = {
     "FastPair-12": "#6baed6", "FastPair-16": "#08519c",
-    # Four engine codecs now share the square, so the shade ramp is the only thing separating
+    # Four engine codecs share the square, so the shade ramp is the only thing separating
     # them: spread across the full ColorBrewer Oranges range rather than the middle of it,
     # where Snappy (#fd8d3c) and Deflate-fast (#f16913) were nearly the same orange.
-    "DE Deflate (5)": "#fdd0a2", "DE Deflate (0)": "#fdae6b", "DE LZ4": "#e6550d",
+    # fig_crossarch draws each column's WINNING codec as a rule in these same shades, so the
+    # three that ever win (Deflate (5), LZ4, Snappy) must stay legible as a thin line.
+    # Deflate-fast wins no column anywhere, so it takes the faintest slot.
+    "DE Deflate (5)": "#e08214", "DE Deflate (0)": "#fdd0a2", "DE LZ4": "#e6550d",
     "DE Snappy": "#a63603",
     "Zstd (-10)": "#cccccc", "Zstd (1)": "#969696", "Zstd (3)": "#525252",
     # nvCOMP's speed-first software codecs (B300, campaign run): they reach FastPair-class

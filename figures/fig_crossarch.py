@@ -42,18 +42,29 @@ GPU_COLOR = {"l40s": "#74c476", "a100": "#9ecae1", "h100": "#3182bd", "b300": "#
 # x offsets within a column slot, in ORDER (bandwidth) order.
 DODGE = [-0.20, -0.067, 0.067, 0.20]
 
+# (dataset, column, label, origin) with origin S = synthetic, R = real, matching fig_sota's
+# panel split and tab:datasets' grouping.
 COLS = [
-    ("tpch-sf10", "l_comment", "TPC-H l_comment"),
-    ("tpch-sf10", "ps_comment", "TPC-H ps_comment"),
-    ("lship", "l_shipinstruct", "l_shipinstruct"),
-    ("synthetic", "url", "synthetic URL"),
-    ("clickbench", "URL", "ClickBench URL"),
-    ("fineweb", "text", "FineWeb text"),
-    ("wikipedia", "text", "Wikipedia text"),
-    ("book-reviews", "text", "book-reviews"),
-    ("amazon-movies", "text", "amazon-movies"),
-    ("amazon-electronics", "text", "amazon-electronics"),
+    ("tpch-sf10", "l_comment", "TPC-H l_comment", "S"),
+    ("tpch-sf10", "ps_comment", "TPC-H ps_comment", "S"),
+    ("lship", "l_shipinstruct", "l_shipinstruct", "S"),
+    ("synthetic", "url", "synthetic URL", "S"),
+    ("clickbench", "URL", "ClickBench URL", "R"),
+    ("fineweb", "text", "FineWeb text", "R"),
+    ("wikipedia", "text", "Wikipedia text", "R"),
+    ("book-reviews", "text", "book-reviews", "R"),
+    ("amazon-movies", "text", "amazon-movies", "R"),
+    ("amazon-electronics", "text", "amazon-electronics", "R"),
 ]
+
+# Which engine codec actually wins varies by column: Deflate-hi on the synthetics and
+# ClickBench URL, LZ4 or Snappy on the long-text columns. So the rule is drawn in that
+# codec's own shade, reusing fig_sota's DE ramp verbatim, and the legend names the three
+# winners instead of an anonymous "engine". Shades must track fig_sota.CFG.
+DE_CODEC_NAME = {"DEFLATE-hi": "Deflate (5)", "DEFLATE-fast": "Deflate (0)",
+                 "LZ4": "LZ4", "Snappy": "Snappy"}
+DE_CODEC_COLOR = {"Deflate (5)": "#e08214", "Deflate (0)": "#fdd0a2",
+                  "LZ4": "#e6550d", "Snappy": "#a63603"}
 
 
 def rates(dataset, column, bits):
@@ -87,21 +98,23 @@ def de_rates():
     except FileNotFoundError:
         pass
     out = {}
-    for dataset, column, _ in COLS:
+    for dataset, column, _, _ in COLS:
         did = "tpch-sf10" if dataset in ("tpch-sf10", "lship") else dataset
         e = de.get((did, column))
         if not e:
             continue
-        best = [v["decode_gib_s"] * C.GIB_TO_GB for v in (e.get("codecs") or {}).values()
+        best = [(v["decode_gib_s"] * C.GIB_TO_GB, DE_CODEC_NAME.get(n, n))
+                for n, v in (e.get("codecs") or {}).items()
                 if v.get("decode_gib_s") and v.get("ratio")]
         if best:
-            out[(dataset, column)] = max(best)
+            out[(dataset, column)] = max(best)   # (rate, winning codec name)
     return out
 
 
-def panel(ax, bits, order, de, show_ylabel, ylim):
-    ax.axhline(1000.0, color=C.INK, lw=0.5, ls=(0, (4, 3)), alpha=0.5, zorder=1)
-    for x, (dataset, column, label) in enumerate(order):
+def panel(ax, bits, order, de, show_ylabel, ylim, split):
+    # No 1 TB/s rule: the 1000 tick and its gridline already mark that line exactly, so the
+    # dashed overlay was drawing the same fact twice and needed a legend row to explain it.
+    for x, (dataset, column, label, _) in enumerate(order):
         rs = rates(dataset, column, bits)
         if not rs:
             continue
@@ -118,10 +131,19 @@ def panel(ax, bits, order, de, show_ylabel, ylim):
                        edgecolors="white", linewidths=0.3)
         d = de.get((dataset, column))
         if d:
-            ax.plot([x - 0.30, x + 0.30], [d, d], color=C.WARM, lw=1.5,
-                    solid_capstyle="butt", zorder=3)
+            rate, codec = d
+            ax.plot([x - 0.30, x + 0.30], [rate, rate], color=DE_CODEC_COLOR.get(codec, C.WARM),
+                    lw=1.9, solid_capstyle="butt", zorder=3)
+    # Divide synthetic from real. The two groups answer different questions (low-cardinality
+    # dictionaries versus dictionaries that fill), and the engine's own behaviour differs
+    # sharply across the boundary, so leaving it implicit in the ordering hid a real seam.
+    if split:
+        ax.axvline(split - 0.5, color="#b9bdc2", lw=0.7, zorder=1)
+        for lo, hi, name in ((0, split, "synthetic"), (split, len(order), "real")):
+            ax.text((lo + hi - 1) / 2.0, ylim[1] * 0.93, name, fontsize=6.0, style="italic",
+                    color=C.INK, ha="center", va="top", zorder=6)
     ax.set_xticks(range(len(order)))
-    ax.set_xticklabels([l for _, _, l in order], fontsize=5.4, rotation=38,
+    ax.set_xticklabels([l for _, _, l, _ in order], fontsize=5.4, rotation=38,
                        ha="right", rotation_mode="anchor")
     ax.set_xlim(-0.6, len(order) - 0.4)
     ax.set_yscale("log")
@@ -140,20 +162,30 @@ def main():
     de = de_rates()
     # One x order for both panels, by B300 FastPair-12 rate descending, so a column keeps
     # its position between the panels and the profile reads as a descent.
-    order = sorted(COLS, key=lambda c: -(rates(c[0], c[1], 12).get("b300") or 0))
+    # Synthetic first, then real, each by B300 FastPair-12 rate descending.
+    def key(c):
+        return (0 if c[3] == "S" else 1, -(rates(c[0], c[1], 12).get("b300") or 0))
+    order = sorted(COLS, key=key)
+    split = sum(1 for c in order if c[3] == "S")
+    ylim = (170, 2300)
     plt = C.apply_theme()
     fig, (ax12, ax16) = plt.subplots(1, 2, figsize=(7.0, 2.6), sharey=True)
-    panel(ax12, 12, order, de, True, (170, 2300))
-    panel(ax16, 16, order, de, False, (170, 2300))
+    panel(ax12, 12, order, de, True, ylim, split)
+    panel(ax16, 16, order, de, False, ylim, split)
     from matplotlib.lines import Line2D
     handles = [Line2D([], [], color=GPU_COLOR[g], marker="o", ls="", ms=4.5,
                       label=C.GPU_LABEL[g] + (" (GDDR6)" if g == "l40s" else ""))
                for g in ORDER]
-    handles += [
-        Line2D([], [], color=C.WARM, lw=1.5, label="same column, B300 engine"),
-        Line2D([], [], color=C.INK, lw=0.5, ls=(0, (4, 3)), alpha=0.5, label="1 TB/s"),
-    ]
-    fig.legend(handles=handles, frameon=False, fontsize=6.3, ncol=6, loc="lower center",
+    # Name the engine codecs that actually win a column, in the order they first appear
+    # left to right, rather than an anonymous "engine" swatch.
+    winners = []
+    for dataset, column, _, _ in order:
+        d = de.get((dataset, column))
+        if d and d[1] not in winners:
+            winners.append(d[1])
+    handles += [Line2D([], [], color=DE_CODEC_COLOR.get(w, C.WARM), lw=1.9,
+                       label="B300 engine: %s" % w) for w in winners]
+    fig.legend(handles=handles, frameon=False, fontsize=6.3, ncol=7, loc="lower center",
                bbox_to_anchor=(0.0, -0.01, 1.0, 0.09), mode="expand",
                columnspacing=0.8, handlelength=1.3, handletextpad=0.5, borderaxespad=0.0)
     fig.tight_layout(rect=(0, 0.11, 1, 1))
@@ -162,14 +194,16 @@ def main():
     # Report what the figure asserts so the prose quotes derived numbers, not eyeballed ones.
     for bits in (12, 16):
         clean = 0
-        for dataset, column, label in COLS:
+        for dataset, column, label, _ in COLS:
             d = de.get((dataset, column))
             rs = rates(dataset, column, bits)
             if not d or not rs:
                 continue
-            below = [C.GPU_LABEL[g] for g, t in rs.items() if t <= d]
+            rate, codec = d
+            below = [C.GPU_LABEL[g] for g, t in rs.items() if t <= rate]
             if below:
-                print("FastPair-%d %-22s engine=%4.0f  below: %s" % (bits, label, d, ",".join(below)))
+                print("FastPair-%d %-22s engine=%4.0f (%-11s)  below: %s"
+                      % (bits, label, rate, codec, ",".join(below)))
             else:
                 clean += 1
         print("FastPair-%d: %d of %d columns where all four GPUs clear the engine"
