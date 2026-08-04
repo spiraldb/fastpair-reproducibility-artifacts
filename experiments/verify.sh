@@ -17,8 +17,10 @@ cd "$ROOT"
 # schematic (no results dependency) but it has a script, so it rebuilds too. Output name in
 # parens where it differs (fig_crossstack writes fig_crossstack_strip.pdf).
 LIVE_FIGS=(
-  # the 11 figures in the main paper
-  fig_teaser fig_sota fig_sota_cpu fig_scaling fig_stagecost fig_costsurface
+  # the 12 figures in the main paper. fig_sota also ASSERTS its own claim: it exits nonzero
+  # if any FastPair mark fails to clear the same-device baseline frontier, so a data change
+  # that broke the dominance claim fails this run rather than shipping quietly.
+  fig_teaser fig_sota fig_crossarch fig_sota_cpu fig_scaling fig_stagecost fig_costsurface
   fig_gatherwidth fig_ablation fig_compressibility fig_hierarchy fig_offtrade
   # extended-version figures (CPU deep-dive + per-dataset breakdown), regenerated
   # for completeness; not referenced in the main paper

@@ -2,19 +2,30 @@
 # requires-python = ">=3.9"
 # dependencies = ["matplotlib", "numpy"]
 # ///
-"""Fig. sota: the whole result space as throughput vs compression ratio.
+"""Fig. sota: the result space on ONE device as throughput vs compression ratio.
 
-Each (column, *configuration*) is a thin vertical range bar at the column's compression
-ratio, spanning that config's best-to-worst decode over the four GPUs (A100->B300); single-
-GPU configs (the Blackwell DE) are a tick. Color = configuration, in technique-family
-shades (FastPair dict-12/-16; the DE's Deflate algo 5/0 and LZ4; Zstd's levels), so the
-within-family split stays visible while the per-GPU marker cloud and its shape legend are
-gone. Throughput is LOG here: FastPair (TB/s), the hardware DE (hundreds of GB/s), and
-software Zstd (sub-GB/s) span ~4 orders, so a log axis keeps every family visible. Two
-panels (real | synthetic) share the throughput axis; the synthetic columns reach far
-higher ratios, so the x-axes differ.
-Source: results/{a100,l40s,h100,b300}/onpair_summary_*.json + b300/onpair_nvcomp_hw.json
-(DE Deflate/LZ4) + b300-campaign-0717/onpair_nvcomp_hw.json (DE Snappy overlay).
+Every mark is a B300 measurement. This is deliberate and it is the fix for the previous
+form, which drew FastPair and Zstd as boxes spanning four GPUs (A100->B300) while the
+Blackwell-only DE and nvCOMP codecs were single B300 points: that compared our four-
+generation spread against each baseline's best chip, so the visual understated the
+same-device margin the prose claims (a ~1.5x apparent gap where the B300-vs-B300 number
+is 2.2x on ClickBench URL). Varying the device is now fig_crossarch's job; this figure
+varies the codec and holds the device fixed.
+
+The staircase is the BASELINE Pareto frontier: at each compression ratio, the best decode
+rate any non-FastPair baseline achieves at that ratio or better. The paper's claim is
+positional, that no baseline decodes faster than FastPair at an equal or better ratio on
+the same device, so drawing the frontier makes the claim visible rather than something the
+reader must reconstruct from a cloud. FastPair marks above and right of the staircase are
+the claim. main() asserts it and prints any violation.
+
+Zstd levels that are Pareto-dominated by another level on the SAME column are omitted:
+they sit strictly below-left of a kept point, so they cannot affect the frontier or the
+claim, and the three levels cost 30 marks. Throughput is LOG: FastPair (TB/s) and
+software Zstd (sub-GB/s) span ~4 orders. Two panels (real | synthetic) share the
+throughput axis; the synthetic columns reach far higher ratios, so the x-axes differ.
+Source: results/b300/onpair_summary_*.json + b300/onpair_nvcomp_hw.json (DE Deflate/LZ4)
++ b300-campaign-0717/onpair_nvcomp_hw.json (DE Snappy overlay + gANS/Bitcomp).
 """
 import json
 
@@ -56,27 +67,63 @@ MARKER = {
 }
 
 
+DEV = "b300"   # the one device this figure reports; see the module docstring.
+
+
 def fp_cfg(fn, col, bits):
-    # OnPair re-trains its dictionary per box, so mem_ratio jitters slightly across GPUs
-    # (≤1.3% on real columns, ~4% on the far-from-cap synthetic ones). The ratio is a column
-    # property, reported canonically from the B300 (tab:datasets), so pin x to the B300 value
-    # and keep only the per-GPU throughput on y -- no cosmetic x-jitter.
-    ts = [t for t in (C.best_shipped(C.cell(g, fn, col, bits)) for g in C.GPUS) if t]
-    r = (C.cell("b300", fn, col, bits) or {}).get("mem_ratio")
-    if r is None:
-        r = next((c.get("mem_ratio") for g in C.GPUS
-                  for c in [C.cell(g, fn, col, bits)] if c and c.get("mem_ratio")), None)
-    return ([r] * len(ts) if r else []), ts
+    """(ratio, GB/s) for one FastPair preset on the B300, or (None, None)."""
+    c = C.cell(DEV, fn, col, bits)
+    t = C.best_shipped(c)
+    r = (c or {}).get("mem_ratio")
+    return (r, t) if (r and t) else (None, None)
 
 
 def zstd_cfg(fn, col, level):
-    rs, ts = [], []
-    for g in C.GPUS:
-        c = C.cell(g, fn, col, 12) or C.cell(g, fn, col, 16)
-        for e in ((c or {}).get("gpu") or {}).get("nvcomp_zstd") or []:
-            if isinstance(e, dict) and str(e.get("zstd_level")) == level and e.get("compression_ratio") and C.zstd_gb_s(e):
-                rs.append(e["compression_ratio"]); ts.append(C.zstd_gb_s(e))
-    return rs, ts
+    """(ratio, GB/s) for one Zstd level on the B300, or (None, None)."""
+    c = C.cell(DEV, fn, col, 12) or C.cell(DEV, fn, col, 16)
+    for e in ((c or {}).get("gpu") or {}).get("nvcomp_zstd") or []:
+        if (isinstance(e, dict) and str(e.get("zstd_level")) == level
+                and e.get("compression_ratio") and C.zstd_gb_s(e)):
+            return e["compression_ratio"], C.zstd_gb_s(e)
+    return None, None
+
+
+def undominated(pts):
+    """Keep only Pareto-optimal (ratio, rate) points: nothing else is >= on both axes.
+
+    Used to prune Zstd levels within a column. A dropped point is strictly worse on both
+    axes than a kept one, so it can move neither the frontier nor the dominance claim.
+    """
+    keep = []
+    for i, (r, t, *rest) in enumerate(pts):
+        if not any(j != i and pts[j][0] >= r and pts[j][1] >= t
+                   and (pts[j][0] > r or pts[j][1] > t) for j in range(len(pts))):
+            keep.append((r, t, *rest))
+    return keep
+
+
+def frontier(pts, xlo=None):
+    """Step path of F(x) = best baseline rate at ratio x or better, in ASCENDING x.
+
+    F is piecewise constant and non-increasing: raising the ratio requirement can only
+    drop competitors. Breakpoints are the baselines' own ratios, and on the interval
+    (x_{k-1}, x_k] the qualifying set is {r >= x_k}, so the arrays are meant to be drawn
+    with step(where="pre"). Ascending order matters: an earlier version built this path
+    right to left, which matplotlib's step renders as a near-flat line and made the
+    envelope look like a 1 TB/s ceiling across every ratio.
+    """
+    if not pts:
+        return [], []
+    xs = sorted({r for r, _ in pts})
+    if xlo is not None and xlo < xs[0]:
+        xs = [xlo] + xs
+    return xs, [frontier_at(pts, x) for x in xs]
+
+
+def frontier_at(pts, ratio):
+    """Best baseline rate at `ratio` or better; 0.0 if no baseline reaches that ratio."""
+    vals = [t for r, t in pts if r >= ratio]
+    return max(vals) if vals else 0.0
 
 
 def _edge(color, f=0.7):
@@ -87,46 +134,71 @@ def _edge(color, f=0.7):
     return (r * f, g * f, b * f)
 
 
-def range_bar(ax, rs, ts, color, marker="o", s=13):
-    """Multi-GPU configs (>=3 points across the GPUs) draw a box over their decode spread,
-    matching fig_sota_cpu; single-GPU configs (one point: the hardware DE and nvCOMP software
-    codecs) draw a distinct marker (see MARKER). Box width scales with x for the log axis."""
-    if not rs or not ts:
+YLO, YHI = 100.0, 2600.0
+# Below YLO there is nothing but dominated nvCOMP-Zstd levels, and on a log axis that dead
+# band ate ~2.5 of 4 decades, compressing the whole competitive region (and the margin over
+# the frontier) into a sliver. Points below the floor are pinned to it as hollow down-
+# triangles and their true range is reported for the caption, so they are marked off-scale,
+# not dropped.
+OFFSCALE = []
+
+
+def mark(ax, r, t, color, marker="o", s=20, label=None):
+    if not (r and t):
         return
-    x = float(np.median(rs))
-    if len(ts) >= 3:
-        ax.boxplot([ts], positions=[x], widths=[x * 0.06], patch_artist=True,
-                   whis=(0, 100), showfliers=False, manage_ticks=False, zorder=3,
-                   medianprops=dict(lw=0),   # whiskers span full min..max (no hidden fliers); median line off
-                   whiskerprops=dict(color=color, lw=0.6), capprops=dict(color=color, lw=0.6),
-                   boxprops=dict(facecolor=color, edgecolor=_edge(color), alpha=0.6, lw=0.6))
-    else:
-        ax.scatter(rs, ts, s=s, color=color, marker=marker, zorder=4,
-                   edgecolors=_edge(color), linewidths=0.3, alpha=0.95)
+    if t < YLO:
+        OFFSCALE.append((label, t))
+        ax.scatter([r], [YLO * 1.04], s=s * 0.7, facecolors="none", marker="v",
+                   edgecolors=color, linewidths=0.6, zorder=4, alpha=0.9)
+        return
+    ax.scatter([r], [t], s=s, color=color, marker=marker, zorder=5,
+               edgecolors=_edge(color), linewidths=0.3, alpha=0.95)
+
+
+def collect(origin, de, gb):
+    """(fastpair, baselines) point lists for one panel, all on DEV.
+
+    fastpair: (ratio, rate, config-label, column-label). baselines: (ratio, rate, label).
+    GSST is excluded from the baseline frontier: it is a published A100 number, so folding
+    it into a same-device envelope would be exactly the cross-device mixing this figure
+    exists to remove. It is still drawn, and the caption marks it cross-paper.
+    """
+    fps, bases = [], []
+    for fn, col, did, orig in COLS:
+        if orig != origin:
+            continue
+        for bits in (12, 16):
+            r, t = fp_cfg(fn, col, bits)
+            if r:
+                fps.append((r, t, "FastPair-%d" % bits, col))
+        d = de.get((did, col))
+        if d:
+            for name, eng in (d.get("codecs") or {}).items():
+                lbl = DE_NAME.get(name, "DE %s" % name)
+                if lbl in CFG and eng.get("ratio") and eng.get("decode_gib_s"):
+                    bases.append((eng["ratio"], eng["decode_gib_s"] * C.GIB_TO_GB, lbl))
+        zs = [(r, t, "Zstd (%s)" % lvl) for lvl in ("-10", "1", "3")
+              for r, t in [zstd_cfg(fn, col, lvl)] if r]
+        bases.extend(undominated(zs))   # dominated levels add marks, never information
+        for name in ("gANS", "Bitcomp-default", "Bitcomp-sparse"):
+            e = (gb.get((did, col)) or {}).get(name) or {}
+            if e.get("ratio") and e.get("decode_gib_s"):
+                bases.append((e["ratio"], e["decode_gib_s"] * C.GIB_TO_GB, name))
+    return fps, bases
 
 
 def panel(ax, origin, title, de, gb):
-    cols = [t for t in COLS if t[3] == origin]
-    for fn, col, did, _ in cols:
-        for bits in (12, 16):
-            range_bar(ax, *fp_cfg(fn, col, bits), CFG["FastPair-%d" % bits])
-        d = de.get((did, col))
-        if d:
-            for name, eng in d["codecs"].items():
-                lbl = DE_NAME.get(name, "DE %s" % name)
-                if lbl in CFG and eng.get("ratio") and eng.get("decode_gib_s"):
-                    range_bar(ax, [eng["ratio"]], [eng["decode_gib_s"] * C.GIB_TO_GB], CFG[lbl],
-                              marker=MARKER.get(lbl, "o"), s=26)
-        for lvl in ("-10", "1", "3"):
-            range_bar(ax, *zstd_cfg(fn, col, lvl), CFG["Zstd (%s)" % lvl])
-        # nvCOMP speed-first software codecs (B300 single points, like the DE)
-        cod = gb.get((did, col))
-        if cod:
-            for name in ("gANS", "Bitcomp-default", "Bitcomp-sparse"):
-                e = cod.get(name) or {}
-                if e.get("ratio") and e.get("decode_gib_s"):
-                    range_bar(ax, [e["ratio"]], [e["decode_gib_s"] * C.GIB_TO_GB], CFG[name],
-                              marker=MARKER.get(name, "o"), s=26)
+    fps, bases = collect(origin, de, gb)
+    bp = [(r, t) for r, t, _ in bases]
+    xs, ys = frontier(bp, xlo=min([r for r, _, _, _ in fps] + [r for r, _ in bp]) * 0.92)
+    if xs:
+        ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
+        ax.fill_between(xs, 1e-3, ys, step="pre", color=C.INK, alpha=0.055,
+                        lw=0, zorder=1)
+    for r, t, lbl in bases:
+        mark(ax, r, t, CFG[lbl], marker=MARKER.get(lbl, "o"), s=26, label=lbl)
+    for r, t, lbl, _ in fps:
+        mark(ax, r, t, CFG[lbl], marker="o", s=22, label=lbl)
     if origin == "S":
         ax.scatter([2.74], [C.GSST_GBS], s=80, marker="*", color=C.GSST_RED, zorder=5)
     from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
@@ -163,37 +235,63 @@ def main():
     except FileNotFoundError:
         pass
     plt = C.apply_theme()
-    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 1.9), sharey=True)  # matched height with fig8/fig10
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.35), sharey=True)
     panel(axR, "R", "Real-world columns", de, gb)
     panel(axS, "S", "Synthetic columns", de, gb)
+    # Assert the claim the frontier draws: every FastPair mark clears the best baseline
+    # available at its ratio or better, on this device. A violation must change the prose,
+    # so it fails the build rather than shipping a figure that contradicts the text.
+    violations = []
+    for origin in ("R", "S"):
+        fps, bases = collect(origin, de, gb)
+        bp = [(r, t) for r, t, _ in bases]
+        for r, t, lbl, col in fps:
+            f = frontier_at(bp, r)
+            if f and t <= f:
+                violations.append("%s %s: %.0f GB/s at ratio %.2f, baseline %.0f" % (col, lbl, t, r, f))
+    if violations:
+        raise SystemExit("fig_sota: dominance claim VIOLATED on %s:\n  %s"
+                         % (DEV, "\n  ".join(violations)))
+    print("dominance holds on %s: all %d FastPair marks clear the baseline frontier"
+          % (DEV, sum(len(collect(o, de, gb)[0]) for o in ("R", "S"))))
     # LOG throughput: FastPair (TB/s) and software Zstd (sub-GB/s) span ~4 orders; linear buried
     # the low end. Log keeps every family visible on one axis.
     axR.set_yscale("log")
-    axR.set_ylim(0.3, 2500)
+    axR.set_ylim(YLO, YHI)
     axR.set_ylabel("decode (GB/s, log)")
+    if OFFSCALE:
+        lo, hi = min(t for _, t in OFFSCALE), max(t for _, t in OFFSCALE)
+        fams = sorted({(l or "?").split(" (")[0] for l, _ in OFFSCALE})
+        print("off-scale below %.0f GB/s: %d marks, %.1f-%.1f GB/s, families: %s"
+              % (YLO, len(OFFSCALE), lo, hi, ", ".join(fams)))
     from matplotlib.lines import Line2D
     import itertools
 
     def flip(items, ncol):
         return list(itertools.chain(*[items[i::ncol] for i in range(ncol)]))
 
-    # single-GPU configs show their marker shape; multi-GPU (range) configs show a line swatch
+    # Every series is now a single B300 point, so every swatch is its marker shape. The
+    # old line swatches encoded the four-GPU range this figure no longer draws.
     codec_handles = [
-        (Line2D([], [], color=CFG[k], marker=MARKER[k], ls="", ms=6, label=k)
-         if k in MARKER else Line2D([], [], color=CFG[k], lw=5, label=k))
+        Line2D([], [], color=CFG[k], marker=MARKER.get(k, "o"), ls="", ms=5.5, label=k)
         for k in CFG
     ]
-    gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=9, label="GSST")
+    gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=9,
+                  label="GSST (A100, cross-paper)")
     # Place GSST (a GPU decoder) right after the DE marks so row 1 groups the fast
     # decoders (FastPair + DE + GSST) and Zstd(-10) falls to row 2 with the software field.
-    leg = codec_handles[:6] + [gsst] + codec_handles[6:]
+    extra = [
+        Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="best baseline at this ratio or better"),
+        Line2D([], [], color=C.INK, marker="v", ls="", ms=5, markerfacecolor="none",
+               label="off-scale (below %d GB/s)" % YLO),
+    ]
+    leg = codec_handles[:6] + [gsst] + codec_handles[6:] + extra
     # Span the full figure width: a 4-tuple bbox (x0, y0, w, h) with mode="expand"
     # stretches the legend columns edge to edge rather than clustering them centered.
-    # Short handles (handlelength) keep each entry narrow so all 13 fit in 2 rows (ncol=7).
-    fig.legend(handles=flip(leg, 7), frameon=False, fontsize=6.3, ncol=7, loc="lower center",
-               bbox_to_anchor=(0.0, -0.04, 1.0, 0.12), mode="expand",
-               columnspacing=1.0, handlelength=1.0, handletextpad=0.7, borderaxespad=0.0)
-    fig.tight_layout(rect=(0, 0.12, 1, 1))
+    fig.legend(handles=flip(leg, 5), frameon=False, fontsize=6.3, ncol=5, loc="lower center",
+               bbox_to_anchor=(0.0, -0.05, 1.0, 0.16), mode="expand",
+               columnspacing=1.0, handlelength=1.4, handletextpad=0.7, borderaxespad=0.0)
+    fig.tight_layout(rect=(0, 0.17, 1, 1))
     C.save(fig, "fig_sota")
 
 
