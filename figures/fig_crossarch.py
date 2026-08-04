@@ -140,8 +140,9 @@ def panel(ax, bits, order, de, show_ylabel, ylim, split):
     if split:
         ax.axvline(split - 0.5, color="#b9bdc2", lw=0.7, zorder=1)
         for lo, hi, name in ((0, split, "synthetic"), (split, len(order), "real")):
-            ax.text((lo + hi - 1) / 2.0, ylim[1] * 0.93, name, fontsize=6.0, style="italic",
-                    color=C.INK, ha="center", va="top", zorder=6)
+            ax.text((lo + hi - 1) / 2.0, 1.015, name, fontsize=6.0, style="italic",
+                    color=C.INK, ha="center", va="bottom", zorder=6,
+                    transform=ax.get_xaxis_transform())
     ax.set_xticks(range(len(order)))
     ax.set_xticklabels([l for _, _, l, _ in order], fontsize=5.4, rotation=38,
                        ha="right", rotation_mode="anchor")
@@ -153,7 +154,7 @@ def panel(ax, bits, order, de, show_ylabel, ylim, split):
     ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
     ax.yaxis.set_minor_locator(FixedLocator([]))
     ax.yaxis.set_minor_formatter(NullFormatter())
-    ax.set_title("FastPair-%d" % bits, fontsize=8)
+    ax.set_title("FastPair-%d" % bits, fontsize=8, pad=12)
     if show_ylabel:
         ax.set_ylabel("decode (GB/s, log)")
 
@@ -184,7 +185,7 @@ def main():
         if d and d[1] not in winners:
             winners.append(d[1])
     handles += [Line2D([], [], color=DE_CODEC_COLOR.get(w, C.WARM), lw=1.9,
-                       label="B300 engine: %s" % w) for w in winners]
+                       label="B300 DE: %s" % w) for w in winners]
     fig.legend(handles=handles, frameon=False, fontsize=6.3, ncol=7, loc="lower center",
                bbox_to_anchor=(0.0, -0.01, 1.0, 0.09), mode="expand",
                columnspacing=0.8, handlelength=1.3, handletextpad=0.5, borderaxespad=0.0)
