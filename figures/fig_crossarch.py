@@ -61,6 +61,18 @@ COLS = [
 # ClickBench URL, LZ4 or Snappy on the long-text columns. So the rule is drawn in that
 # codec's own shade, reusing fig_sota's DE ramp verbatim, and the legend names the three
 # winners instead of an anonymous "engine". Shades must track fig_sota.CFG.
+# Short tick labels. At 0.75x height the rotated label block is a fixed cost that competes
+# directly with the plot area: full names squeezed the panels to ~0.8 in, where the L40S/A100
+# and H100/B300 dots merged. The dataset family stays recoverable from the group label plus
+# tab:datasets, so the abbreviation costs less than the lost vertical resolution.
+SHORT = {
+    "TPC-H l_comment": "l_comment", "TPC-H ps_comment": "ps_comment",
+    "l_shipinstruct": "l_shipinstr.", "synthetic URL": "synth. URL",
+    "ClickBench URL": "ClickBench", "FineWeb text": "FineWeb",
+    "Wikipedia text": "Wikipedia", "book-reviews": "book-rev.",
+    "amazon-movies": "amz-movies", "amazon-electronics": "amz-electr.",
+}
+
 DE_CODEC_NAME = {"DEFLATE-hi": "Deflate (5)", "DEFLATE-fast": "Deflate (0)",
                  "LZ4": "LZ4", "Snappy": "Snappy"}
 DE_CODEC_COLOR = {"Deflate (5)": "#e08214", "Deflate (0)": "#fdd0a2",
@@ -144,7 +156,7 @@ def panel(ax, bits, order, de, show_ylabel, ylim, split):
                     color=C.INK, ha="center", va="bottom", zorder=6,
                     transform=ax.get_xaxis_transform())
     ax.set_xticks(range(len(order)))
-    ax.set_xticklabels([l for _, _, l, _ in order], fontsize=5.4, rotation=38,
+    ax.set_xticklabels([SHORT.get(l, l) for _, _, l, _ in order], fontsize=5.4, rotation=47,
                        ha="right", rotation_mode="anchor")
     ax.set_xlim(-0.6, len(order) - 0.4)
     ax.set_yscale("log")
@@ -154,7 +166,7 @@ def panel(ax, bits, order, de, show_ylabel, ylim, split):
     ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
     ax.yaxis.set_minor_locator(FixedLocator([]))
     ax.yaxis.set_minor_formatter(NullFormatter())
-    ax.set_title("FastPair-%d" % bits, fontsize=8, pad=12)
+    ax.set_title("FastPair-%d" % bits, fontsize=8, pad=10)
     if show_ylabel:
         ax.set_ylabel("decode (GB/s, log)")
 
@@ -170,7 +182,7 @@ def main():
     split = sum(1 for c in order if c[3] == "S")
     ylim = (170, 2300)
     plt = C.apply_theme()
-    fig, (ax12, ax16) = plt.subplots(1, 2, figsize=(7.0, 2.6), sharey=True)
+    fig, (ax12, ax16) = plt.subplots(1, 2, figsize=(7.0, 1.95), sharey=True)
     panel(ax12, 12, order, de, True, ylim, split)
     panel(ax16, 16, order, de, False, ylim, split)
     from matplotlib.lines import Line2D
