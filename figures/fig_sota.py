@@ -249,7 +249,7 @@ def main():
     except FileNotFoundError:
         pass
     plt = C.apply_theme()
-    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.9), sharey=True)
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.03), sharey=True)
     panel(axR, "R", "Real-world columns", de, gb)
     panel(axS, "S", "Synthetic columns", de, gb)
     # Assert the claim the frontier draws: every FastPair mark clears the best baseline
@@ -276,7 +276,7 @@ def main():
     # Label the decades 100 / 1000, not 10^2 / 10^3. The axis carries GB/s values a reader
     # compares against rates quoted in the prose, and exponent notation adds a step to that.
     from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
-    axR.yaxis.set_major_locator(FixedLocator([100, 1000]))
+    axR.yaxis.set_major_locator(FixedLocator([100, 300, 1000, 1300]))
     axR.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
     axR.yaxis.set_minor_locator(FixedLocator([]))
     axR.yaxis.set_minor_formatter(NullFormatter())
@@ -298,7 +298,7 @@ def main():
         for k in CFG
     ]
     gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=9,
-                  label="GSST (A100, cross-paper)")
+                  label="GSST (A100)")
     # Place GSST (a GPU decoder) right after the DE marks so row 1 groups the fast
     # decoders (FastPair + DE + GSST) and Zstd(-10) falls to row 2 with the software field.
     # The off-scale swatch borrows the Zstd triangle because every off-scale mark is Zstd
@@ -306,17 +306,17 @@ def main():
     # family ever falls below the floor.
     offscale_shape = FAMILY_MARKER[FAMILY.get(OFFSCALE[0][0], "Zstd")] if OFFSCALE else "^"
     extra = [
-        Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="best baseline at this ratio or better"),
+        Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="baseline envelope"),
         Line2D([], [], color=C.INK, marker=offscale_shape, ls="", ms=5, markerfacecolor="none",
-               label="open: off-scale (below %d GB/s)" % YLO),
+               label="off-scale (open)"),
     ]
     leg = codec_handles[:6] + [gsst] + codec_handles[6:] + extra
     # Span the full figure width: a 4-tuple bbox (x0, y0, w, h) with mode="expand"
     # stretches the legend columns edge to edge rather than clustering them centered.
-    fig.legend(handles=flip(leg, 5), frameon=False, fontsize=6.3, ncol=5, loc="lower center",
-               bbox_to_anchor=(0.0, -0.005, 1.0, 0.10), mode="expand",
-               columnspacing=1.0, handlelength=1.4, handletextpad=0.7, borderaxespad=0.0)
-    fig.tight_layout(rect=(0, 0.11, 1, 1))
+    fig.legend(handles=flip(leg, 8), frameon=False, fontsize=6.3, ncol=8, loc="lower center",
+               bbox_to_anchor=(0.0, -0.01, 1.0, 0.13), mode="expand",
+               columnspacing=0.6, handlelength=1.1, handletextpad=0.45, borderaxespad=0.0)
+    fig.tight_layout(rect=(0, 0.155, 1, 1))
     C.save(fig, "fig_sota")
 
 
