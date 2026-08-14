@@ -50,6 +50,7 @@ training-budget fix, without which the 4096-symbol table trains to ~250 entries)
 | `h100-fsst12/…` | H100 SXM, Nebius eu-north1, 2026-08-12 | same | same | same | cross-arch FSST-12 |
 | `l40s-fsst12/…` | L40S (Ada, GDDR6), Nebius eu-north1, 2026-08-12 | same | same | same | cross-arch FSST-12 (GDDR6 leg) |
 | `a100-fsst12/…` | A100-SXM4 40GB, **GCP** us-central1-f, 2026-08-13 | same | same, NCU phase skipped | same | cross-arch FSST-12; the chip where FSST-12 **beats** OnPair-12 |
+| `b300-fsst12/` (ClickBench, TPC-H, synthetic cells) | B300 SXM6, Nebius uk-south1, 2026-08-13 | same | recovery send: the non-HF datasets, which earlier runs measured but did not collect | same | `fig:compressibility` synthetic panel, `fig:sota` |
 
 Two ratio fields per FSST-12 cell. `mem_ratio` is native (fixed 12-bit codes);
 `mem_ratio_container_matched` measures the code stream through OnPair's own instrument
