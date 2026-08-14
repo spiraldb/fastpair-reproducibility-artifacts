@@ -66,6 +66,8 @@ The pairing no earlier capture set had: every cost-surface capture profiled only
 the selector chose, so no cell held both kernels. **Distinct from `*-shdict-ncu`**, whose
 `pdict` baseline is the shared-memory staged dictionary, not the global stride-16 table.
 
+| `b300-widthncu-eval/shdict_ncu_*_{details,raw}.csv` | B300 SXM6, Nebius uk-south1, 2026-08-13 | 2d909147f | NCU `--set full`, 16 launches/cell, `split8read` and stride-16 on FineWeb + Wikipedia (both EVALUATED columns) | `l1tex__data_pipe_lsu_wavefronts.avg` ratio | §5 access-width isolation, replacing the MobilePhoneModel diagnostic column |
+
 ## Hardware Decompression Engine (Blackwell-only)
 
 | Result | Box | Rev | Config | Consumed by |
