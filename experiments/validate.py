@@ -31,7 +31,7 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 54
+EXPECTED_CHECKS = 69
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -326,6 +326,112 @@ def main():
             dominated = all(late[m] >= min(1.0, early[m]) - 1e-9 for m in late if m in early)
             check("offtrade: late-mat never beats min(dense, early)",
                   1.0 if dominated else 0.0, 1, 1, "bool")
+
+    # 11. FSST-12 generality (§6.4, §1, §7). Until 2026-08-14 NOTHING here was checked, and
+    #     three published numbers had silently drifted: the rate range was still B300+H100-only
+    #     after the other two chips landed, the compression-ratio range read 0.72-0.81x where
+    #     the data gives 0.74-0.84x, and the OnPair-16 margin read 1.06-1.23x (B300) where four
+    #     chips give 1.12-1.61x. These checks exist so that cannot recur silently.
+    #
+    #     The OnPair comparator is same_run_onpair(), NOT cell(..., ONPAIR): the former is the
+    #     OnPair cell measured on the same box in the same session, the latter is the canonical
+    #     matrix entry from an earlier send. Using the wrong one shifts every ratio.
+    TEXT5 = [("fineweb", "text"), ("wikipedia", "text"), ("book-reviews", "text"),
+             ("amazon-movies", "text"), ("amazon-electronics", "text")]
+    GPUS4 = ("b300", "h100", "l40s", "a100")
+
+    def fsst_rate_ratios(bits):
+        """FSST-12 / OnPair-<bits> decode rate, over the five text columns x four GPUs."""
+        out = {}
+        for g in GPUS4:
+            rs = []
+            for ds, col in TEXT5:
+                f = C.best_shipped(C.cell(g, ds, col, 12, C.FSST12))
+                o = C.best_shipped(C.same_run_onpair(g, ds, col, bits))
+                if f and o:
+                    rs.append(f / o)
+            if rs:
+                out[g] = rs
+        return out
+
+    r12 = fsst_rate_ratios(12)
+    if len(r12) == len(GPUS4) and all(len(v) == len(TEXT5) for v in r12.values()):
+        flat = [x for v in r12.values() for x in v]
+        check("FSST-12: cells present (5 columns x 4 GPUs)", float(len(flat)), 20, 20, "cells")
+        check("FSST-12 / OnPair-12: min over 4 GPUs", min(flat), 0.90, 0.93, "x", "§6: 0.91 to 1.11x")
+        check("FSST-12 / OnPair-12: max over 4 GPUs", max(flat), 1.09, 1.13, "x", "§6: 0.91 to 1.11x")
+        # The A100 inversion is the load-bearing claim: it is the ONE chip where FSST-12 beats
+        # OnPair-12 on every one of the five columns, which §6 reads as the access-width account.
+        check("FSST-12: A100 beats OnPair-12 on all five",
+              1.0 if all(x > 1.0 for x in r12["a100"]) else 0.0, 1, 1, "bool",
+              "§6 attributes this to the split's common path plus the narrowest L1 headroom")
+        check("FSST-12: A100 min", min(r12["a100"]), 1.00, 1.04, "x", "§6: 1.02 to 1.11x on the A100")
+        check("FSST-12: A100 max", max(r12["a100"]), 1.09, 1.13, "x")
+        # ... and the other three chips must NOT invert, or the A100 sentence is not a contrast.
+        check("FSST-12: B300/H100/L40S do not invert",
+              1.0 if all(x <= 1.02 for g in ("b300", "h100", "l40s") for x in r12[g]) else 0.0,
+              1, 1, "bool")
+
+    r16 = fsst_rate_ratios(16)
+    if len(r16) == len(GPUS4) and all(len(v) == len(TEXT5) for v in r16.values()):
+        flat16 = [x for v in r16.values() for x in v]
+        check("FSST-12 / OnPair-16: min over 4 GPUs", min(flat16), 1.10, 1.14, "x", "§6: 1.12 to 1.61x")
+        check("FSST-12 / OnPair-16: max over 4 GPUs", max(flat16), 1.59, 1.63, "x", "§6: 1.12 to 1.61x")
+        check("FSST-12 exceeds OnPair-16 on every cell",
+              1.0 if all(x > 1.0 for x in flat16) else 0.0, 1, 1, "bool")
+
+    # Compression ratio, container-matched: the basis §6 and tab:datasets now state explicitly.
+    cr = []
+    for ds, col in TEXT5:
+        f = C.cell("b300", ds, col, 12, C.FSST12)
+        o = C.same_run_onpair("b300", ds, col, 12)
+        if f and o and f.get("mem_ratio_container_matched") and o.get("mem_ratio"):
+            cr.append(f["mem_ratio_container_matched"] / o["mem_ratio"])
+    if len(cr) == len(TEXT5):
+        check("FSST-12 ratio / OnPair-12 ratio: min", min(cr), 0.72, 0.76, "x", "§6: 0.74 to 0.84x")
+        check("FSST-12 ratio / OnPair-12 ratio: max", max(cr), 0.82, 0.86, "x", "§6: 0.74 to 0.84x")
+
+    # The two ratio bases (FSST-12's own fixed 12-bit packing vs the container OnPair's codes
+    # pass through) agree on the five REAL TEXT columns the paper evaluates, which is why the
+    # basis choice moves no reported number.
+    #
+    # The scope is exactly those five, NOT "high-cardinality columns": TPC-H p_name has 2.0M
+    # distinct values and still diverges 1.34x, because BtrBlocks compresses a structured code
+    # stream further than a fixed 12-bit packing regardless of cardinality. An earlier version
+    # of this check asserted the agreement over everything above 100k distinct and failed on
+    # exactly that column. Cardinality is one driver of the divergence, not the only one.
+    agree = []
+    for ds, col in TEXT5:
+        c = C.cell("b300", ds, col, 12, C.FSST12)
+        if c and c.get("mem_ratio") and c.get("mem_ratio_container_matched"):
+            agree.append(c["mem_ratio_container_matched"] / c["mem_ratio"])
+    diverge = []
+    for f in sorted((C.RESULTS / "b300-fsst12").glob("*.json")):
+        for c in json.load(open(f)):
+            if c.get("codec") != C.FSST12:
+                continue
+            n, m = c.get("mem_ratio"), c.get("mem_ratio_container_matched")
+            if n and m and (c["dataset_id"], c["column"]) not in TEXT5:
+                diverge.append(m / n)
+    if agree and diverge:
+        check("ratio bases agree on the five evaluated text columns", max(agree), 0.99, 1.01, "x",
+              "the basis choice moves no number the paper reports")
+        check("ratio bases diverge elsewhere", max(diverge), 100, 2000, "x",
+              "READMEs said 3.3x; fineweb/language (1 distinct) is 906x")
+
+    # Every FSST-12 cell is byte-exact against the CPU reference -- the generality claim is
+    # "decodes byte for byte through the shipped kernels", so a single false here voids it.
+    ver = []
+    for g in GPUS4:
+        d = C.RESULTS / ("%s-fsst12" % g)
+        if not d.is_dir():
+            continue
+        for f in sorted(d.glob("fsst12_summary_*.json")):
+            ver += [bool(c.get("verified")) for c in json.load(open(f))
+                    if c.get("codec") == C.FSST12]
+    if ver:
+        check("FSST-12: every cell byte-exact", 1.0 if all(ver) else 0.0, 1, 1, "bool",
+              f"{sum(ver)}/{len(ver)} verified")
 
     # ── report ──
     w = max(len(r[0]) for r in ROWS)

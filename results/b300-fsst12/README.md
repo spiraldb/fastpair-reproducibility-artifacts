@@ -24,13 +24,16 @@ codecs are compared without crossing sends.
   `mem_ratio_container_matched` measures the code stream through the instrument OnPair's codes
   go through (BtrBlocks over a `u16` array). Use the container-matched figure for
   codec-vs-codec claims against OnPair-in-Vortex.
-- **The two bases agree only where cardinality is high.** They are equal to two decimals on
-  the high-cardinality text columns (`fineweb/text` and `wikipedia/text`, 1.84 and 1.83 on
-  either basis), and the gap widens as cardinality falls, because BtrBlocks bitpacks below
-  12 bits where FSST-12's packing is fixed: `l_shipinstruct` (4 distinct) is 3.38 native vs
-  11.39 matched, `l_linestatus` (2 distinct) 0.50 vs 8.00, and at the degenerate end
-  `fineweb/language` (1 distinct) 1.00 vs 905.51. Any summary bound on the divergence has to
-  name the column set it covers.
+- **The two bases agree on the evaluated text columns, and the divergence is not simply
+  cardinality.** They are equal to two decimals on the five real text columns the paper
+  evaluates (`fineweb/text` 1.84 and `wikipedia/text` 1.83 on either basis), which is why the
+  basis choice moves no reported number. They separate wherever BtrBlocks can compress the code
+  stream further than a fixed twelve bits: the generated TPC-H columns diverge 1.2 to 1.3x
+  **despite high cardinality** (`p_name`, 2.0M distinct, is 2.59 native vs 3.47 matched), and
+  low-cardinality columns diverge further still -- `l_shipinstruct` (4 distinct) 3.38 vs 11.39,
+  `l_linestatus` (2 distinct) 0.50 vs 8.00, and at the degenerate end `fineweb/language`
+  (1 distinct) 1.00 vs 905.51. Any summary bound has to name the column set it covers.
+  `experiments/validate.py` asserts both the agreement and the divergence.
 - **Filenames are not scopes.** `run.py` writes one `summary.json` per invocation and the job
   snapshots it per dataset, so a file named for one dataset can contain cells for others. Key
   on each cell's own `dataset_id` / `column` / `bits` / `codec`.
