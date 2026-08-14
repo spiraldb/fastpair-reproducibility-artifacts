@@ -79,10 +79,39 @@ COLMAP = {  # cpu column -> (gpu dataset_id, gpu column, panel)
 TECH = [
     ("OnPair-16", "#08519c"), ("OnPair-12", "#6baed6"), ("Deflate (9)", "#fdae61"), ("Zstd (3)", "#525252"),
     ("Zstd (1)", "#969696"), ("Deflate (1)", "#f16913"), ("LZ4", "#a63603"),
-    ("FSST", C.GSST_RED), ("Zstd (-10)", "#cccccc"),
+    ("FSST-8", C.GSST_RED), ("FSST-12", "#c994c7"), ("Zstd (-10)", "#cccccc"),
 ]
+# The CPU sweep's "FSST" is the 8-bit dialect (fsst-rs), so it is labelled FSST-8 here now
+# that the escape-free 12-bit dialect appears alongside it.
+RENAME_CODEC = {"FSST": "FSST-8"}
+
+# FSST-12 ratio basis. Native is the codec's own fixed 12-bit packing; container-matched
+# measures the code stream through the instrument OnPair's codes go through (BtrBlocks over
+# a u16 array). Container-matched is plotted because every other bar on the OnPair side of
+# this figure is container-measured, so it is the like-for-like comparison; on the real
+# columns the two agree to two decimals, so the choice is visible only on low-cardinality
+# synthetic data. Flip to False to plot native.
+FSST12_CONTAINER_MATCHED = True
 # the bench labels Deflate by mode; relabel to the explicit zlib level for the figure.
 RENAME = {"Deflate-hi": "Deflate (9)", "Deflate-fast": "Deflate (1)"}
+
+
+def fsst12_ratio(col):
+    """FSST-12's ratio for one column, from whichever chip measured it.
+
+    A codec's compression ratio is device-independent, so the first chip that has the
+    column serves, exactly as the competitor legs do.
+    """
+    did, gc, _ = COLMAP[col]
+    for g in C.GPUS:
+        c = C.cell(g, did, gc, 12, C.FSST12)
+        if not c:
+            continue
+        if FSST12_CONTAINER_MATCHED and c.get("mem_ratio_container_matched"):
+            return c["mem_ratio_container_matched"]
+        if c.get("mem_ratio"):
+            return c["mem_ratio"]
+    return None
 
 
 def onpair_ratio(col, bits=16):
@@ -105,10 +134,12 @@ def main():
     leg = json.load(open(C.RESULTS / "cpu-sota" / "intel-sapphire.json"))
     ratio = {}  # column -> {technique: ratio}
     for c in leg["competitors"]:
-        ratio.setdefault(c["column"], {})[RENAME.get(c["codec"], c["codec"])] = c["ratio"]
+        name = RENAME.get(c["codec"], c["codec"])
+        ratio.setdefault(c["column"], {})[RENAME_CODEC.get(name, name)] = c["ratio"]
     for col in COLMAP:
         ratio.setdefault(col, {})["OnPair-16"] = onpair_ratio(col, bits=16)
         ratio.setdefault(col, {})["OnPair-12"] = onpair_ratio(col, bits=12)
+        ratio.setdefault(col, {})["FSST-12"] = fsst12_ratio(col)
 
     real = [c for c, m in COLMAP.items() if m[2] == "R"]
     syn = [c for c, m in COLMAP.items() if m[2] == "S"]
@@ -121,15 +152,17 @@ def main():
     x = np.arange(len(TECH)); w = 0.4
     labels = [t for t, _ in TECH]
     colors = [c for _, c in TECH]
-    ax.bar(x - w / 2, [gm_real[t] for t in labels], w, color=colors, edgecolor="none", label="real")
-    ax.bar(x + w / 2, [gm_syn[t] for t in labels], w, color=colors, edgecolor=C.INK,
+    ax.bar(x - w / 2, [gm_real[t] or 0 for t in labels], w, color=colors, edgecolor="none", label="real")
+    ax.bar(x + w / 2, [gm_syn[t] or 0 for t in labels], w, color=colors, edgecolor=C.INK,
            linewidth=0.7, alpha=0.55, label="synthetic", hatch="///")
     for i, t in enumerate(labels):
-        ax.text(i - w / 2, gm_real[t] + 0.1, "%.1f" % gm_real[t], ha="center", va="bottom", fontsize=6)
-        ax.text(i + w / 2, gm_syn[t] + 0.1, "%.1f" % gm_syn[t], ha="center", va="bottom", fontsize=6)
+        if gm_real.get(t):
+            ax.text(i - w / 2, gm_real[t] + 0.1, "%.1f" % gm_real[t], ha="center", va="bottom", fontsize=6)
+        if gm_syn.get(t):
+            ax.text(i + w / 2, gm_syn[t] + 0.1, "%.1f" % gm_syn[t], ha="center", va="bottom", fontsize=6)
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=20, ha="right", fontsize=7)
     ax.set_ylabel("compression ratio")
-    ax.set_ylim(0, max(gm_syn.values()) * 1.15)
+    ax.set_ylim(0, max(v for v in gm_syn.values() if v) * 1.15)
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(facecolor=C.INK, label="real columns"),
                        Patch(facecolor=C.INK, alpha=0.55, hatch="///", label="synthetic columns")],

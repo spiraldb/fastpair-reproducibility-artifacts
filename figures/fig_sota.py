@@ -48,6 +48,10 @@ COLS = [
 # configuration -> shade, in technique-family families (FastPair blues / DE oranges / Zstd grays).
 CFG = {
     "FastPair-12": "#6baed6", "FastPair-16": "#08519c",
+    # FSST-12 decoded by the SAME kernels. Drawn in the FastPair family because it is our
+    # decoder on a second codec, not a competing system, so it is a claim mark and the
+    # baseline frontier is unaffected. Distinct hue so it does not read as a third preset.
+    "FSST-12": "#c994c7",
     # Four engine codecs share the square, so the shade ramp is the only thing separating
     # them. It spans the full ColorBrewer Oranges range, roughly even in lightness, after two
     # narrower attempts: the original clustered three of four steps mid-ramp, and the next put
@@ -74,7 +78,7 @@ DE_NAME = {"DEFLATE-hi": "DE Deflate (5)", "DEFLATE-fast": "DE Deflate (0)", "LZ
 # frontier, not the codec label, is what carries the dominance claim.
 FAMILY_MARKER = {"FastPair": "o", "DE": "s", "Zstd": "^", "nvCOMP-sw": "D"}
 FAMILY = {
-    "FastPair-12": "FastPair", "FastPair-16": "FastPair",
+    "FastPair-12": "FastPair", "FastPair-16": "FastPair", "FSST-12": "FastPair",
     "DE Deflate (5)": "DE", "DE Deflate (0)": "DE", "DE LZ4": "DE", "DE Snappy": "DE",
     "Zstd (-10)": "Zstd", "Zstd (1)": "Zstd", "Zstd (3)": "Zstd",
     "gANS": "nvCOMP-sw", "Bitcomp-default": "nvCOMP-sw", "Bitcomp-sparse": "nvCOMP-sw",
@@ -90,6 +94,21 @@ def fp_cfg(fn, col, bits):
     c = C.cell(DEV, fn, col, bits)
     t = C.best_shipped(c)
     r = (c or {}).get("mem_ratio")
+    return (r, t) if (r and t) else (None, None)
+
+
+def fsst12_cfg(fn, col):
+    """(ratio, GB/s) for FSST-12 on the B300, or (None, None).
+
+    Ratio is the container-matched measure, which is the like-for-like comparison against
+    OnPair's BtrBlocks-measured ratio on the same axis; on these columns it agrees with the
+    native figure to two decimals. Falls back to native where the field is absent.
+    """
+    c = C.cell(DEV, fn, col, 12, C.FSST12)
+    if not c:
+        return (None, None)
+    t = C.best_shipped(c)
+    r = c.get("mem_ratio_container_matched") or c.get("mem_ratio")
     return (r, t) if (r and t) else (None, None)
 
 
@@ -189,6 +208,9 @@ def collect(origin, de, gb):
             r, t = fp_cfg(fn, col, bits)
             if r:
                 fps.append((r, t, "FastPair-%d" % bits, col))
+        r, t = fsst12_cfg(fn, col)
+        if r:
+            fps.append((r, t, "FSST-12", col))
         d = de.get((did, col))
         if d:
             for name, eng in (d.get("codecs") or {}).items():
