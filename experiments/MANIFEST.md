@@ -35,6 +35,37 @@ headline; `results/b300-locked` is the clock-pinned sibling for the extended ver
 each column entry retains its full per-chunk sweep (32\,KiB–512\,KiB) in a `chunk_sweep` field, and
 `best_decode_gib_s` is the max over it (the field `de_map()` reads).
 
+## FSST-12 (the generality result, 2026-08-12/13)
+
+FSST-12 normalized into FastPair's decode ABI on the host and decoded by the **unmodified**
+shipped kernels. Each run also measures OnPair on the same box in the same session, so the
+two codecs are never compared across sends. Every FSST-12 cell is byte-exact verified; the
+cell aborts rather than reporting an unvalidated rate. Vortex rev `2d909147f`, branch
+`mp/fsst12-bench`; FSST-12 encoder from `mprammer/fsst@196a862` (which carries the 1 MB
+training-budget fix, without which the 4096-symbol table trains to ~250 entries).
+
+| Result | Box | Rev | Config | Reduction | Consumed by |
+|---|---|---|---|---|---|
+| `b300-fsst12/{fsst12_summary,onpair_ref}_*.json` | B300 SXM6, Nebius uk-south1, 2026-08-12 | 2d909147f | `--codec fsst12`, 1000 MB chunk, 100 iters, `--gpu-validate`; OnPair reference bits 12+16 | best byte-exact kernel = decoded_bytes / min(decode_ns_iters) | FSST-12 rate + ratio, §6 |
+| `h100-fsst12/…` | H100 SXM, Nebius eu-north1, 2026-08-12 | same | same | same | cross-arch FSST-12 |
+| `l40s-fsst12/…` | L40S (Ada, GDDR6), Nebius eu-north1, 2026-08-12 | same | same | same | cross-arch FSST-12 (GDDR6 leg) |
+| `a100-fsst12/…` | A100-SXM4 40GB, **GCP** us-central1-f, 2026-08-13 | same | same, NCU phase skipped | same | cross-arch FSST-12; the chip where FSST-12 **beats** OnPair-12 |
+
+Two ratio fields per FSST-12 cell. `mem_ratio` is native (fixed 12-bit codes);
+`mem_ratio_container_matched` measures the code stream through OnPair's own instrument
+(BtrBlocks over `u16`). They agree to two decimals on the real text columns and diverge up to
+3.3x at low cardinality. **Which one the paper reports is an open disclosure decision.**
+
+## Split-vs-stride16 NCU (the access-width mechanism, 2026-08-12)
+
+| Result | Box | Rev | Config | Reduction | Consumed by |
+|---|---|---|---|---|---|
+| `{b300,h100,l40s}-splitncu/splitncu_*_{details,raw}.csv` | B300 / H100 / L40S, Nebius, 2026-08-12 | 2d909147f | NCU `--set full`, 16 launches/cell, `split8read` **and** stride-16 `onpair_shmem_4tpt` on the SAME cell; H100 and L40S add `split4read` | `l1tex__data_pipe_lsu_wavefronts.avg` ratio | §5 access-width mechanism (`sec:dd:dict`) |
+
+The pairing no earlier capture set had: every cost-surface capture profiled only the kernel
+the selector chose, so no cell held both kernels. **Distinct from `*-shdict-ncu`**, whose
+`pdict` baseline is the shared-memory staged dictionary, not the global stride-16 table.
+
 ## Hardware Decompression Engine (Blackwell-only)
 
 | Result | Box | Rev | Config | Consumed by |

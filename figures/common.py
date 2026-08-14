@@ -91,14 +91,71 @@ REPRESENTATIVE = [
 ]
 
 
-def load(gpu, dataset):
+# Codec that produced a cell's stored representation. Every record written before
+# FSST-12 existed is OnPair and carries no "codec" key, so absent means ONPAIR.
+ONPAIR = "onpair"
+FSST12 = "fsst12"
+
+
+def load(gpu, dataset, codec=ONPAIR):
+    """Cells for one (gpu, dataset), from the directory that codec lives in.
+
+    OnPair is the canonical matrix under `results/<gpu>/`, one file per dataset.
+    FSST-12 lives under `results/<gpu>-fsst12/`, and there the FILENAMES ARE NOT
+    SCOPES: run.py writes one summary.json per invocation and the job snapshots it
+    per dataset, so a file named for one dataset can hold cells for others. Every
+    file in that directory is therefore read and the cells are filtered on their own
+    `dataset_id`. Verified free of duplicates at import.
+    """
+    if codec == FSST12:
+        d = RESULTS / ("%s-fsst12" % gpu)
+        if not d.is_dir():
+            return []
+        out = []
+        for f in sorted(d.glob("*.json")):
+            out.extend(json.load(open(f)))
+        return [c for c in out if c.get("dataset_id") == dataset]
     f = RESULTS / gpu / ("onpair_summary_%s.json" % dataset)
     return json.load(open(f)) if f.exists() else []
 
 
-def cell(gpu, dataset, column, bits=12):
-    for c in load(gpu, dataset):
-        if c.get("column") == column and c.get("bits") == bits:
+def same_run_onpair(gpu, dataset, column, bits):
+    """The OnPair cell measured in the SAME session as that chip's FSST-12 cells.
+
+    Distinct from `cell(..., ONPAIR)`, which returns the canonical matrix entry from
+    a different (earlier) send. Use this one for FSST-12-vs-OnPair claims, so the
+    comparison never crosses boxes or revisions; use `cell` for anything the paper
+    already reports.
+    """
+    d = RESULTS / ("%s-fsst12" % gpu)
+    if not d.is_dir():
+        return None
+    for f in sorted(d.glob("onpair_ref_*.json")):
+        for c in json.load(open(f)):
+            if (
+                c.get("dataset_id") == dataset
+                and c.get("column") == column
+                and c.get("bits") == bits
+                and c.get("codec", ONPAIR) == ONPAIR
+            ):
+                return c
+    return None
+
+
+def cell(gpu, dataset, column, bits=12, codec=ONPAIR):
+    """One (gpu, dataset, column, bits, codec) record, or None.
+
+    `codec` is not redundant with `bits`. FSST-12 is a 12-bit codec, so it writes
+    bits=12 and is otherwise indistinguishable from OnPair-12 -- and because this
+    returns the FIRST match, that collision would silently hand back the wrong
+    codec's cell rather than raise. Callers get OnPair unless they ask otherwise.
+    """
+    for c in load(gpu, dataset, codec):
+        if (
+            c.get("column") == column
+            and c.get("bits") == bits
+            and c.get("codec", ONPAIR) == codec
+        ):
             return c
     return None
 
