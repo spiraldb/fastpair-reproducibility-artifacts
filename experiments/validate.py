@@ -31,7 +31,7 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 84
+EXPECTED_CHECKS = 98
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -544,21 +544,62 @@ def main():
             vals[tag] = statistics.median(got)
         return (vals["s"] / vals["t"]) if vals.get("t") else None
 
+    def width_delta_pts(chip, col, metric):
+        """split8read minus stride-16, in percentage points (not a ratio)."""
+        import csv as _csv, io as _io
+        d = C.RESULTS / ("%s-widthncu-eval" % chip)
+        vals = {}
+        for variant, tag in (("split8read", "s"), ("onpair_shmem_4tpt", "t")):
+            f = d / ("shdict_ncu_%s_text_b12_%s_width.csv" % (col, variant))
+            if not f.exists():
+                return None
+            txt = f.read_text(errors="replace")
+            i = txt.find('"ID","Process ID"')
+            if i < 0:
+                return None
+            got = []
+            for r in _csv.DictReader(_io.StringIO(txt[i:])):
+                if r.get("Metric Name") == metric:
+                    try:
+                        got.append(float((r.get("Metric Value") or "").replace(",", "")))
+                    except ValueError:
+                        pass
+            if not got:
+                return None
+            vals[tag] = statistics.median(got)
+        return vals["s"] - vals["t"]
+
     WAVE = "l1tex__data_pipe_lsu_wavefronts.sum"
     SECT = "l1tex__t_sectors.sum"
-    for chip in ("b300", "a100"):
+    for chip in ("b300", "a100", "h100", "l40s"):
         for col in ("fineweb", "wikipedia"):
             wv = width_ratio(chip, col, WAVE) or width_ratio(chip, col,
                                                              "l1tex__data_pipe_lsu_wavefronts.avg")
             sc = width_ratio(chip, col, SECT)
             if wv:
-                check("width %s/%s: wavefronts fall" % (chip, col), wv, 0.74, 0.81, "x",
+                # The L40S reduction is real but SMALLER (0.84) than the HBM parts' 0.77,
+                # and its hit rate moves ~8 points rather than under 3, so that chip
+                # corroborates the direction without isolating width from residency.
+                # Asserting one band for all four would either fail or be too loose to mean
+                # anything, so the bands differ and §5.3 says why.
+                lo, hi = (0.81, 0.88) if chip == "l40s" else (0.74, 0.81)
+                check("width %s/%s: wavefronts fall" % (chip, col), wv, lo, hi, "x",
                       "split8read / stride-16; the narrowing")
             if sc:
                 # The control. If sectors moved with wavefronts, the gain would be bytes,
                 # not access width, and the mechanism claim would not hold.
                 check("width %s/%s: sectors flat" % (chip, col), sc, 0.99, 1.02, "x",
                       "same bytes, fewer accesses")
+            # The OTHER control, and the one §5.3's isolation actually rests on: on the
+            # L1-bound parts the hit rate must move too little to explain a ~23% wavefront
+            # drop. On the L40S it moves ~8 points and the paper says the two terms are not
+            # separated there, so that chip is asserted to be the exception rather than
+            # quietly averaged in with the rest.
+            hr = width_delta_pts(chip, col, "l1tex__t_sector_hit_rate.pct")
+            if hr is not None:
+                lo, hi = (5.0, 12.0) if chip == "l40s" else (0.0, 3.0)
+                check("width %s/%s: hit-rate move (pts)" % (chip, col), hr, lo, hi, "pts",
+                      "residency cannot explain the drop where this is small")
 
     # ── report ──
     w = max(len(r[0]) for r in ROWS)
