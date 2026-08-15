@@ -34,6 +34,17 @@ LIVE_FIGS=(
 
 command -v uv >/dev/null 2>&1 || { echo "FATAL: need 'uv' (https://docs.astral.sh/uv/)"; exit 2; }
 
+# tab:datasets is the paper's one hand-maintained table. It has no figure to regenerate,
+# so it is checked instead: every printed cell is re-derived from results/ and compared with
+# what the paper prints. It drifted before this existed (2026-08-15: five cells, one of them
+# a four-machine mean printed under a "B300 run" caption), which is exactly the failure a
+# generator-less table invites.
+echo "== checking tab:datasets against results/ =="
+if ! uv run figures/tab_datasets.py --check; then
+  echo "FATAL: tab:datasets disagrees with results/ (see above)"
+  exit 1
+fi
+
 echo "== regenerating ${#LIVE_FIGS[@]} figures from results/ =="
 figfail=0
 for f in "${LIVE_FIGS[@]}"; do
