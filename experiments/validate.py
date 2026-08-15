@@ -31,7 +31,7 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 69
+EXPECTED_CHECKS = 75
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -432,6 +432,52 @@ def main():
     if ver:
         check("FSST-12: every cell byte-exact", 1.0 if all(ver) else 0.0, 1, 1, "bool",
               f"{sum(ver)}/{len(ver)} verified")
+
+    # 12. Fused output positioning (results/b300-fusedstall/). §3.2 justifies the stored
+    #     sidecar against regeneration as a SEPARATE pass; the reviewer's reply is to fuse
+    #     regeneration into the decode. Measured here, and slow -- but only meaningful
+    #     because the kernel is byte-exact AND because the obvious objection (our block-wide
+    #     stall) was removed and changed nothing.
+    fs_dir = C.RESULTS / "b300-fusedstall"
+    if fs_dir.is_dir():
+        SHIPPED = "onpair_shmem_4tpt_split8read"
+        rel = {}
+        for f in sorted(fs_dir.glob("fusedstall_summary_*.json")):
+            for c in json.load(open(f)):
+                g = c.get("gpu") or {}
+                km = {k.get("kernel"): k for k in g.get("kernels", []) if k.get("applicable")}
+                base = (km.get(SHIPPED) or {}).get("decode_gib_s")
+                if not base:
+                    continue
+                for name in (SHIPPED + "_lookback", SHIPPED + "_lookback_noshift",
+                             SHIPPED + "_lookback_w1", SHIPPED + "_stcsedge"):
+                    k = km.get(name)
+                    if k and k.get("decode_gib_s"):
+                        # An unverified rate must never reach a check: that is the whole
+                        # reason the experimental kernels are excluded from best_kernel.
+                        if not k.get("verified"):
+                            continue
+                        rel.setdefault(name, []).append(k["decode_gib_s"] / base)
+        gm = lambda v: statistics.geometric_mean(v)
+        b = rel.get(SHIPPED + "_lookback")
+        n = rel.get(SHIPPED + "_lookback_noshift")
+        w1 = rel.get(SHIPPED + "_lookback_w1")
+        e = rel.get(SHIPPED + "_stcsedge")
+        if b and n:
+            check("fused positioning: base vs shipped", gm(b), 0.30, 0.40, "x",
+                  "about 2.9x slower; §3.2's third option")
+            check("fused positioning: stall removed", gm(n), 0.30, 0.40, "x")
+            # The load-bearing one: removing the stall must change ~nothing, or the
+            # paper's claim that the stall is not the cost is wrong.
+            check("fused positioning: removing the stall changes nothing", gm(n) / gm(b),
+                  0.97, 1.03, "x", "hypothesis was that this would be >1")
+        if b and w1:
+            # Second, independent refutation: no-stall-at-all is the WORST configuration.
+            check("fused positioning: 1 warp/block is worse, not better", gm(w1) / gm(b),
+                  0.35, 0.50, "x", "narrowing removes the idle and loses 2.3x")
+        if e:
+            check("streaming drain edges: no effect", gm(e), 0.98, 1.02, "x",
+                  "head+tail policy change is inside dispersion")
 
     # ── report ──
     w = max(len(r[0]) for r in ROWS)
