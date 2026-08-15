@@ -31,7 +31,7 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 75
+EXPECTED_CHECKS = 83
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -478,6 +478,72 @@ def main():
         if e:
             check("streaming drain edges: no effect", gm(e), 0.98, 1.02, "x",
                   "head+tail policy change is inside dispersion")
+
+    # 13. Access-width isolation on the EVALUATED columns (§5.3). The claim is that
+    #     split8read narrows each access rather than making the table more cache-resident,
+    #     and it rests on two counters moving in OPPOSITE ways: wavefronts down about a
+    #     quarter while sector count stays flat. A hit-rate move of a couple of points
+    #     cannot produce a wavefront reduction of 23%, which is the whole argument.
+    #
+    #     The A100 leg needed an explicit --metrics pass: `--set full` omits both counters
+    #     on sm_80, which is why this was a three-chip result until 2026-08-15.
+    def width_ratio(chip, col, metric):
+        import csv as _csv, io as _io
+        d = C.RESULTS / ("%s-widthncu-eval" % chip)
+        if not d.is_dir():
+            return None
+        vals = {}
+        for variant, tag in (("split8read", "s"), ("onpair_shmem_4tpt", "t")):
+            f = d / ("shdict_ncu_%s_text_b12_%s_width.csv" % (col, variant))
+            if not f.exists():
+                f = d / ("shdict_ncu_%s_text_b12_%s_raw.csv" % (col, variant))
+            if not f.exists():
+                return None
+            txt = f.read_text(errors="replace")
+            i = txt.find('"ID","Process ID"')
+            if i < 0:
+                return None
+            got = []
+            for r in _csv.DictReader(_io.StringIO(txt[i:])):
+                if r.get("Metric Name") == metric:
+                    try:
+                        got.append(float((r.get("Metric Value") or "").replace(",", "")))
+                    except ValueError:
+                        pass
+                elif metric in (r.keys() if hasattr(r, "keys") else []):
+                    pass
+            if not got:
+                # raw-page CSVs carry metrics as COLUMNS, not rows
+                rows = list(_csv.reader(_io.StringIO(txt[i:])))
+                hdr = [h.split(".TriageCompute.")[-1] for h in rows[0]]
+                if metric not in hdr:
+                    return None
+                j = hdr.index(metric)
+                for rr in rows[2:]:
+                    try:
+                        got.append(float(rr[j].replace(",", "")))
+                    except (ValueError, IndexError):
+                        pass
+            if not got:
+                return None
+            vals[tag] = statistics.median(got)
+        return (vals["s"] / vals["t"]) if vals.get("t") else None
+
+    WAVE = "l1tex__data_pipe_lsu_wavefronts.sum"
+    SECT = "l1tex__t_sectors.sum"
+    for chip in ("b300", "a100"):
+        for col in ("fineweb", "wikipedia"):
+            wv = width_ratio(chip, col, WAVE) or width_ratio(chip, col,
+                                                             "l1tex__data_pipe_lsu_wavefronts.avg")
+            sc = width_ratio(chip, col, SECT)
+            if wv:
+                check("width %s/%s: wavefronts fall" % (chip, col), wv, 0.74, 0.81, "x",
+                      "split8read / stride-16; the narrowing")
+            if sc:
+                # The control. If sectors moved with wavefronts, the gain would be bytes,
+                # not access width, and the mechanism claim would not hold.
+                check("width %s/%s: sectors flat" % (chip, col), sc, 0.99, 1.02, "x",
+                      "same bytes, fewer accesses")
 
     # ── report ──
     w = max(len(r[0]) for r in ROWS)
