@@ -28,9 +28,11 @@ these are the reductions that reproduce every printed cell):
   Ratio   mem_ratio             -- includes the output-offset sidecar.
 
 FSST-12's ratio is mem_ratio_container_matched, the basis that puts it through the same
-container as OnPair's codes. FSST-12 has no Tokens/Len entry: its table is a fixed 4,096
-entries and all its symbols are <=8 bytes, but the committed data records neither its used-token
-count nor its mean code length, so those cells stay empty rather than being invented.
+container as OnPair's codes. Its Tokens and Len come from the SAME reductions as the OnPair
+columns -- gpu.distinct_codes and sample_bytes/(compressed_bytes/2) -- because the FSST-12
+cells record both fields. (An earlier version of this file claimed the data did not record
+them, which was simply wrong: it does.) FSST-12 has no <=8B column because gpu.frac_le8 is
+exactly 1.0 on every row by construction, so the column would carry no information.
 """
 import sys
 from pathlib import Path
@@ -77,12 +79,27 @@ def fsst_ratio(fn, col):
     return c.get("mem_ratio_container_matched") if c else None
 
 
+def fsst_stats(fn, col):
+    """Tokens / Len / Ratio for FSST-12, by the same reductions as the OnPair columns."""
+    c = C.cell("b300", FSST_KEY.get(fn, fn), col, 12, C.FSST12)
+    if not c:
+        return None
+    g = c.get("gpu") or {}
+    cb, sb = g.get("compressed_bytes"), c.get("sample_bytes")
+    return {
+        "tokens": g.get("distinct_codes"),
+        "len": (sb / (cb / 2)) if (sb and cb) else None,
+        "le8": g.get("frac_le8"),
+        "ratio": c.get("mem_ratio_container_matched"),
+    }
+
+
 def emit():
     out, group = [], None
     for label, fn, col, grp in ROWS:
         if grp != group:
             group = grp
-            out.append("\\multicolumn{12}{@{}l}{\\textit{%s}} \\\\" % grp)
+            out.append("\\multicolumn{14}{@{}l}{\\textit{%s}} \\\\" % grp)
         a, b = onpair_stats(fn, col, 12), onpair_stats(fn, col, 16)
         f = fsst_ratio(fn, col)
         if not a or not b:
@@ -92,8 +109,12 @@ def emit():
         for s in (a, b):
             cells.append("%s & %.1f & %.0f\\%% & %.1f$\\times$" % (
                 "{:,}".format(s["tokens"]).replace(",", "\\,"), s["len"], s["le8"] * 100, s["ratio"]))
-        out.append("%s & %s & & %s & & %s \\\\" % (
-            label, cells[0], cells[1], ("%.1f$\\times$" % f) if f else "--"))
+        fs = fsst_stats(fn, col)
+        fcell = "-- & -- & --"
+        if fs:
+            fcell = "%s & %.1f & %.1f$\\times$" % (
+                "{:,}".format(fs["tokens"]).replace(",", "\\,"), fs["len"], fs["ratio"])
+        out.append("%s & %s & & %s & & %s \\\\" % (label, cells[0], cells[1], fcell))
     return "\n".join(out)
 
 
@@ -121,12 +142,18 @@ PRINTED = {
     ("amazon-electronics", "text", 12): (4048, 4.2, 95, 2.7),
     ("amazon-electronics", "text", 16): (65471, 7.1, 68, 3.4),
 }
+# (tokens, len, ratio) as the paper prints them for FSST-12.
 PRINTED_FSST = {
-    ("tpch-sf10", "l_comment"): 2.9, ("tpch-sf10", "ps_comment"): 3.8,
-    ("lship", "l_shipinstruct"): 11.4, ("synthetic", "url"): 3.4,
-    ("clickbench", "URL"): 2.1, ("fineweb", "text"): 1.8, ("wikipedia", "text"): 1.8,
-    ("book-reviews", "text"): 1.9, ("amazon-movies", "text"): 1.9,
-    ("amazon-electronics", "text"): 2.0,
+    ("tpch-sf10", "l_comment"): (1044, 4.0, 2.9),
+    ("tpch-sf10", "ps_comment"): (919, 4.9, 3.8),
+    ("lship", "l_shipinstruct"): (8, 6.0, 11.4),
+    ("synthetic", "url"): (283, 4.0, 3.4),
+    ("clickbench", "URL"): (3678, 3.2, 2.1),
+    ("fineweb", "text"): (3669, 2.8, 1.8),
+    ("wikipedia", "text"): (3772, 2.7, 1.8),
+    ("book-reviews", "text"): (3004, 2.9, 1.9),
+    ("amazon-movies", "text"): (3122, 2.9, 1.9),
+    ("amazon-electronics", "text"): (3015, 3.0, 2.0),
 }
 
 
@@ -145,18 +172,27 @@ def check():
             bad.append("%s/%s b%d <=8B: table %d%%, data %.1f%%" % (fn, col, bits, le8, s["le8"] * 100))
         if abs(s["ratio"] - ratio) > 0.05:
             bad.append("%s/%s b%d Ratio: table %.1f, data %.2f" % (fn, col, bits, ratio, s["ratio"]))
-    for (fn, col), r in PRINTED_FSST.items():
-        got = fsst_ratio(fn, col)
-        if got is None:
+    for (fn, col), (tok, ln, r) in PRINTED_FSST.items():
+        fs = fsst_stats(fn, col)
+        if not fs:
             bad.append("%s/%s FSST-12: NO DATA" % (fn, col))
-        elif abs(got - r) > 0.05:
-            bad.append("%s/%s FSST-12 Ratio: table %.1f, data %.2f" % (fn, col, r, got))
+            continue
+        if fs["tokens"] != tok:
+            bad.append("%s/%s FSST-12 Tokens: table %s, data %s" % (fn, col, tok, fs["tokens"]))
+        if abs(fs["len"] - ln) > 0.05:
+            bad.append("%s/%s FSST-12 Len: table %.1f, data %.2f" % (fn, col, ln, fs["len"]))
+        if abs(fs["ratio"] - r) > 0.05:
+            bad.append("%s/%s FSST-12 Ratio: table %.1f, data %.2f" % (fn, col, r, fs["ratio"]))
+        # <=8B is omitted from the table because it is 1.0 by construction. Assert that,
+        # so if it ever is not, the omission stops being justified and this fails.
+        if fs["le8"] is None or abs(fs["le8"] - 1.0) > 1e-9:
+            bad.append("%s/%s FSST-12 frac_le8: expected exactly 1.0, data %s" % (fn, col, fs["le8"]))
     if bad:
         print("tab:datasets DRIFT -- %d cell(s) disagree with results/:" % len(bad))
         for b in bad:
             print("  " + b)
         return 1
-    print("tab:datasets: all %d cells re-derive from results/ ✓" % (len(PRINTED) * 4 + len(PRINTED_FSST)))
+    print("tab:datasets: all %d cells re-derive from results/ ✓" % (len(PRINTED) * 4 + len(PRINTED_FSST) * 4))
     return 0
 
 
