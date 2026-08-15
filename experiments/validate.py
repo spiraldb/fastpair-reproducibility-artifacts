@@ -31,7 +31,7 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 83
+EXPECTED_CHECKS = 84
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -478,6 +478,21 @@ def main():
         if e:
             check("streaming drain edges: no effect", gm(e), 0.98, 1.02, "x",
                   "head+tail policy change is inside dispersion")
+        # Disjoint dictionary halves: §4 discloses that the shipped kernel holds each
+        # entry's low eight bytes twice, and now states what that costs in RATE, not only
+        # in footprint. Small, and the paper says so; the check keeps "small" honest.
+        hi = []
+        for f in sorted(fs_dir.glob("fusedstall_summary_*.json")):
+            for c in json.load(open(f)):
+                km = {k.get("kernel"): k for k in ((c.get("gpu") or {}).get("kernels") or [])
+                      if k.get("applicable")}
+                base = (km.get(SHIPPED) or {}).get("decode_gib_s")
+                k = km.get(SHIPPED + "_hilo")
+                if base and k and k.get("decode_gib_s") and k.get("verified"):
+                    hi.append(k["decode_gib_s"] / base)
+        if hi:
+            check("disjoint dict halves: small gain", gm(hi), 1.01, 1.05, "x",
+                  "§4: 1.02 to 1.03x; the duplicate costs rate as well as footprint")
 
     # 13. Access-width isolation on the EVALUATED columns (§5.3). The claim is that
     #     split8read narrows each access rather than making the table more cache-resident,
