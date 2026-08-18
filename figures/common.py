@@ -97,26 +97,45 @@ ONPAIR = "onpair"
 FSST12 = "fsst12"
 
 
+# Harness LABELS are not dataset ids. The sweep writes `onpair_summary_<label>.json`, and a
+# label can differ from the `dataset_id` recorded inside it: `lship` holds cells whose
+# dataset_id is `tpch-sf10`. Filenames are therefore not scopes for OnPair either.
+#
+# This bites silently rather than loudly. Asking for the cell by its real id --
+# cell(gpu, "tpch-sf10", "l_shipinstruct") -- opened the tpch file, which holds only the
+# three comment columns, and returned None. On 2026-08-17 that quietly dropped a whole
+# column from a selector fit across all four GPUs: the fit reported 72 cells and 9 columns
+# when the corpus has 10, and nothing failed. Individual figures had each papered over it
+# with their own alias tables (fig_compressibility._OFFSET_DID_ALIAS,
+# fig_crossarch.FSST12_ALIAS, inline conditionals elsewhere), so the mapping was repeated
+# four times and absent everywhere else. Resolve it once, here.
+LABEL_TO_DATASET = {"lship": "tpch-sf10"}
+
+
+def resolve_dataset(dataset):
+    """The real `dataset_id` for a harness label (identity for anything already an id)."""
+    return LABEL_TO_DATASET.get(dataset, dataset)
+
+
 def load(gpu, dataset, codec=ONPAIR):
     """Cells for one (gpu, dataset), from the directory that codec lives in.
 
-    OnPair is the canonical matrix under `results/<gpu>/`, one file per dataset.
-    FSST-12 lives under `results/<gpu>-fsst12/`, and there the FILENAMES ARE NOT
-    SCOPES: run.py writes one summary.json per invocation and the job snapshots it
-    per dataset, so a file named for one dataset can hold cells for others. Every
-    file in that directory is therefore read and the cells are filtered on their own
-    `dataset_id`. Verified free of duplicates at import.
+    `dataset` may be either a dataset_id or a harness label; both resolve to the same
+    cells. Filenames are not scopes in either directory, so every file is read and cells
+    are filtered on their own `dataset_id`. Verified free of duplicates at import.
     """
-    if codec == FSST12:
-        d = RESULTS / ("%s-fsst12" % gpu)
-        if not d.is_dir():
-            return []
-        out = []
-        for f in sorted(d.glob("*.json")):
+    target = resolve_dataset(dataset)
+    d = RESULTS / (("%s-fsst12" % gpu) if codec == FSST12 else gpu)
+    if not d.is_dir():
+        return []
+    pattern = "*.json" if codec == FSST12 else "onpair_summary_*.json"
+    out = []
+    for f in sorted(d.glob(pattern)):
+        try:
             out.extend(json.load(open(f)))
-        return [c for c in out if c.get("dataset_id") == dataset]
-    f = RESULTS / gpu / ("onpair_summary_%s.json" % dataset)
-    return json.load(open(f)) if f.exists() else []
+        except (json.JSONDecodeError, OSError):
+            continue
+    return [c for c in out if c.get("dataset_id") == target]
 
 
 def same_run_onpair(gpu, dataset, column, bits):
