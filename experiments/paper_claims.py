@@ -40,6 +40,28 @@ OUT = os.path.join(ROOT, "results", "paper-claims.json")
 CHIPS_CAMPAIGN = ["b300", "h100", "a100"]          # the l40s leg never landed
 CHIPS_PROBE = ["a100", "l40s", "h100", "b300"]
 GEN_PREFIXES = ("tpch-sf15", "tpch-sf45", "tpch-sf263")
+CAMPAIGN_TARGETS = {
+    ("fineweb2", "fineweb2-zh", "text"),
+    ("wikipedia", "wikipedia", "text"),
+    ("codeparrot", "codeparrot", "content"),
+    ("android", "loghub-android", "line"),
+    ("url", "clickbench", "URL"),
+    ("thunderbird", "loghub-thunderbird", "line"),
+    ("title", "clickbench", "Title"),
+    ("hdfs", "loghub-hdfs", "line"),
+    ("spark", "loghub-spark", "line"),
+    ("windows", "loghub-windows", "line"),
+    ("caddress", "tpch-sf263", "c_address"),
+    ("lcomment", "tpch-sf15", "l_comment"),
+    ("oclerk", "tpch-sf45", "o_clerk"),
+    ("shipinstruct", "tpch-sf15", "l_shipinstruct"),
+    ("pscomment", "tpch-sf15", "ps_comment"),
+}
+DG_COORDS = {(k, t, b)
+             for k in range(1, 9) for t in (64, 128, 256) for b in (1, 2, 4, 6, 8)}
+DH_COORDS = {(k, t, b, h)
+             for k in range(1, 9) for t in (64, 128, 256) for b in (1, 2, 4, 6, 8)
+             for h in range(2, min(k, 4) + 1)}
 
 # Model constants. Each is a hardware allocation rule, not a tuning choice.
 REGS_PER_SM = 65536
@@ -104,7 +126,9 @@ def load_probe():
     for chip in CHIPS_PROBE:
         f = dp = None
         for cand_f, cand_dp in probe_paths(chip):
-            if os.path.exists(cand_f):
+            # A kernel file without its device budgets is not a usable capture. Keep looking for
+            # the other supported layout instead of selecting a partial first candidate.
+            if os.path.isfile(cand_f) and os.path.isfile(cand_dp):
                 f, dp = cand_f, cand_dp
                 break
         if f is None:
@@ -113,12 +137,61 @@ def load_probe():
             line = line.strip()
             if line:
                 d = json.loads(line)
+                if not isinstance(d, dict):
+                    sys.exit("probe %s contains a non-object row" % chip)
                 d["_chip"] = chip
                 rows.append(d)
         if dp and os.path.exists(dp):
             p = json.load(open(dp))
+            if not isinstance(p, dict):
+                sys.exit("probe %s device properties are not an object" % chip)
             shared_per_sm[chip] = p.get("shared_per_sm_bytes") or p.get("shared_per_block_optin_bytes")
     return rows, shared_per_sm
+
+
+def require_complete_probe(rows, shared_per_sm):
+    """An explicitly selected probe must contain one whole, uniform capture for every chip."""
+    h1 = {(k, t, b, 1)
+          for k in range(1, 9) for t in (64, 128, 256) for b in (1, 2, 4, 6, 8)}
+    h_aware = {(k, t, b, h)
+               for k in range(1, 9) for t in (64, 128, 256) for b in (1, 2, 4, 6, 8)
+               for h in range(1, min(k, 4) + 1)}
+    inventory_kinds = set()
+    for chip in CHIPS_PROBE:
+        sub = [row for row in rows if row.get("_chip") == chip]
+        if any(row.get("buildable") is not True for row in sub):
+            sys.exit("probe %s contains an unbuildable coordinate" % chip)
+        coords = [(row.get("tokens_per_thread"), row.get("block_threads"),
+                   row.get("min_blocks"), row.get("held_high", 1)) for row in sub]
+        try:
+            coord_set = set(coords)
+        except TypeError:
+            sys.exit("probe %s contains a non-scalar coordinate" % chip)
+        if len(coords) != len(coord_set):
+            sys.exit("probe %s repeats a resource coordinate" % chip)
+        if coord_set == h1:
+            inventory_kinds.add("h1")
+        elif coord_set == h_aware:
+            inventory_kinds.add("h-aware")
+        else:
+            sys.exit("probe %s is incomplete: %d unique coordinates (wanted exactly 120 or 390)"
+                     % (chip, len(coord_set)))
+        shared = shared_per_sm.get(chip)
+        if not isinstance(shared, int) or isinstance(shared, bool) or shared <= 0:
+            sys.exit("probe %s has no positive shared-memory budget" % chip)
+        flat, nested = probe_paths(chip)
+        flat_complete = all(os.path.isfile(path) for path in flat)
+        nested_complete = all(os.path.isfile(path) for path in nested)
+        if not flat_complete and nested_complete:
+            marker_path = os.path.join(PROBE, chip, "suite-complete.txt")
+            try:
+                marker = open(marker_path).read()
+            except OSError as error:
+                sys.exit("suite probe %s has no readable completion marker: %s" % (chip, error))
+            if "failed_stages:" in marker or "stage_LADDER_rc: 0" not in marker:
+                sys.exit("suite probe %s has no successful LADDER completion record" % chip)
+    if len(inventory_kinds) != 1:
+        sys.exit("probe inputs mix H=1 and H-aware inventories across chips")
 
 
 def occupancy(rows, shared_per_sm):
@@ -224,6 +297,81 @@ def load_campaign():
             for c in json.load(open(f)):
                 out[(chip, c["dataset_id"], c["column"], c["bits"])] = c
     return out
+
+
+def require_complete_suite_campaign():
+    """Refuse a suite root unless all paper-consumed chips contain the exact boost corpus."""
+    expected_cells = {(ds, col, bits)
+                      for _, ds, col in CAMPAIGN_TARGETS for bits in (12, 16)}
+    for chip in CHIPS_CAMPAIGN:
+        directory = os.path.join(CAMPAIGN, chip)
+        if not os.path.isdir(directory):
+            sys.exit("suite campaign is incomplete: missing chip directory %s" % chip)
+
+        marker_path = os.path.join(directory, "suite-complete.txt")
+        targets_path = os.path.join(directory, "campaign_targets.txt")
+        clock_path = os.path.join(directory, "clock-state.txt")
+        try:
+            marker = open(marker_path).read()
+            target_rows = [tuple(line.split()) for line in open(targets_path) if line.strip()]
+            clock = open(clock_path).read()
+        except OSError as error:
+            sys.exit("suite %s provenance is unreadable: %s" % (chip, error))
+        if "failed_stages:" in marker or "stage_GRID_boost_rc: 0" not in marker:
+            sys.exit("suite %s has no successful boost GRID completion record" % chip)
+        if set(target_rows) != CAMPAIGN_TARGETS or len(target_rows) != len(CAMPAIGN_TARGETS):
+            sys.exit("suite %s campaign_targets.txt is not the fixed 15-column corpus" % chip)
+        if "mem_pin: FAILED" in clock or not re.search(r"^mem_pin: [1-9][0-9]* MHz$", clock, re.M):
+            sys.exit("suite %s has no successful memory-clock pin" % chip)
+
+        observed = []
+        for path in sorted(glob.glob(os.path.join(directory, "sweep_summary_*_boost.json"))):
+            try:
+                cells = json.load(open(path))
+            except (OSError, json.JSONDecodeError) as error:
+                sys.exit("suite %s boost summary is unreadable: %s" % (chip, error))
+            if not isinstance(cells, list):
+                sys.exit("suite %s boost summary is not a cell list: %s" % (chip, path))
+            for cell in cells:
+                if not isinstance(cell, dict):
+                    sys.exit("suite %s boost summary contains a non-object cell" % chip)
+                identity = (cell.get("dataset_id"), cell.get("column"), cell.get("bits"))
+                observed.append(identity)
+                gpu = cell.get("gpu")
+                kernels = gpu.get("kernels") if isinstance(gpu, dict) else None
+                if cell.get("codec") != "onpair" or cell.get("training_seed") != 20260819 \
+                        or cell.get("verified") is not True or not isinstance(gpu, dict) \
+                        or gpu.get("validated") is not True or gpu.get("verified") is not True \
+                        or gpu.get("iterations") != 100 or not isinstance(kernels, list):
+                    sys.exit("suite %s boost cell %r is not a full, verified packed-grid result"
+                             % (chip, identity))
+                dg, dh, timed = set(), set(), set()
+                for kernel in kernels:
+                    if not isinstance(kernel, dict):
+                        continue
+                    name = kernel.get("kernel")
+                    samples = kernel.get("decode_ns_iters")
+                    if not isinstance(samples, list) or len(samples) != 100 \
+                            or not all(isinstance(value, int) and not isinstance(value, bool)
+                                       and value > 0 for value in samples):
+                        continue
+                    timed.add(name)
+                    match = re.fullmatch(r"onpair_dg_k(\d+)_t(\d+)_b(\d+)", str(name))
+                    if match:
+                        dg.add(tuple(map(int, match.groups())))
+                    match = re.fullmatch(r"onpair_dh_k(\d+)_t(\d+)_b(\d+)_h(\d+)", str(name))
+                    if match:
+                        dh.add(tuple(map(int, match.groups())))
+                if dg != DG_COORDS or dh != DH_COORDS or gpu.get("auto_kernel") not in timed:
+                    sys.exit("suite %s boost cell %r lacks the exact timed dg/dh/auto inventory"
+                             % (chip, identity))
+        try:
+            observed_set = set(observed)
+        except TypeError:
+            sys.exit("suite %s contains a non-scalar cell identity" % chip)
+        if len(observed) != len(expected_cells) or observed_set != expected_cells:
+            sys.exit("suite %s boost corpus is incomplete: %d cells, %d unique (wanted 30 exact)"
+                     % (chip, len(observed), len(observed_set)))
 
 
 def pearson(xs, ys):
@@ -446,7 +594,8 @@ def emit_tex(path):
     lines = ["% GENERATED by experiments/paper_claims.py -- do not edit.",
              "% Every number below is re-derived from committed results/. The paper cites these",
              "% macros instead of transcribing values, so prose cannot go stale.",
-             "%% source: results/{resource-probe-20260818,campaign-20260820}", ""]
+             f"%% probe source: {os.path.relpath(PROBE, ROOT)}",
+             f"%% campaign source: {os.path.relpath(CAMPAIGN, ROOT)}", ""]
     missing = [k for k, _, _ in TEX if k not in derived]
     if missing:
         raise SystemExit("cannot emit: %d claim(s) not derived: %s" % (len(missing), ", ".join(missing)))
@@ -505,8 +654,12 @@ def main():
     rows, shared = load_probe()
     if not rows:
         sys.exit("no probe rows under %s" % PROBE)
+    if args.suite_root or args.probe_root:
+        require_complete_probe(rows, shared)
     occupancy(rows, shared)
     model_arithmetic(shared)
+    if args.suite_root:
+        require_complete_suite_campaign()
     cells = load_campaign()
     if cells:
         campaign_stats(cells)
