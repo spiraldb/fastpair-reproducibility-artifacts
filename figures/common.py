@@ -257,6 +257,82 @@ def de_map():
             for e in json.load(open(f))}
 
 
+# --------------------------------------------------------------------------
+# Token access distribution (Appendix A)
+# --------------------------------------------------------------------------
+# Ranks the figure samples at. 4^6 and 4^8 land exactly on the two dictionary caps, and 256 /
+# 1024 are the two ranks the appendix quotes in prose.
+FREQ_EDGES = [1, 4, 16, 64, 256, 1024, 4096, 16384, 65536]
+
+
+def freqdist(fname="token-freqdist/token_freqdist.json"):
+    """Per (column, codec) token access distribution records."""
+    return json.load(open(RESULTS / fname))
+
+
+def freq_record(rows, column, codec):
+    """The one record for a (column, codec), or None."""
+    for r in rows:
+        if r["column"] == column and r["codec"] == codec:
+            return r
+    return None
+
+
+def freq_coverage(curve, ranks=None):
+    """Share of all accesses (%) served by the N most-frequently-read entries, at each rank.
+
+    Cumulative on purpose. An earlier version of the figure binned ranks into powers of four
+    and drew the share falling in each bin, which is misleading: the bins hold 1, 3, 12, 48
+    ... entries, so a bar can be tall merely because its bin is wide.
+
+    Deliberately stdlib-only and living here rather than in the figure, so the validator
+    re-derives the appendix's numbers through the SAME reduction the figure draws instead of a
+    second implementation that could drift apart from it.
+    """
+    ranks = FREQ_EDGES if ranks is None else ranks
+    xs = [0.0] + [float(r) for r, _ in curve]
+    ys = [0.0] + [float(c) for _, c in curve]
+    out = []
+    for want in ranks:
+        if want >= xs[-1]:
+            out.append(ys[-1] * 100.0)
+            continue
+        for i in range(1, len(xs)):
+            if xs[i] >= want:
+                # Linear between the bracketing samples; equal x means a repeated rank, so
+                # take the later (higher) coverage rather than dividing by zero.
+                span = xs[i] - xs[i - 1]
+                frac = 0.0 if span == 0 else (want - xs[i - 1]) / span
+                out.append((ys[i - 1] + frac * (ys[i] - ys[i - 1])) * 100.0)
+                break
+    return out
+
+
+def freq_at(record, rank):
+    """Coverage (%) at one rank for one record."""
+    return freq_coverage(record["curve"], [rank])[0]
+
+
+def freq_entries_for(record, target_pct):
+    """Entries needed to cover target_pct of accesses -- the hot-set size.
+
+    Inverts the cumulative curve by linear interpolation, the same convention freq_coverage
+    reads it forward with. Taking the smallest EMITTED rank at or above the target instead
+    would be an upper bound and is visibly coarser: on `l_comment` at 90% it reads 2287
+    against the interpolated 2165, because the curve is sampled at 64 log-spaced ranks and
+    the gaps are wide out where the tail flattens.
+    """
+    curve = record["curve"]
+    xs = [0.0] + [float(r) for r, _ in curve]
+    ys = [0.0] + [float(c) * 100.0 for _, c in curve]
+    for i in range(1, len(ys)):
+        if ys[i] >= target_pct:
+            span = ys[i] - ys[i - 1]
+            frac = 0.0 if span == 0 else (target_pct - ys[i - 1]) / span
+            return xs[i - 1] + frac * (xs[i] - xs[i - 1])
+    return xs[-1]
+
+
 def ncu_sol(metric, fname="b200-ncu/ncu_costsurface_synthetic_url_b12_sol.txt"):
     """Parse a Speed-of-Light %-of-peak value from an NSight Compute SOL dump."""
     txt = (RESULTS / fname).read_text(errors="ignore")

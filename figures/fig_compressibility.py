@@ -76,10 +76,15 @@ COLMAP = {  # cpu column -> (gpu dataset_id, gpu column, panel)
     "l_shipinstruct": ("lship", "l_shipinstruct", "S"), "synthetic_url": ("synthetic", "url", "S"),
 }
 # technique -> color (matches fig_sota_cpu's palette). OnPair is the protagonist.
+# Order is the plotted bar order, grouped by family: the three escape-free dictionary
+# codecs FastPair decodes, then FSST-8, then the byte-oriented codecs with each family's
+# levels adjacent (Deflate 9/1, Zstd 3/1/-10), and LZ4 last.
 TECH = [
-    ("OnPair-16", "#08519c"), ("OnPair-12", "#6baed6"), ("Deflate (9)", "#fdae61"), ("Zstd (3)", "#525252"),
-    ("Zstd (1)", "#969696"), ("Deflate (1)", "#f16913"), ("LZ4", "#a63603"),
-    ("FSST-8", C.GSST_RED), ("FSST-12", "#c994c7"), ("Zstd (-10)", "#cccccc"),
+    ("OnPair-16", "#08519c"), ("OnPair-12", "#6baed6"), ("FSST-12", "#c994c7"),
+    ("FSST-8", C.GSST_RED),
+    ("Deflate (9)", "#fdae61"), ("Deflate (1)", "#f16913"),
+    ("Zstd (3)", "#525252"), ("Zstd (1)", "#969696"), ("Zstd (-10)", "#cccccc"),
+    ("LZ4", "#a63603"),
 ]
 # The CPU sweep's "FSST" is the 8-bit dialect (fsst-rs), so it is labelled FSST-8 here now
 # that the escape-free 12-bit dialect appears alongside it.
@@ -148,7 +153,11 @@ def main():
 
     import numpy as np
     plt = C.apply_theme()
-    fig, ax = plt.subplots(figsize=(7.0, 1.75))  # shrunk further (shorter at \textwidth)
+    # 2026-08-15: halved in height for the page budget. Every bar is value-labelled, so the
+    # y-axis carries no information the bar tops do not; it is dropped along with the
+    # in-plot legend (moved to the caption) and the label rotation. Same data, same
+    # comparisons, ~half the column-inches.
+    fig, ax = plt.subplots(figsize=(7.0, 0.85))
     x = np.arange(len(TECH)); w = 0.4
     labels = [t for t, _ in TECH]
     colors = [c for _, c in TECH]
@@ -157,17 +166,17 @@ def main():
            linewidth=0.7, alpha=0.55, label="synthetic", hatch="///")
     for i, t in enumerate(labels):
         if gm_real.get(t):
-            ax.text(i - w / 2, gm_real[t] + 0.1, "%.1f" % gm_real[t], ha="center", va="bottom", fontsize=6)
+            ax.text(i - w / 2, gm_real[t] + 0.12, "%.1f" % gm_real[t], ha="center", va="bottom", fontsize=5.5)
         if gm_syn.get(t):
-            ax.text(i + w / 2, gm_syn[t] + 0.1, "%.1f" % gm_syn[t], ha="center", va="bottom", fontsize=6)
-    ax.set_xticks(x); ax.set_xticklabels(labels, rotation=20, ha="right", fontsize=7)
-    ax.set_ylabel("compression ratio")
-    ax.set_ylim(0, max(v for v in gm_syn.values() if v) * 1.15)
-    from matplotlib.patches import Patch
-    ax.legend(handles=[Patch(facecolor=C.INK, label="real columns"),
-                       Patch(facecolor=C.INK, alpha=0.55, hatch="///", label="synthetic columns")],
-              frameon=False, fontsize=7, loc="upper right")
-    fig.tight_layout()  # fill the figure width (match fig_sota's rendered size at \textwidth)
+            ax.text(i + w / 2, gm_syn[t] + 0.12, "%.1f" % gm_syn[t], ha="center", va="bottom", fontsize=5.5)
+    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=5.5)
+    ax.tick_params(axis="x", length=0, pad=1)
+    ax.set_ylim(0, max(v for v in gm_syn.values() if v) * 1.18)
+    # y-axis is redundant with the value labels
+    ax.get_yaxis().set_visible(False)
+    for side in ("left", "right", "top"):
+        ax.spines[side].set_visible(False)
+    fig.tight_layout(pad=0.15)
     C.save(fig, "fig_compressibility")
 
 

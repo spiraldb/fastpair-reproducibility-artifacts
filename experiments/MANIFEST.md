@@ -291,6 +291,29 @@ where the access-rate reading gives way — and still never wins. The bits14 gat
 (100 KB for `pdict`/`vdict`, 224 KB for `shdict8`) are harness design-sanity caps, not
 hardware maxima; only the bits16 verdict rests on hardware.
 
+## Token access distribution (Appendix A) — `results/token-freqdist/`
+
+CPU-only, no GPU time and nothing in the evaluation depends on it. The tool trains and
+encodes each column at each codec, then reads the frequency of every dictionary entry off the
+code stream, so it measures which entries a column actually reads rather than what the table
+contains.
+
+| Result | Box | Rev | Config | Reduction | Consumed by |
+|---|---|---|---|---|---|
+| `token-freqdist/token_freqdist.json` | laptop (CPU only) | `onpair` 0.0.4; FSST-12 `mprammer/fsst` @ `196a862` | ten selected columns x {OnPair-12, OnPair-16, FSST-12}, **64 MiB sample per column** | cumulative access coverage at 64 log-spaced ranks; bytes of an 8 B plane covering 50/90/99/99.9% of accesses; share of accesses reaching the high plane | `fig:freqbars`, Appendix A |
+
+Two caveats that must travel with these numbers:
+
+- **The sample is 64 MiB, not the 1 GB the evaluation uses.** Sample size changes the trained
+  dictionary, so these curves rank and characterise columns; they are not evaluation numbers
+  and must not be quoted as such.
+- **OnPair trains unseeded**, so re-running retrains and the figures move by a few percent.
+  Every number quoted in Appendix A was re-derived from the committed JSON rather than carried
+  across from an earlier run.
+
+FSST-12 is pinned to `196a862` rather than the crate or local HEAD because that rev carries
+the training-budget fix; without it the trained table is 88% empty.
+
 ## Not in git (too large; on the orchestrating laptop / regenerable)
 - Raw `.ncu-rep` archives → `~/data/onpair-ncu-archive/`, `~/agents/harness/runs/`.
 - Full CPU `perf` text → inside the `cpu-tma/*_raw.tar.gz`.

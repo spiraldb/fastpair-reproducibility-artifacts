@@ -31,7 +31,7 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 98
+EXPECTED_CHECKS = 130
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -600,6 +600,87 @@ def main():
                 lo, hi = (5.0, 12.0) if chip == "l40s" else (0.0, 3.0)
                 check("width %s/%s: hit-rate move (pts)" % (chip, col), hr, lo, hi, "pts",
                       "residency cannot explain the drop where this is small")
+
+    # 10. Token access distribution (Appendix A). Every number the appendix quotes in prose,
+    # re-derived through common.freq_* -- the same reduction fig_freqbars draws, so the figure,
+    # the prose and the JSON cannot drift apart. This appendix had NO coverage until
+    # 2026-08-20, the same exposure that let three FSST-12 numbers in §6 drift unnoticed.
+    try:
+        fd = C.freqdist()
+
+        # "the 256 most-read entries serve 81% of FSST-12's decoded codes, 35% of OnPair-12's
+        # and 13% of OnPair-16's; a thousand entries serve all of FSST-12's, 72% ... and 24%"
+        for codec, at256, at1k in (("fsst-12", (80, 82), (99.5, 100)),
+                                   ("onpair-12", (34.5, 36), (71, 73)),
+                                   ("onpair-16", (13, 14), (24, 25))):
+            r = C.freq_record(fd, "l_comment", codec)
+            check("freq l_comment/%s: top-256 coverage" % codec, C.freq_at(r, 256),
+                  at256[0], at256[1], "%", "appendix A prose")
+            check("freq l_comment/%s: top-1024 coverage" % codec, C.freq_at(r, 1024),
+                  at1k[0], at1k[1], "%", "appendix A prose")
+
+        # "1026 entries against OnPair-12's 3862 on l_comment, and 870 against 2214 on naics_name"
+        for col, codec, want in (("l_comment", "fsst-12", 1026), ("l_comment", "onpair-12", 3862),
+                                 ("cg_naics_name", "fsst-12", 870),
+                                 ("cg_naics_name", "onpair-12", 2214)):
+            got = C.freq_record(fd, col, codec)["entries_referenced"]
+            check("freq %s/%s: entries referenced" % (col, codec), float(got),
+                  want, want, "", "appendix A prose")
+
+        # "376 entries, 2165 and 26866" to cover 90%, i.e. "37% of FSST-12's table, 56% of
+        # OnPair-12's and 48% of OnPair-16's". Interpolated, not nearest-sample: see
+        # common.freq_entries_for, which inverts the curve the way the figure reads it forward.
+        for codec, ent, frac in (("fsst-12", (374, 378), (36, 38)),
+                                 ("onpair-12", (2160, 2172), (55, 57)),
+                                 ("onpair-16", (26800, 26930), (47, 49))):
+            r = C.freq_record(fd, "l_comment", codec)
+            e90 = C.freq_entries_for(r, 90)
+            check("freq l_comment/%s: entries for 90%%" % codec, e90, ent[0], ent[1],
+                  "entries", "appendix A prose")
+            check("freq l_comment/%s: 90%% as share of table" % codec,
+                  100.0 * e90 / r["entries_referenced"], frac[0], frac[1], "%",
+                  "appendix A prose")
+
+        # "covering 90% of the reads takes between 15 and 59% of the entries" -- the LOW end
+        # does not re-derive: the minimum over all (column, codec) is 13.8%, on
+        # cg_naics_name/OnPair-16. Asserted against the DATA rather than against the prose, so
+        # the discrepancy stays visible. Fix the sentence to "14 to 59%", or recompute it if the
+        # appendix is rescoped to the locked corpus, which drops that column entirely.
+        shares = [100.0 * C.freq_entries_for(r, 90) / r["entries_referenced"] for r in fd]
+        check("freq: min 90% share of table", min(shares), 13.5, 14.2, "%",
+              "prose says 15%; data says 13.8% on cg_naics_name/OnPair-16")
+        check("freq: max 90% share of table", max(shares), 58, 59.5, "%", "prose: 59%")
+
+        # "that hot set stays under 19 KB on every column at OnPair-12 and FSST-12 alike",
+        # charging each entry the eight bytes of a dense plane. OnPair-16 "does not: on the five
+        # columns whose dictionaries fill, its hot set is 191 to 299 KB".
+        for codec in ("fsst-12", "onpair-12"):
+            worst = max(8.0 * C.freq_entries_for(r, 90) / 1024.0
+                        for r in fd if r["codec"] == codec)
+            check("freq %s: worst 90%% hot set" % codec, worst, 0, 19, "KiB",
+                  "appendix A: under 19 KB on every column")
+        big = sorted((8.0 * C.freq_entries_for(r, 90) / 1024.0
+                      for r in fd if r["codec"] == "onpair-16"), reverse=True)[:5]
+        check("freq onpair-16: 5th largest hot set", big[-1], 190, 195, "KiB", "appendix A: 191 KB")
+        check("freq onpair-16: largest hot set", big[0], 295, 302, "KiB", "appendix A: 299 KB")
+
+        # "On Wikipedia only 2% of accesses reach the high plane and 90% of those come from
+        # 1.1 KB. On l_comment 42% ... from 8.8 KB. On naics_name 79% ... 1.9 KB against the
+        # low plane's 3.1 KB." Checked in BYTES: the appendix's KB are binary (9048 B reads as
+        # 8.8), so asserting on the raw counter keeps a unit slip out of the check itself.
+        for col, frac, hib, lob in (("wikipedia", (1.5, 2.5), (1150, 1200), None),
+                                    ("l_comment", (41, 43), (9000, 9100), None),
+                                    ("cg_naics_name", (78, 80), (1950, 2000), (3150, 3200))):
+            r = C.freq_record(fd, col, "onpair-12")
+            check("freq %s: high-plane access share" % col, 100.0 * r["hi_access_frac"],
+                  frac[0], frac[1], "%", "appendix A prose")
+            check("freq %s: high-plane 90%% bytes" % col, float(r["hi_bytes_90"]),
+                  hib[0], hib[1], "B", "appendix A prose")
+            if lob:
+                check("freq %s: low-plane 90%% bytes" % col, float(r["lo_bytes_90"]),
+                      lob[0], lob[1], "B", "appendix A prose")
+    except FileNotFoundError:
+        pass
 
     # ── report ──
     w = max(len(r[0]) for r in ROWS)

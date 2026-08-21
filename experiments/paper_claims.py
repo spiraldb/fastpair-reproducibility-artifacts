@@ -1,0 +1,550 @@
+# /// script
+# requires-python = ">=3.9"
+# dependencies = []
+# ///
+"""Re-derive every numeric claim in the paper's Sections 2, 3 and 4, and check it.
+
+WHY THIS EXISTS. Those sections' numbers were derived in ad-hoc sessions and then typed into
+prose. That is exactly how the project's recurring defect happens: a number outlives the state it
+was measured in, and nobody can tell which. This script recomputes each one from committed data,
+writes them to results/paper-claims.json for the record, and with --check compares them against
+what the paper currently asserts.
+
+    uv run experiments/paper_claims.py            # derive + write results/paper-claims.json
+    uv run experiments/paper_claims.py --check     # non-zero exit on any drift
+
+DECLARED vs DERIVED. `DECLARED` below is what the paper says today, transcribed by hand and cited
+to a section. Everything else is computed. A mismatch means either the prose is stale or the data
+moved, and the script does not guess which -- it prints both and fails.
+
+SOURCES, all inside this repository:
+  results/resource-probe-20260818/<chip>_kernel_resources.jsonl   one capture per chip, 120 configs
+  results/resource-probe-20260818/<chip>_device_properties.json   per-SM budgets
+  results/campaign-20260820/<chip>/sweep_summary_<label>_<policy>.json   the coarsening campaign
+"""
+import argparse
+import glob
+import json
+import math
+import os
+import re
+import statistics as st
+import sys
+from collections import defaultdict
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROBE = os.path.join(ROOT, "results", "resource-probe-20260818")
+CAMPAIGN = os.path.join(ROOT, "results", "campaign-20260820")
+OUT = os.path.join(ROOT, "results", "paper-claims.json")
+
+CHIPS_CAMPAIGN = ["b300", "h100", "a100"]          # the l40s leg never landed
+CHIPS_PROBE = ["a100", "l40s", "h100", "b300"]
+GEN_PREFIXES = ("tpch-sf15", "tpch-sf45", "tpch-sf263")
+
+# Model constants. Each is a hardware allocation rule, not a tuning choice.
+REGS_PER_SM = 65536
+WARP = 32
+REG_GRANULE_PER_WARP = 256      # -> 8 registers per thread
+SHARED_GRANULE = 128            # a block's total shared allocation rounds up to this
+PER_BLOCK_RESERVED = 1024       # runtime reservation, in neither static_shared nor M
+
+# What the paper asserts today. Keys are checked; `tol` is absolute unless it ends in '%'.
+# DECLARED is now the SMALL residue: values the paper does not cite through a generated macro.
+# Anything in TEX below needs no declaration -- the emitted file is the contract, and verify.sh
+# fails if the committed file differs from a fresh derivation. That removes the failure codex
+# found in pass 3: a declaration and a derivation sharing one bug cannot disagree, so checking
+# them against each other proved nothing.
+#
+# Tolerance 0 everywhere: every value is already rounded to its reporting precision, so a
+# nonzero tolerance spans whole display units and would hide a real regression rather than
+# absorb floating-point noise.
+DECLARED = {
+    "s3.regs_per_sm":              (65536, 0, "3.1"),
+    "occ.l40s_shared_limited":     (77, 0, "3.1"),
+    "occ.h100_regs_limited":       (116, 0, "3.1"),
+    "occ.a100_shared_limited":     (35, 0, "3.1"),
+}
+
+derived = {}
+notes = {}
+
+
+def put(key, value, note):
+    derived[key] = value
+    notes[key] = note
+
+
+# ---------------------------------------------------------------- probe / occupancy
+def reg_alloc_for_usage(r):
+    """Registers ALLOCATED per thread for a warp that USES r. Rounds UP to the granule."""
+    if r <= 0:
+        return 0
+    return (-(-(r * WARP) // REG_GRANULE_PER_WARP) * REG_GRANULE_PER_WARP) // WARP
+
+
+def reg_ceiling(quotient):
+    """The largest per-thread count a (T,B) budget admits. Rounds DOWN to the granule: you
+    cannot allocate a granule you do not have room for. Confusing this with the round-up above
+    is what made the checker disagree with a correct paper value of 40 at B=6."""
+    return int(quotient) // (REG_GRANULE_PER_WARP // WARP) * (REG_GRANULE_PER_WARP // WARP)
+
+
+def probe_paths(chip):
+    """Both layouts. A standalone probe capture names its files <chip>_*, while a suite leg lands
+    them unprefixed inside its own <chip>/ directory. Returning both candidate shapes lets one
+    reducer read either without the caller needing to know which produced the data."""
+    return ((os.path.join(PROBE, "%s_kernel_resources.jsonl" % chip),
+             os.path.join(PROBE, "%s_device_properties.json" % chip)),
+            (os.path.join(PROBE, chip, "kernel_resources.jsonl"),
+             os.path.join(PROBE, chip, "device_properties.json")))
+
+
+def load_probe():
+    rows, shared_per_sm = [], {}
+    for chip in CHIPS_PROBE:
+        f = dp = None
+        for cand_f, cand_dp in probe_paths(chip):
+            if os.path.exists(cand_f):
+                f, dp = cand_f, cand_dp
+                break
+        if f is None:
+            continue
+        for line in open(f):
+            line = line.strip()
+            if line:
+                d = json.loads(line)
+                d["_chip"] = chip
+                rows.append(d)
+        if dp and os.path.exists(dp):
+            p = json.load(open(dp))
+            shared_per_sm[chip] = p.get("shared_per_sm_bytes") or p.get("shared_per_block_optin_bytes")
+    return rows, shared_per_sm
+
+
+def occupancy(rows, shared_per_sm):
+    usable = [r for r in rows if r.get("buildable") and r.get("blocks_per_sm")
+              and r.get("block_threads") and r.get("regs_per_thread")
+              and r["_chip"] in shared_per_sm]
+
+    def pred(r, reg_round=True, reserve=True, shared_gran=True):
+        T = r["block_threads"]
+        regs = reg_alloc_for_usage(r["regs_per_thread"]) if reg_round else r["regs_per_thread"]
+        sh = (r.get("static_shared_bytes") or 0) + (PER_BLOCK_RESERVED if reserve else 0)
+        if sh and shared_gran:
+            sh = -(-sh // SHARED_GRANULE) * SHARED_GRANULE
+        by_r = REGS_PER_SM // (regs * T)
+        by_s = shared_per_sm[r["_chip"]] // sh if sh else 10 ** 6
+        by_w = (r.get("max_warps_per_sm") or 64) // max(1, T // WARP)
+        return min(by_r, by_s, by_w), by_r, by_s, by_w
+
+    put("occ.configs", len(usable), "unique kernel configurations, one capture per chip")
+    put("occ.exact", sum(1 for r in usable if pred(r)[0] == r["blocks_per_sm"]),
+        "formula == cuOccupancyMaxActiveBlocksPerMultiprocessor (NOT observed residency)")
+    put("occ.exact_no_reservation",
+        sum(1 for r in usable if pred(r, reserve=False)[0] == r["blocks_per_sm"]),
+        "ablation: drop the 1 KiB per-block reservation")
+    put("occ.exact_no_shared_granule",
+        sum(1 for r in usable if pred(r, shared_gran=False)[0] == r["blocks_per_sm"]),
+        "ablation: drop the 128 B shared-allocation granule")
+    put("occ.exact_no_reg_granule",
+        sum(1 for r in usable if pred(r, reg_round=False)[0] == r["blocks_per_sm"]),
+        "ablation: drop register granule rounding")
+
+    for chip in CHIPS_PROBE:
+        sub = [r for r in usable if r["_chip"] == chip]
+        if not sub:
+            continue
+        lim = defaultdict(int)
+        for r in sub:
+            _, br, bs, bw = pred(r)
+            lo = min(br, bs, bw)
+            if br == lo:
+                lim["regs"] += 1
+            if bs == lo:
+                lim["shared"] += 1
+            if bw == lo:
+                lim["warps"] += 1
+        for term in ("regs", "shared", "warps"):
+            put("occ.%s_%s_limited" % (chip, term), lim[term],
+                "configs where %s is a limiting term (ties counted in each)" % term)
+        put("occ.%s_configs" % chip, len(sub), "configs for this chip")
+    # Registers observed, to keep the "multiple of 8" claim honest
+    vals = sorted({r["regs_per_thread"] for r in usable})
+    put("occ.regs_observed", vals, "distinct regs_per_thread across all configs")
+    put("occ.regs_all_multiple_of_8", all(v % 8 == 0 for v in vals),
+        "FALSE means some kernel reports a non-granule register count")
+
+
+# ---------------------------------------------------------------- model arithmetic
+def model_arithmetic(shared_per_sm):
+    K, S, T, B, W = 6, 16, 256, 4, 8
+    M = T * (K * (S + 4) + 1)
+    put("s3.regs_per_sm", REGS_PER_SM, "identical on every device measured")
+    put("s3.M_bytes_K6_S16_T256", M, "M = T*(K*(S+4)+1) at the shipped point")
+    block = -(-(M + PER_BLOCK_RESERVED) // SHARED_GRANULE) * SHARED_GRANULE
+    put("s3.block_kib_with_reserve", round(block / 1024, 2), "M + 1 KiB reservation, granule-rounded")
+    put("s3.four_blocks_kib", round(4 * block / 1024, 2), "four resident blocks")
+    put("s3.regs_T256_B4", reg_ceiling(REGS_PER_SM / (T * B)), "granule-floored quotient at B=4")
+    put("s3.quotient_T256_B6", round(REGS_PER_SM / (T * 6), 2), "raw quotient at B=6")
+    put("s3.alloc_T256_B6", reg_ceiling(REGS_PER_SM / (T * 6)), "granule-floored at B=6")
+    put("s3.low_plane_kib_op12", 2 ** 12 * W // 1024, "2^b * W")
+    put("s3.low_plane_kib_op16", 2 ** 16 * W // 1024, "2^b * W")
+    put("s3.fits_devices",
+        {c: (4 * block <= shared_per_sm[c]) for c in sorted(shared_per_sm)},
+        "does the four-block shipped point fit each device's shared carveout")
+
+
+# ---------------------------------------------------------------- campaign
+def rate_of(cell, which="auto"):
+    g = cell["gpu"]
+    nb = g["decoded_bytes"]
+    per = {}
+    for k in g.get("kernels") or []:
+        it = k.get("decode_ns_iters") or []
+        if it:
+            per[k["kernel"]] = (nb / min(it), k.get("role"))
+    if not per:
+        return None
+    if which == "auto":
+        v = per.get(g.get("auto_kernel"))
+        return v[0] if v else None
+    if which == "prod":
+        c = [v[0] for v in per.values() if v[1] == "production"]
+        return max(c) if c else None
+    return max(v[0] for v in per.values())
+
+
+def load_campaign():
+    out = {}
+    for chip in CHIPS_CAMPAIGN:
+        d = os.path.join(CAMPAIGN, chip)
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(glob.glob(os.path.join(d, "sweep_summary_*_boost.json"))):
+            for c in json.load(open(f)):
+                out[(chip, c["dataset_id"], c["column"], c["bits"])] = c
+    return out
+
+
+def pearson(xs, ys):
+    n = len(xs)
+    mx, my = sum(xs) / n, sum(ys) / n
+    num = sum((a - mx) * (b - my) for a, b in zip(xs, ys))
+    dx = math.sqrt(sum((a - mx) ** 2 for a in xs))
+    dy = math.sqrt(sum((b - my) ** 2 for b in ys))
+    return num / (dx * dy) if dx and dy else float("nan")
+
+
+def campaign_stats(cells):
+    is_gen = lambda ds: ds.startswith(GEN_PREFIXES)
+
+    # dg grid on the b300, real columns: K x T x B
+    grid = defaultdict(dict)
+    for (chip, ds, col, bits), c in cells.items():
+        if chip != "b300" or is_gen(ds):
+            continue
+        nb = c["gpu"]["decoded_bytes"]
+        for k in c["gpu"]["kernels"]:
+            m = re.fullmatch(r"onpair_dg_k(\d+)_t(\d+)_b(\d+)", k["kernel"])
+            it = k.get("decode_ns_iters") or []
+            if m and it:
+                grid[(ds, col, bits)][tuple(map(int, m.groups()))] = nb / min(it)
+
+    kspread, bl, bh, p90 = [], [], [], defaultdict(list)
+    twin = defaultdict(int)
+    t128_def = []
+    for key, g in grid.items():
+        tb = defaultdict(dict)
+        kb = defaultdict(dict)
+        for (k, t, b), v in g.items():
+            tb[(t, b)][k] = v
+            kb[(k, t)][b] = v
+        for _, ks in tb.items():
+            if len(ks) >= 6:
+                kspread.append((max(ks.values()) / min(ks.values()) - 1) * 100)
+        for (k, t), bs in kb.items():
+            for want, sink in (((1, 2, 4), bl), ((4, 6, 8), bh)):
+                have = [bs[b] for b in want if b in bs]
+                if len(have) == len(want):
+                    s = (max(have) / min(have) - 1) * 100
+                    sink.append(s)
+                    if want == (4, 6, 8):
+                        p90[k].append(s)
+        # T comparison at fixed (K,B)
+        byk = defaultdict(dict)
+        for (k, t, b), v in g.items():
+            byk[(k, b)][t] = v
+        for _, ts in byk.items():
+            if {64, 128, 256} <= set(ts):
+                t128_def.append((max(ts.values()) / ts[128] - 1) * 100)
+        # per-column argmax T
+        (bk, bt, bb) = max(g, key=lambda kk: g[kk])
+        twin[bt] += 1
+
+    put("s4.k_spread_median_pct", round(st.median(kspread), 1), "dg grid, b300, real columns")
+    put("s4.k_spread_max_pct", round(max(kspread), 1), "same")
+    put("s4.b_low_spread_median_pct", round(st.median(bl), 2), "B in {1,2,4} at fixed (K,T)")
+    put("s4.b_high_spread_median_pct", round(st.median(bh), 1), "B in {4,6,8} at fixed (K,T)")
+    # NEAREST-RANK p90, stated rather than implied. `v[int(0.9*n)]` selects the 55th of 60, which
+    # is not any standard convention and inflated three of four published values (K=5 by 25%).
+    def p90_of(v):
+        v = sorted(v)
+        return v[max(0, math.ceil(0.9 * len(v)) - 1)]
+    for k in sorted(p90):
+        put("s4.b_p90_k%d_pct" % k, round(p90_of(p90[k]), 1),
+            "nearest-rank p90 of the B in {4,6,8} spread (n=%d)" % len(p90[k]))
+    for t in (64, 128, 256):
+        put("s4.t%d_argmax_count" % t, twin.get(t, 0), "column-preset pairs whose best dg cell uses this T")
+    put("s4.t128_median_deficit_pct", round(st.median(t128_def), 2),
+        "how far T=128 trails the best T at fixed (K,B)")
+
+    # frac_le8 / mean-length / concentration correlations, per chip and preset
+    for chip in CHIPS_CAMPAIGN:
+        for bits in (12, 16):
+            pts = [(c["gpu"]["frac_le8"], c["gpu"]["dict_mean_len"],
+                    c["gpu"].get("access_top4096_frac"), rate_of(c))
+                   for (ch, ds, col, b), c in cells.items()
+                   if ch == chip and b == bits and not is_gen(ds) and rate_of(c)]
+            if len(pts) < 3:
+                continue
+            fl, ml, t4, rt = zip(*pts)
+            put("s4.r_fracle8_%s_op%d" % (chip, bits), round(pearson(fl, rt), 2), "frac_le8 vs shipped rate")
+            put("s4.r_meanlen_%s_op%d" % (chip, bits), round(pearson(ml, rt), 2), "mean token length vs rate")
+            if bits == 16 and all(v is not None for v in t4):
+                put("s4.top4096_min", round(min(t4), 3), "concentration range, real columns, OP-16")
+                put("s4.top4096_max", round(max(t4), 3), "same")
+                r_t4, r_ml, r_x = pearson(t4, rt), pearson(ml, rt), pearson(ml, t4)
+                partial = (r_t4 - r_ml * r_x) / math.sqrt((1 - r_ml ** 2) * (1 - r_x ** 2))
+                put("s4.partial_r_top4096_op16_%s" % chip, round(partial, 2),
+                    "concentration vs rate on %s, controlling for mean token length" % chip)
+
+    # H: the hoisted high-plane read cap. H>1 can only fire once the long-token queue is deeper
+    # than one hoist round of 32, and the expected depth is 32*K*(1-frac_le8). Compare each dh
+    # rung against dg (which IS H=1) at the SAME (K,T,B), and only on columns where the queue is
+    # deep enough -- a "no effect" on a shallow-queue column measures nothing.
+    h_gain, h_live, h_dead = [], 0, 0
+    for (chip, ds, col, bits), c in cells.items():
+        if is_gen(ds):
+            continue
+        nb = c["gpu"]["decoded_bytes"]
+        fle8 = c["gpu"].get("frac_le8")
+        base, held = {}, defaultdict(dict)
+        for k in c["gpu"]["kernels"]:
+            it = k.get("decode_ns_iters") or []
+            if not it:
+                continue
+            m = re.fullmatch(r"onpair_dg_k(\d+)_t(\d+)_b(\d+)", k["kernel"])
+            if m:
+                base[tuple(map(int, m.groups()))] = nb / min(it)
+                continue
+            m = re.fullmatch(r"onpair_dh_k(\d+)_t(\d+)_b(\d+)_h(\d+)", k["kernel"])
+            if m:
+                kk, tt, bb, hh = map(int, m.groups())
+                held[(kk, tt, bb)][hh] = nb / min(it)
+        for (kk, tt, bb), rungs in held.items():
+            if (kk, tt, bb) not in base or fle8 is None:
+                continue
+            depth = 32 * kk * (1 - fle8)
+            if depth <= 32:
+                h_dead += 1
+                continue
+            h_live += 1
+            b1 = base[(kk, tt, bb)]
+            best = max(rungs.values())
+            h_gain.append((best / b1 - 1) * 100)
+    if h_gain:
+        h_gain.sort()
+        put("s4.h_configs_queue_deep", h_live, "dh configs whose queue exceeds one hoist round")
+        put("s4.h_configs_queue_shallow", h_dead, "dh configs where H>1 structurally cannot fire")
+        put("s4.h_best_gain_median_pct", round(st.median(h_gain), 2),
+            "best H rung against H=1 at the same (K,T,B), deep-queue configs only")
+        put("s4.h_best_gain_p90_pct", round(h_gain[max(0, math.ceil(0.9*len(h_gain))-1)], 2),
+            "same, nearest-rank 90th percentile")
+        put("s4.h_best_gain_max_pct", round(h_gain[-1], 2), "same, maximum")
+        put("s4.h_configs_improved", sum(1 for g in h_gain if g > 0.5),
+            "deep-queue configs where some H>1 beats H=1 by more than the 0.5% noise floor")
+
+    # preset flip: worst OP-16 penalty on a real column
+    worst = 0.0
+    for chip in CHIPS_CAMPAIGN:
+        for (ch, ds, col, b), c in cells.items():
+            if ch != chip or b != 12 or is_gen(ds):
+                continue
+            c16 = cells.get((chip, ds, col, 16))
+            r12, r16 = rate_of(c), rate_of(c16) if c16 else None
+            if r12 and r16 and r16 < r12:
+                worst = max(worst, (1 - r16 / r12) * 100)
+    put("s4.preset_flip_worst_pct", round(worst, 1), "largest OP-16 penalty on a real column")
+
+    # clock policy: boost:locked on the shipped path
+    for chip in CHIPS_CAMPAIGN:
+        rr = []
+        for f in sorted(glob.glob(os.path.join(CAMPAIGN, chip, "sweep_summary_*_locked.json"))):
+            for lc in json.load(open(f)):
+                bc = cells.get((chip, lc["dataset_id"], lc["column"], lc["bits"]))
+                rb, rl = (rate_of(bc) if bc else None), rate_of(lc)
+                if rb and rl:
+                    rr.append(rb / rl)
+        if rr:
+            put("s4.boost_locked_median_%s" % chip, round(st.median(rr), 3),
+                "boost:locked on the shipped kernel")
+
+    # headline rates, real subset only
+    for chip in CHIPS_CAMPAIGN:
+        for bits in (12, 16):
+            rs = [(rate_of(c), ds + "/" + col) for (ch, ds, col, b), c in cells.items()
+                  if ch == chip and b == bits and not is_gen(ds) and rate_of(c)]
+            if rs:
+                v, who = max(rs)
+                put("s4.peak_shipped_%s_op%d" % (chip, bits), round(v),
+                    "GB/s, shipped selector, real columns; %s" % who)
+
+
+# Values the paper cites, mapped to a LaTeX macro name and a format. THIS REPLACES TRANSCRIPTION:
+# the paper says \claimKSpreadMedian, not "80%", so a number cannot go stale in prose. A key absent
+# from `derived` is a hard error rather than an empty macro, because an empty macro renders as
+# nothing and would silently delete a number from a sentence.
+TEX = [
+    ("s4.k_spread_median_pct",      "claimKSpreadMedian",     "{:.0f}\\%"),
+    ("s4.k_spread_max_pct",         "claimKSpreadMax",        "{:.0f}\\%"),
+    ("s4.b_low_spread_median_pct",  "claimBLowSpread",        "{:.2f}\\%"),
+    ("s4.b_high_spread_median_pct", "claimBHighSpread",       "{:.1f}\\%"),
+    ("s4.b_p90_k4_pct",             "claimBPninetyKfour",     "{:.1f}\\%"),
+    ("s4.b_p90_k5_pct",             "claimBPninetyKfive",     "{:.1f}\\%"),
+    ("s4.b_p90_k6_pct",             "claimBPninetyKsix",      "{:.1f}\\%"),
+    ("s4.b_p90_k7_pct",             "claimBPninetyKseven",    "{:.1f}\\%"),
+    ("s4.t256_argmax_count",        "claimTargmaxTwoFiveSix", "{:d}"),
+    ("s4.t64_argmax_count",         "claimTargmaxSixtyFour",  "{:d}"),
+    ("s4.t128_median_deficit_pct",  "claimTonetwoeightDeficit", "{:.1f}\\%"),
+    ("s4.top4096_min",              "claimTopFourKMin",       "{:.2f}"),
+    ("s4.top4096_max",              "claimTopFourKMax",       "{:.2f}"),
+    ("s4.partial_r_top4096_op16_b300", "claimPartialRBthreehundred", "{:+.2f}"),
+    ("s4.partial_r_top4096_op16_h100", "claimPartialRHonehundred",   "{:+.2f}"),
+    ("s4.partial_r_top4096_op16_a100", "claimPartialRAonehundred",   "{:+.2f}"),
+    ("s4.preset_flip_worst_pct",    "claimPresetFlipWorst",   "{:.0f}\\%"),
+    ("s4.h_configs_queue_deep",     "claimHDeepConfigs",      "{:d}"),
+    ("s4.h_configs_queue_shallow",  "claimHShallowConfigs",   "{:d}"),
+    ("s4.h_best_gain_median_pct",   "claimHGainMedian",       "{:.1f}\\%"),
+    ("s4.h_best_gain_p90_pct",      "claimHGainPninety",      "{:.1f}\\%"),
+    ("s4.h_configs_improved",       "claimHImproved",         "{:d}"),
+    ("s3.M_bytes_K6_S16_T256",      "claimMbytes",            "{:d}"),
+    ("s3.block_kib_with_reserve",   "claimBlockKiB",          "{:.2f}"),
+    ("s3.four_blocks_kib",          "claimFourBlocksKiB",     "{:.0f}"),
+    ("s3.regs_T256_B4",             "claimRegsBfour",         "{:d}"),
+    ("s3.quotient_T256_B6",         "claimQuotientBsix",      "{:.1f}"),
+    ("s3.alloc_T256_B6",            "claimAllocBsix",         "{:d}"),
+    ("s3.low_plane_kib_op12",       "claimLowPlaneTwelve",    "{:d}"),
+    ("s3.low_plane_kib_op16",       "claimLowPlaneSixteen",   "{:d}"),
+    ("occ.configs",                 "claimOccConfigs",        "{:d}"),
+    ("occ.exact",                   "claimOccExact",          "{:d}"),
+    ("occ.exact_no_reservation",    "claimOccNoReserve",      "{:d}"),
+    ("occ.exact_no_shared_granule", "claimOccNoSharedGran",   "{:d}"),
+]
+
+
+def emit_tex(path):
+    lines = ["% GENERATED by experiments/paper_claims.py -- do not edit.",
+             "% Every number below is re-derived from committed results/. The paper cites these",
+             "% macros instead of transcribing values, so prose cannot go stale.",
+             "%% source: results/{resource-probe-20260818,campaign-20260820}", ""]
+    missing = [k for k, _, _ in TEX if k not in derived]
+    if missing:
+        raise SystemExit("cannot emit: %d claim(s) not derived: %s" % (len(missing), ", ".join(missing)))
+    for key, macro, fmt in TEX:
+        lines.append("\\newcommand{\\%s}{%s}" % (macro, fmt.format(derived[key])))
+    with open(path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print("wrote %s (%d macros)" % (path, len(TEX)))
+
+
+def newer_suites(consumed):
+    """Suite directories this invocation is NOT reading. The reducer used to hard-code the August
+    campaign, so a freshly ingested leg was invisible: `--check` went green against stale data and
+    read as confirmation of the run that had just finished. Never let that be silent again."""
+    root = os.path.join(ROOT, "results")
+    consumed = os.path.abspath(consumed)
+    return sorted(d for d in glob.glob(os.path.join(root, "suite-*"))
+                  if os.path.isdir(d) and os.path.abspath(d) != consumed)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--check", action="store_true", help="compare against DECLARED and exit non-zero on drift")
+    ap.add_argument("--emit-tex", metavar="PATH", help="write the LaTeX macro file the paper inputs")
+    ap.add_argument("--suite-root", metavar="PATH",
+                    help="read campaign cells (and probe captures, if present) from this suite "
+                         "directory instead of the default campaign; path may be repo-relative")
+    ap.add_argument("--probe-root", metavar="PATH",
+                    help="read probe captures from here; defaults to --suite-root, then the "
+                         "standalone probe capture")
+    ap.add_argument("--allow-unconsumed", action="store_true",
+                    help="proceed even though newer suite directories exist that this run ignores")
+    args = ap.parse_args()
+
+    global PROBE, CAMPAIGN
+    if args.suite_root:
+        CAMPAIGN = args.suite_root if os.path.isabs(args.suite_root) \
+            else os.path.join(ROOT, args.suite_root)
+        if not os.path.isdir(CAMPAIGN):
+            sys.exit("--suite-root %s is not a directory" % CAMPAIGN)
+        PROBE = CAMPAIGN
+    if args.probe_root:
+        PROBE = args.probe_root if os.path.isabs(args.probe_root) \
+            else os.path.join(ROOT, args.probe_root)
+        if not os.path.isdir(PROBE):
+            sys.exit("--probe-root %s is not a directory" % PROBE)
+
+    # A leg that landed but is not being read is the failure this guard exists for.
+    unconsumed = newer_suites(CAMPAIGN)
+    if unconsumed and not args.allow_unconsumed:
+        sys.exit("REFUSING to derive from %s while these suite legs are unread:\n  %s\n"
+                 "Pass --suite-root <one of them> to use a leg, or --allow-unconsumed to ignore "
+                 "them deliberately." % (os.path.relpath(CAMPAIGN, ROOT),
+                                         "\n  ".join(os.path.relpath(d, ROOT) for d in unconsumed)))
+
+    rows, shared = load_probe()
+    if not rows:
+        sys.exit("no probe rows under %s" % PROBE)
+    occupancy(rows, shared)
+    model_arithmetic(shared)
+    cells = load_campaign()
+    if cells:
+        campaign_stats(cells)
+    else:
+        print("WARNING: no campaign cells under %s; section 4 claims not derived" % CAMPAIGN,
+              file=sys.stderr)
+
+    payload = {"derived": derived, "notes": notes,
+               "sources": {"probe": os.path.relpath(PROBE, ROOT),
+                           "campaign": os.path.relpath(CAMPAIGN, ROOT)}}
+    with open(OUT, "w") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+    print("wrote %s (%d derived values)" % (os.path.relpath(OUT, ROOT), len(derived)))
+
+    if args.emit_tex:
+        emit_tex(args.emit_tex)
+
+    if not args.check:
+        for k in sorted(derived):
+            print("  %-38s %s" % (k, derived[k]))
+        return 0
+
+    bad, missing = [], []
+    for key, (want, tol, sec) in sorted(DECLARED.items()):
+        if key not in derived:
+            missing.append((key, sec))
+            continue
+        got = derived[key]
+        ok = abs(got - want) <= tol if isinstance(got, (int, float)) else got == want
+        if not ok:
+            bad.append((key, sec, want, got, tol))
+    for key, sec, want, got, tol in bad:
+        print("DRIFT  §%-5s %-34s paper says %s, data says %s (tol %s)" % (sec, key, want, got, tol))
+    for key, sec in missing:
+        print("MISSING §%-5s %-34s declared but not derived" % (sec, key))
+    print("\n%d/%d declared claims re-derive" % (len(DECLARED) - len(bad) - len(missing), len(DECLARED)))
+    return 1 if (bad or missing) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
