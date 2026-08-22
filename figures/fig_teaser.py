@@ -10,16 +10,24 @@ software nvCOMP-Zstd at both ends of its level range.
 Linear y-axis. The Zstd bars on Wikipedia (1-2 GB/s) are therefore near-invisible
 against OnPair's ~870; their printed values carry the number.
 
-Sources: results/b300/onpair_summary_*.json (OnPair, nvCOMP-Zstd),
-results/b300-fsst12/fsst12_summary_*.json (FSST-12),
-results/b300/onpair_nvcomp_hw.json (engine, via common.de_map()).
+THREE REAL COLUMNS. The previous form put TPC-H l_comment on page one, which is generated data,
+and the paper quarantines generated columns everywhere else precisely because they decode faster.
+Leading with one undercut that discipline before the reader reached Section 5.
+
+Source: results/suite-<id>/b300/{sweep,fsst12}_summary_*_boost.json and onpair_nvcomp_hw.json.
 """
+import sys
+from pathlib import Path
+
 import numpy as np
-import common as C
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import common as C  # noqa: E402
+import suite as S  # noqa: E402
 
 COLS = [
+    ("loghub-windows", "line", "Loghub\nWindows"),
     ("clickbench", "URL", "ClickBench\nURL"),
-    ("tpch-sf10", "l_comment", "TPC-H\nl_comment"),
     ("wikipedia", "text", "Wikipedia"),
 ]
 
@@ -37,28 +45,33 @@ def zstd_at(cell, level):
     for e in ((cell or {}).get("gpu") or {}).get("nvcomp_zstd") or []:
         if not isinstance(e, dict) or e.get("zstd_level") != level:
             continue
-        v = C.zstd_gb_s(e)
+        v = (e.get("decode_gib_s") or 0) * C.GIB_TO_GB
         if v and (best is None or v > best):
             best = v
     return best
 
 
 def main():
-    de = C.de_map()
+    root = S.latest_root()
+    if root is None:
+        sys.exit("no results/suite-* directory found")
+    op = S.cells(root, "b300", "boost", "onpair")
+    fs = S.cells(root, "b300", "boost", "fsst12")
+    zs = S.cells(root, "b300", "boost", "zstd")
+    de = {(r.get("dataset_id"), r.get("column")): r.get("best_decode_gib_s", 0) * C.GIB_TO_GB
+          for r in S.de_rows(root, "b300")}
     plt = C.apply_theme()
     fig, ax = plt.subplots(figsize=(3.3, 2.15))
     x = np.arange(len(COLS))
     w = 0.14
     vals = [[] for _ in SERIES]
     for d, c, _ in COLS:
-        cl = C.cell("b300", d, c)
-        ds_id = (cl or {}).get("dataset_id", d)
-        vals[0].append(C.best_shipped(C.cell("b300", d, c, 16)) or np.nan)
-        vals[1].append(C.best_shipped(C.cell("b300", d, c, 12)) or np.nan)
-        vals[2].append(C.best_shipped(C.cell("b300", d, c, 12, codec=C.FSST12)) or np.nan)
-        vals[3].append(de.get((ds_id, c)) or np.nan)
-        vals[4].append(max((zstd_at(C.cell("b300", d, c, b), -10) or 0) for b in (12, 16)) or np.nan)
-        vals[5].append(max((zstd_at(C.cell("b300", d, c, b), 3) or 0) for b in (12, 16)) or np.nan)
+        vals[0].append(S.rate_gb_s(op.get((d, c, 16))) or np.nan)
+        vals[1].append(S.rate_gb_s(op.get((d, c, 12))) or np.nan)
+        vals[2].append(S.rate_gb_s(fs.get((d, c, 12))) or np.nan)
+        vals[3].append(de.get((d, c)) or np.nan)
+        vals[4].append(zstd_at(zs.get((d, c, 12)), -10) or np.nan)
+        vals[5].append(zstd_at(zs.get((d, c, 12)), 3) or np.nan)
 
     for j, (lab, color) in enumerate(SERIES):
         xs = x + (j - (len(SERIES) - 1) / 2.0) * w

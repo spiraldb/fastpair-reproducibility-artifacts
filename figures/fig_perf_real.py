@@ -23,14 +23,16 @@ ratio is a property of the data, so a pooled frontier can put us on one column a
 on another; with c_address in the corpus that produces false violations. Like for like, 0 of 45
 cells are dominated.
 
+ZSTD IS A REAL COMPETITOR ON LOG-STRUCTURED COLUMNS, not the floor-dwelling series it first looks
+like. Its GPU rate tracks the FRAME COUNT a column yields, not the codec: Loghub Windows gives
+2022 frames and decodes at 165-200 GB/s with a 25-50x ratio, while Wikipedia's long documents give
+115 frames and 1.7-3.1 GB/s. It is therefore in the per-column dominance test, not just the plot.
+
 MISSING BASELINES KEEP THEIR LEGEND ENTRIES. gANS and both Bitcomp variants were never collected
 -- the suite's DE stage runs only DEFLATE, LZ4 and Snappy -- and their swatches stay so the gap is
 legible as a gap.
 
-ZSTD DECODES THREE ORDERS BELOW EVERYTHING ELSE, at 1.7 to 3.1 GB/s against 750 to 1500. On the
-linear axis this figure uses it therefore sits on the floor. That is the honest picture of a
-software codec against a GPU one and the reason the original form of this figure used a log axis;
-the marks are drawn rather than dropped so the comparison is visible at all.
+
 
 Source: results/suite-<id>/b300/{sweep,fsst12}_summary_*_boost.json + onpair_nvcomp_hw.json.
 """
@@ -200,6 +202,10 @@ def main():
     fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.65), sharey=True)
     oR, bR = panel(axR, root, S.REAL, "Real-world columns")
     oS, bS = panel(axS, root, S.GEN, "Synthetic columns")
+    # GSST reports one number: 191 GB/s on an A100, TPC-H l_comment. That is generated data, so it
+    # goes on the synthetic panel, and it is another device, so it is drawn but never enters the
+    # baseline frontier or the dominance test.
+    axS.scatter([2.74], [C.GSST_GBS], s=70, marker="*", color=C.GSST_RED, zorder=6)
 
     # ASSERTED PER COLUMN, not against the pooled staircase. The staircase is drawn for
     # orientation, but a pooled test compares us on one column against a baseline measured on
@@ -210,22 +216,27 @@ def main():
     violations, n = [], 0
     for rows in (S.REAL, S.GEN):
         ours, _ = collect(root, rows)
+        zc = S.cells(root, DEV, "boost", "zstd")
         by_col = {}
         for _, ds, col in rows:
+            pts = []
             d = de_best(root, ds, col)
             if d:
-                by_col[col] = (d[0], d[1])
+                pts.append((d[0], d[1], d[2]))
+            pts += zstd_points(zc, ds, col)
+            by_col[col] = pts
         for r, t, cfg, col in ours:
             n += 1
-            b = by_col.get(col)
-            if b and b[0] >= r and b[1] > t:
-                violations.append("%s %s: %.0f GB/s at ratio %.2f, DE %.0f at %.2f"
-                                  % (col, cfg, t, r, b[1], b[0]))
+            dom = [b for b in by_col.get(col, []) if b[0] >= r and b[1] > t]
+            if dom:
+                b = max(dom, key=lambda p: p[1])
+                violations.append("%s %s: %.0f GB/s at ratio %.2f, %s %.0f at %.2f"
+                                  % (col, cfg, t, r, b[2], b[1], b[0]))
     if violations:
         raise SystemExit("fig_perf_real: per-column dominance VIOLATED on %s:\n  %s"
                          % (DEV, "\n  ".join(violations)))
-    print("per-column dominance holds on %s: %d of %d marks clear the DE on their own column"
-          % (DEV, n, n))
+    print("per-column dominance holds on %s: %d of %d marks clear every baseline on their own "
+          "column" % (DEV, n, n))
 
     from matplotlib.ticker import FixedLocator
     axR.set_ylim(YLO, YHI)
@@ -256,7 +267,7 @@ def main():
     print("BASELINES ABSENT FROM THIS LEG -- collection gaps, not findings:")
     print("  gANS, Bitcomp-{default,sparse}: never collected; the DE stage runs only "
           "DEFLATE/LZ4/Snappy")
-    print("  GSST           : published A100 number, cross-paper; not drawn on a B300 panel")
+    print("  GSST           : drawn on the synthetic panel as a cross-device reference (A100, l_comment)")
 
 
 if __name__ == "__main__":
