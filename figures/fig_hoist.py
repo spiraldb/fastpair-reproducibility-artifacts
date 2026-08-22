@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
-KS = list(range(2, 9))
+KS = list(range(1, 9))
 HS = [1, 2, 3, 4]
 BS = [1, 4, 8]
 T = 256
@@ -78,7 +78,8 @@ def main():
     vmin, vmax = allv.min(), allv.max()
 
     plt = C.apply_theme()
-    fig, axes = plt.subplots(1, len(BS), figsize=(7.0, 1.45), sharey=True)
+    fig, axes = plt.subplots(1, len(BS), figsize=(7.0, 1.45), sharey=True,
+                             gridspec_kw={"wspace": 0.06})
     im = None
     for ax, B in zip(axes, BS):
         im = ax.imshow(grids[B], origin="lower", aspect="auto", cmap="viridis",
@@ -96,14 +97,18 @@ def main():
         ax.set_xticklabels([str(k) for k in KS])
         ax.set_yticks(range(len(HS)))
         ax.set_yticklabels([str(h) for h in HS])
-        ax.set_xlabel("K (codes per lane)")
         ax.set_title(f"B={B}", fontsize=7.5)
         ax.grid(False)
+    axes[len(BS) // 2].set_xlabel("K (codes per lane)")
     axes[0].set_ylabel("H (held rounds)")
     # Every cell carries its rate, so the bar orients the reader between dark and light rather
     # than being read off. Five ticks keep the ramp legible without competing with the numbers.
-    cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015,
-                      ticks=[round(vmin + (vmax - vmin) * f, -2) for f in (0, .25, .5, .75, 1)])
+    # Five ticks spanning the ACTUAL range, rounded inward to the nearest 50. Rounding the
+    # endpoints outward put a tick below the minimum, where it clipped and only four showed; a
+    # generic locator picks round spacings that happen to fit four in this interval.
+    ticks = [round((vmin + (vmax - vmin) * f) / 50) * 50 for f in (0, .25, .5, .75, 1)]
+    ticks = [min(max(t, vmin), vmax) for t in ticks]
+    cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015, ticks=ticks)
     cb.set_label("decode (GB/s)", fontsize=6.5)
     cb.ax.tick_params(labelsize=6)
     C.save(fig, "fig_hoist")

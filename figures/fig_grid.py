@@ -130,10 +130,10 @@ def main():
             ax2.set_yticklabels([])
         ax.set_title(title, fontsize=7.5)
         ax.set_xticks([1, 2, 4, 6, 8])
-        ax.set_xlabel("K (codes per lane)")
         ax.grid(alpha=.25, lw=.4)
         ax.set_axisbelow(True)
     from matplotlib.ticker import FixedLocator
+    axes[len(PANELS) // 2].set_xlabel("K (codes per lane)")
     axes[0].set_ylabel("decode (GB/s)")
     axes[0].set_ylim(0, 2000)
     axes[0].yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
