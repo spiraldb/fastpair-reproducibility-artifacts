@@ -76,25 +76,31 @@ def main():
 
     plt = C.apply_theme()
     fig, ax = plt.subplots(figsize=(7.0, 2.2))
-    # The gap the hoist never closes, drawn only where it IS a gap.
-    lo = [min(r, c) if (r and c) else None for r, c in zip(rec, ref)]
-    ax.fill_between([k for k in KS], [r or 0 for r in rec], [f or 0 for f in ref],
-                    where=[bool(r and f and r < f) for r, f in zip(rec, ref)],
-                    color="#b0413e", alpha=.10, lw=0, zorder=1,
-                    interpolate=False)
-    ax.plot(KS, ref, marker="o", ms=3.2, lw=1.4, color="#08519c",
-            label="B=1, H=1")
-    ax.plot(KS, coll, marker="s", ms=3.0, lw=1.1, color="#9ecae1",
-            label="B=8, H=1")
-    ax.plot(KS, rec, marker="^", ms=3.2, lw=1.2, color="#b0413e", ls=(0, (4, 2)),
-            label="B=8, best H")
+    # A DUMBBELL, not lines. Each line in the previous form encoded two parameters at once (which
+    # B, which H), so the reader had to decode a legend to see a comparison that is categorical.
+    # Here one arrow per K IS the hoist -- from the H=1 baseline to the best H at the same B=8 --
+    # and the reference marker is what B=1 reaches without it. The arrow either reaches the
+    # reference or it does not.
+    for i, K in enumerate(KS):
+        if coll[i] is None or rec[i] is None:
+            continue
+        ax.annotate("", xy=(K, rec[i]), xytext=(K, coll[i]),
+                    arrowprops=dict(arrowstyle="-|>", lw=1.4, color="#b0413e",
+                                    shrinkA=0, shrinkB=0, mutation_scale=7))
+    ax.scatter(KS, coll, s=13, color="#9ecae1", zorder=4, linewidths=0)
+    ax.scatter(KS, ref, s=34, marker="_", color="#08519c", zorder=5, linewidths=1.6)
     ax.set_xticks(KS)
     ax.set_xlabel("K (codes per lane), T=256")
     ax.set_ylabel("decode (GB/s)")
     ax.set_ylim(0, None)
     ax.grid(alpha=.25, lw=.4)
     ax.set_axisbelow(True)
-    ax.legend(fontsize=6.4, frameon=False, loc="lower left", ncol=1, handlelength=2.0)
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[
+        Line2D([], [], color="#08519c", marker="_", ls="", ms=7, mew=1.6, label="B=1, H=1"),
+        Line2D([], [], color="#9ecae1", marker="o", ls="", ms=3.6, label="B=8, H=1"),
+        Line2D([], [], color="#b0413e", lw=1.4, label="B=8, H=1 to best H"),
+    ], fontsize=6.4, frameon=False, loc="lower left", ncol=1, handlelength=1.8)
     fig.tight_layout()
     C.save(fig, "fig_hoist")
 
