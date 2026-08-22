@@ -100,10 +100,10 @@ def main():
         ax.set_title(f"B={B}", fontsize=7.5)
         ax.grid(False)
     axes[0].set_ylabel("H (held rounds)")
-    # Every cell carries its rate, so the bar only has to orient the reader between dark and
-    # light. Three ticks do that; a dense ramp competes with the numbers it is redundant with.
+    # Every cell carries its rate, so the bar orients the reader between dark and light rather
+    # than being read off. Five ticks keep the ramp legible without competing with the numbers.
     cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015,
-                      ticks=[round(vmin, -2), round((vmin + vmax) / 2, -2), round(vmax, -2)])
+                      ticks=[round(vmin + (vmax - vmin) * f, -2) for f in (0, .25, .5, .75, 1)])
     cb.set_label("decode (GB/s)", fontsize=6.5)
     cb.ax.tick_params(labelsize=6)
     C.save(fig, "fig_hoist")
