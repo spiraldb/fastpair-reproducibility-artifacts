@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
-YLO, YHI = 0, 1800
+YLO, YHI = 0, 2000
 
 # Configuration -> shade, in technique families, copied from fig_sota so a colour means the same
 # thing in both figures. OnPair replaces the FastPair label; the hues are unchanged.
@@ -140,11 +140,15 @@ def panel(ax, root, rows, title):
     from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
     ours, bases = collect(root, rows)
     bp = [(r, t) for r, t, _ in bases]
-    lo = min([r for r, _, _, _ in ours] + [r for r, _ in bp] or [1.0]) * 0.92
-    xs, ys = frontier(bp, xlo=lo)
+    allr = [r for r, _, _, _ in ours] + [r for r, _ in bp] or [1.0]
+    xmin, xmax = min(allr) * 0.88, max(allr) * 1.14
+    xs, ys = frontier(bp, xlo=xmin)
     if xs:
+        # Carry the last step out to the right edge so the envelope spans the panel.
+        xs, ys = xs + [xmax], ys + [ys[-1]]
         ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
         ax.fill_between(xs, 1e-3, ys, step="pre", color=C.INK, alpha=0.055, lw=0, zorder=1)
+    ax.set_xlim(xmin, xmax)
     for r, t, cfg in bases:
         mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"), s=26)
     for r, t, cfg, _ in ours:
@@ -169,7 +173,7 @@ def main():
         sys.exit("no results/suite-* directory found")
 
     plt = C.apply_theme()
-    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.03), sharey=True)
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.65), sharey=True)
     oR, bR = panel(axR, root, S.REAL, "Real-world columns")
     oS, bS = panel(axS, root, S.GEN, "Synthetic columns")
 
@@ -199,7 +203,9 @@ def main():
     print("per-column dominance holds on %s: %d of %d marks clear the DE on their own column"
           % (DEV, n, n))
 
-    axR.set_ylim(0, YHI)
+    from matplotlib.ticker import FixedLocator
+    axR.set_ylim(YLO, YHI)
+    axR.yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
     axR.set_ylabel("decode throughput (GB/s)")
 
     from matplotlib.lines import Line2D

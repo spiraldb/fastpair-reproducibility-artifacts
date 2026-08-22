@@ -61,7 +61,10 @@ CHIP_MEM = {"b300": "HBM", "h100": "HBM", "a100": "HBM", "l40s": "GDDR6"}
 CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S"}
 # Nominal clock state -> marker. Ordered as the campaign requests them.
 STATE_MARK = [("boost", "*"), ("max", "o"), ("75%", "s"), ("55%", "^"), ("40%", "D")]
-DE_COLOR = "#b0413e"
+DE_SHADE = {"DEFLATE-hi": "#fd8d3c", "DEFLATE-fast": "#fdd0a2", "LZ4": "#d94801",
+            "Snappy": "#7f2704"}
+DE_LABEL = {"DEFLATE-hi": "Deflate (5)", "DEFLATE-fast": "Deflate (0)", "LZ4": "LZ4",
+            "Snappy": "Snappy"}
 BITS = 12          # one preset; adding OnPair-16 would triple the marks per slot
 
 
@@ -95,8 +98,8 @@ def de_best(root, ds, col, chip="b300"):
     configurations instead put a cloud of operating points nobody would ship behind every slot."""
     for r in S.de_rows(root, chip):
         if r.get("dataset_id") == ds and r.get("column") == col and r.get("best_decode_gib_s"):
-            return r["best_decode_gib_s"] * 1.073741824
-    return None
+            return r["best_decode_gib_s"] * 1.073741824, r.get("best_codec")
+    return None, None
 
 
 def main():
@@ -115,18 +118,19 @@ def main():
     # SIZED TO ITS RENDERED WIDTH. This is a two-column float, so it lands at about 7 inches. A
     # 10-inch figsize is scaled down by a third on the page and takes every font with it, which
     # is why the previous version could not be read at print size. Draw it the size it is shown.
-    fig, ax = plt.subplots(figsize=(7.1, 4.6))
+    fig, ax = plt.subplots(figsize=(7.1, 2.65))
     slot = 1.0
     per_chip = (slot * 0.72) / len(S.CHIPS)
-    absent, drawn = [], 0
+    absent, drawn, de_seen = [], 0, set()
 
     for i, (lab, ds, col, grp) in enumerate(rows):
         x0 = i * slot
         # ONE BAR: the engine's best configuration on this column.
-        v = de_best(root, ds, col)
+        v, codec = de_best(root, ds, col)
         if v is not None:
-            ax.hlines(v, x0 - slot * 0.44, x0 + slot * 0.44, color=DE_COLOR, lw=1.6,
-                      alpha=.95, zorder=2)
+            de_seen.add(codec)
+            ax.hlines(v, x0 - slot * 0.44, x0 + slot * 0.44,
+                      color=DE_SHADE.get(codec, "#b0413e"), lw=1.7, alpha=.95, zorder=2)
 
         for j, chip in enumerate(S.CHIPS):
             xc = x0 - slot * 0.39 + per_chip * (j + 0.5)
@@ -162,23 +166,24 @@ def main():
                        rotation=40, ha="right", fontsize=7)
     # The rule between real and generated columns: they are never pooled into one claim.
     ax.axvline(len(S.REAL) * slot - slot * 0.5, color="#444444", lw=.9, ls=":")
-    ax.text(len(S.REAL) * slot - slot * 0.45, ax.get_ylim()[1], " generated",
-            fontsize=7, va="top", color="#444444")
+    from matplotlib.ticker import FixedLocator
+    ax.set_ylim(0, 2000)
+    ax.yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
     ax.set_ylabel("decode throughput (GB/s)")
     ax.grid(axis="y", alpha=.25, lw=.5)
     ax.set_axisbelow(True)
 
-    chips = [Line2D([], [], color=CHIP_COLOR[c], lw=2,
-                    label=f"{CHIP_LABEL[c]} ({CHIP_MEM[c]})"
-                          + ("" if S.clock_tags(root, c) else " — not measured"))
+    # Every chip keeps its entry whether or not the leg has landed; results drop straight in.
+    chips = [Line2D([], [], color=CHIP_COLOR[c], lw=2, label=f"{CHIP_LABEL[c]} ({CHIP_MEM[c]})")
              for c in S.CHIPS]
     marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
-    de = [Line2D([], [], color=DE_COLOR, lw=1.6, label="DE (best codec + chunk)")]
+    de = [Line2D([], [], color=DE_SHADE[k], lw=1.7, label=f"DE {DE_LABEL[k]} (best)")
+          for k in DE_SHADE if k in de_seen]
     # ABOVE the axes. The x labels are rotated column names and take the whole lower margin, so a
     # legend placed below lands on top of them.
-    leg = fig.legend(handles=chips + marks + de, fontsize=7, ncol=6, loc="lower center",
-                     bbox_to_anchor=(0.5, 0.94), frameon=False)
-    leg.set_title(f"OnPair-{BITS}, best kernel — marker = SM clock state", prop={"size": 7})
+    fig.legend(handles=chips + marks + de, fontsize=6.6, ncol=7, loc="lower center",
+               bbox_to_anchor=(0.5, 0.955), frameon=False, columnspacing=0.9,
+               handlelength=1.3, handletextpad=0.45)
 
     OUT.parent.mkdir(exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
