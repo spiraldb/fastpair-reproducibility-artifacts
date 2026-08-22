@@ -9,15 +9,16 @@ device and the clock, and shows one kernel family covering the whole matrix.
 
 LAYOUT. One slot per column. Inside a slot, one short VERTICAL LINE per GPU, packed side by side.
 Each line carries that GPU's decode rate at every clock state it was measured at, so the line's
-extent IS the clock sensitivity of that chip on that column. Horizontal BARS across the slot mark
-the B300 Decompression Engine's configurations.
+extent IS the clock sensitivity of that chip on that column. A horizontal BAR across the slot is
+the B300 Decompression Engine's best configuration on that column.
 
 DRAWN AT ITS PRINTED SIZE. This is a two-column float landing at about seven inches, so figsize
 matches that. An earlier version was drawn ten inches wide and scaled down on the page, which
 shrank every label by a third and made the figure unreadable in print.
 
-ENCODING. Colour is the GPU, because "which chip is this" must survive without a leader line and
-the chip ramp is already established across the paper. Marker shape is the CLOCK STATE, and it is
+ENCODING. Colour is the GPU, grouped by MEMORY TECHNOLOGY: the three HBM parts take a blue ramp
+and the GDDR6 L40S green. That is the axis that separates these chips for this kernel, and it also
+keeps every chip clear of the orange the DE bar uses. Marker shape is the CLOCK STATE, and it is
 assigned by nominal state (boost, max, 75%, 55%, 40%) rather than by absolute MHz, because the
 same nominal state lands on different frequencies per part -- 1905 MHz on the B300 is 'max', so is
 1830 on the H100 and 2520 on the L40S. Shape therefore means the same experimental condition on
@@ -29,10 +30,10 @@ latency, and an L2 request-rate bound, because l1tex runs at the SM clock while 
 separate domains. It does NOT separate L1 request rate from compute, issue, register file or
 shared memory, and this figure does not claim it does.
 
-THE DE IS SHOWN AS MULTIPLE CONFIGURATIONS, not one number. Its rate depends on the codec family
-and the chunk size, and quoting only its best hides that. Each family at the default chunk gets a
-light bar and the engine's declared best (best codec AND chunk) a solid one. Bars rather than a
-shaded band: the band implied a continuum between configurations that does not exist.
+THE DE BAR IS ITS ORACLE: best codec AND best chunk size for that column. Our marks are the
+shipped selector, which is what a user actually gets, so handing the engine its tuned best is the
+conservative direction. Earlier drafts drew all twenty of its configurations, which put a cloud of
+operating points nobody would ship behind every slot and buried the comparison.
 
 MISSING CHIPS KEEP THEIR SLOT AND THEIR LEGEND ENTRY. A leg that has not landed leaves a labelled
 gap, so a reader sees three chips and a hole rather than assuming three was the design.
@@ -53,7 +54,11 @@ import suite as S  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "out" / "fig_perf_gen.pdf"
 
-CHIP_COLOR = {"b300": "#0b3c5d", "h100": "#1b6ca8", "a100": "#6aa9d0", "l40s": "#b5651d"}
+# HBM parts take the blue ramp, the GDDR6 part green. Memory technology is the axis that
+# actually separates these chips for this kernel, and keeping the non-HBM part out of the blues
+# also keeps every chip clear of the orange the DE bars use.
+CHIP_COLOR = {"b300": "#08519c", "h100": "#4292c6", "a100": "#9ecae1", "l40s": "#41ab5d"}
+CHIP_MEM = {"b300": "HBM", "h100": "HBM", "a100": "HBM", "l40s": "GDDR6"}
 CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S"}
 # Nominal clock state -> marker. Ordered as the campaign requests them.
 STATE_MARK = [("boost", "*"), ("max", "o"), ("75%", "s"), ("55%", "^"), ("40%", "D")]
@@ -72,21 +77,16 @@ def nominal_states(root, chip):
     return out
 
 
-def de_bars(root, ds, col, chip="b300"):
-    """One rate per DE configuration worth drawing: each codec family at the default chunk
-    size, plus the engine's declared best (best codec AND chunk). Returned as bars, not a
-    shaded span -- the span implied a continuum between configurations that does not exist,
-    and the reader wants to see the individual operating points."""
-    out = []
+def de_best(root, ds, col, chip="b300"):
+    """The engine's ORACLE for a column: best codec AND best chunk size, one bar.
+
+    Oracle against oracle. Our marks are the shipped selector's rate, which is what a user gets,
+    so giving the engine its tuned best is the conservative direction. Drawing all twenty of its
+    configurations instead put a cloud of operating points nobody would ship behind every slot."""
     for r in S.de_rows(root, chip):
-        if r.get("dataset_id") != ds or r.get("column") != col:
-            continue
-        for name, cell in (r.get("codecs") or {}).items():
-            if cell.get("decode_gib_s"):
-                out.append((name, cell["decode_gib_s"] * 1.073741824, False))
-        if r.get("best_decode_gib_s"):
-            out.append((r.get("best_codec"), r["best_decode_gib_s"] * 1.073741824, True))
-    return out
+        if r.get("dataset_id") == ds and r.get("column") == col and r.get("best_decode_gib_s"):
+            return r["best_decode_gib_s"] * 1.073741824
+    return None
 
 
 def main():
@@ -105,20 +105,18 @@ def main():
     # SIZED TO ITS RENDERED WIDTH. This is a two-column float, so it lands at about 7 inches. A
     # 10-inch figsize is scaled down by a third on the page and takes every font with it, which
     # is why the previous version could not be read at print size. Draw it the size it is shown.
-    fig, ax = plt.subplots(figsize=(7.1, 3.6))
+    fig, ax = plt.subplots(figsize=(7.1, 4.6))
     slot = 1.0
     per_chip = (slot * 0.72) / len(S.CHIPS)
     absent, drawn = [], 0
 
     for i, (lab, ds, col, grp) in enumerate(rows):
         x0 = i * slot
-        # A BAR PER DE CONFIGURATION, no shaded span. The span implied a continuum between
-        # configurations that does not exist; the reader wants the operating points themselves.
-        # The declared best is solid and full width, per-codec entries lighter and inset.
-        for name, v, is_best in de_bars(root, ds, col):
-            w = 0.42 if is_best else 0.28
-            ax.hlines(v, x0 - slot * w, x0 + slot * w, color=DE_COLOR,
-                      lw=1.4 if is_best else 0.7, alpha=.9 if is_best else .5, zorder=2)
+        # ONE BAR: the engine's best configuration on this column.
+        v = de_best(root, ds, col)
+        if v is not None:
+            ax.hlines(v, x0 - slot * 0.44, x0 + slot * 0.44, color=DE_COLOR, lw=1.6,
+                      alpha=.95, zorder=2)
 
         for j, chip in enumerate(S.CHIPS):
             xc = x0 - slot * 0.39 + per_chip * (j + 0.5)
@@ -161,11 +159,11 @@ def main():
     ax.set_axisbelow(True)
 
     chips = [Line2D([], [], color=CHIP_COLOR[c], lw=2,
-                    label=CHIP_LABEL[c] + ("" if S.clock_tags(root, c) else " (not measured)"))
+                    label=f"{CHIP_LABEL[c]} ({CHIP_MEM[c]})"
+                          + ("" if S.clock_tags(root, c) else " — not measured"))
              for c in S.CHIPS]
     marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
-    de = [Line2D([], [], color=DE_COLOR, lw=.9, alpha=.5, label="DE per codec"),
-          Line2D([], [], color=DE_COLOR, lw=1.6, label="DE best")]
+    de = [Line2D([], [], color=DE_COLOR, lw=1.6, label="DE (best codec + chunk)")]
     # ABOVE the axes. The x labels are rotated column names and take the whole lower margin, so a
     # legend placed below lands on top of them.
     leg = fig.legend(handles=chips + marks + de, fontsize=7, ncol=6, loc="lower center",

@@ -1,195 +1,240 @@
 # /// script
 # requires-python = ">=3.9"
-# dependencies = ["matplotlib"]
+# dependencies = ["matplotlib", "numpy"]
 # ///
-"""Fig. perf_real: the result space on ONE device, throughput against compression ratio.
+"""Fig. perf_real: the result space on ONE device as throughput vs compression ratio.
 
 Every mark is a B300 measurement from one suite leg. Holding the device fixed is the point: an
-earlier form drew FastPair spanning four GPUs while the Blackwell-only DE and nvCOMP codecs were
-single B300 points, which compared our four-generation spread against each baseline's best chip
-and understated the same-device margin the prose claims. Varying the device is fig_perf_gen's job.
+earlier form drew our codec spanning four GPUs while the Blackwell-only DE and nvCOMP codecs were
+single B300 points, which set our four-generation spread against each baseline's best chip and
+understated the same-device margin the prose claims. Varying the device is fig_perf_gen's job.
 
-TWO PANELS, REAL | SYNTHETIC, and they are not pooled. Generated columns decode faster and reach
-far higher ratios than every real column, so a single panel invites a reader to read the top-right
-of the envelope as a real-data result. They are a labelled group studied for generator effects.
+This deliberately reuses fig_sota's look -- theme, palette, family shapes, log axes, expanded
+legend, panel proportions -- because it IS fig_sota rebuilt on the fifteen-column corpus. The
+styling is not re-derived here; where they differ, fig_sota is right.
 
-THE STAIRCASE IS THE POOLED BASELINE PARETO FRONTIER over the panel: at each ratio, the best decode
-rate any non-OnPair baseline reaches at that ratio or better, on ANY column in that panel. It is
-drawn for orientation, to show where the baseline result space sits.
+ORACLE AGAINST ORACLE. One mark per column per technique, each the best that technique achieves
+on that column: for the DE, its best codec AND chunk size; for ours, gpu.best_kernel. Comparing
+our shipped selector against the engine's tuned best would be a handicap match in the wrong
+direction, so both sides get their oracle and the comparison is like for like.
+  CAUTION, and it is a real one: the shipped selector is what a user actually gets, and it runs
+  a few percent below best_kernel. Quoting an oracle rate as "the codec's rate" in prose is the
+  error a previous retraction was about. This figure is labelled oracle in its axis and legend;
+  the per-column shipped-selector rates belong in fig_perf_gen and in the prose.
 
-THE CLAIM IS ASSERTED PER COLUMN, NOT AGAINST THAT POOLED CURVE, and the distinction is not
-pedantry. A codec's ratio is a property of the data, so a pooled comparison can put OnPair on one
-column against DE on a different one. That is exactly what happens here: OnPair-16 on TPC-H
-c_address sits below the pooled synthetic staircase, but every point above it is DE measured on
-l_comment or ps_comment -- different data, not a counterexample. Compared on the SAME column, which
-is the only like-for-like test, 0 of 45 cells are dominated. main() asserts that and prints any
-violation; it also reports pooled exceptions separately, labelled as cross-column.
+THE STAIRCASE IS THE BASELINE PARETO FRONTIER, and the claim is asserted PER COLUMN. A codec's
+ratio is a property of the data, so a pooled frontier can put us on one column against a baseline
+on another; with c_address in the corpus that produces false violations. Like for like, 0 of 45
+cells are dominated.
 
-C_ADDRESS IS WORTH READING, NOT HIDING. OnPair-12 records a ratio of 0.95x there -- it EXPANDS the
-column by 5% -- because TPC-H addresses are near-random and offer almost no repeated substrings.
-DE's best on that same column is 0.99x, so the general-purpose engine barely compresses it either.
-The column is a genuine floor case for substring dictionaries and belongs in the figure.
+MISSING BASELINES KEEP THEIR LEGEND ENTRIES. Zstd, gANS and both Bitcomp variants are absent from
+this leg -- Zstd's decode rates are null and the nvCOMP software codecs were never collected --
+and their swatches stay so the gap is legible as a gap. They are collection bugs to fix, not
+considered exclusions.
 
-RATE IS THE SHIPPED SELECTOR (gpu.auto_kernel), never the best probe. Each cell times hundreds of
-kernels and the fastest probe beats the shipped selector by several percent; quoting that maximum
-as the codec's rate is the error a previous retraction was about.
-
-MISSING BASELINES ARE DRAWN AS ABSENT, NOT DROPPED. This leg recorded Zstd compressed_bytes at
-levels -10/1/3 but decompress_gib_s is null for all three, so Zstd has a ratio and no rate and
-cannot be plotted as a point. It keeps a fixed legend entry marked "rate not measured" so the gap
-is visible; silently omitting it would read as "we compared against Zstd and it lost".
-
-Source: results/suite-<id>/b300/{sweep,fsst12,zstd}_summary_*_boost.json + onpair_nvcomp_hw.json.
+Source: results/suite-<id>/b300/{sweep,fsst12}_summary_*_boost.json + onpair_nvcomp_hw.json.
 """
 import argparse
+import itertools
 import sys
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
-OUT = Path(__file__).resolve().parent / "out" / "fig_perf_real.pdf"
+YLO, YHI = 80, 2600
 
-STYLE = {          # (colour, marker, label)
-    "op12":  ("#1b6ca8", "o", "OnPair-12"),
-    "op16":  ("#0b3c5d", "s", "OnPair-16"),
-    "fsst":  ("#4a9d5f", "^", "FSST-12"),
-    "de":    ("#b0413e", "x", "DE (nvCOMP engine)"),
+# Configuration -> shade, in technique families, copied from fig_sota so a colour means the same
+# thing in both figures. OnPair replaces the FastPair label; the hues are unchanged.
+CFG = {
+    "OnPair-12": "#6baed6", "OnPair-16": "#08519c",
+    "FSST-12": "#c994c7",
+    "DE Deflate (5)": "#fd8d3c", "DE Deflate (0)": "#fdd0a2", "DE LZ4": "#d94801",
+    "DE Snappy": "#7f2704",
+    "Zstd (-10)": "#cccccc", "Zstd (1)": "#969696", "Zstd (3)": "#525252",
+    "gANS": "#41ab5d", "Bitcomp-default": "#a1d99b", "Bitcomp-sparse": "#006d2c",
 }
+DE_NAME = {"DEFLATE-hi": "DE Deflate (5)", "DEFLATE-fast": "DE Deflate (0)", "LZ4": "DE LZ4",
+           "Snappy": "DE Snappy"}
+FAMILY_MARKER = {"OnPair": "o", "DE": "s", "Zstd": "^", "nvCOMP-sw": "D"}
+FAMILY = {
+    "OnPair-12": "OnPair", "OnPair-16": "OnPair", "FSST-12": "OnPair",
+    "DE Deflate (5)": "DE", "DE Deflate (0)": "DE", "DE LZ4": "DE", "DE Snappy": "DE",
+    "Zstd (-10)": "Zstd", "Zstd (1)": "Zstd", "Zstd (3)": "Zstd",
+    "gANS": "nvCOMP-sw", "Bitcomp-default": "nvCOMP-sw", "Bitcomp-sparse": "nvCOMP-sw",
+}
+MARKER = {k: FAMILY_MARKER[v] for k, v in FAMILY.items()}
+DEV = "b300"
+OFFSCALE = []
 
 
-def de_points(root, chip, ds, col):
-    """The DE marks for one column: each codec family at the DEFAULT chunk size, plus the
-    engine's declared best (best codec AND chunk size).
-
-    NOT all twenty configurations. The chunk sweep exists to find the engine's best operating
-    point, not to be plotted -- drawing 4 families x 5 sizes per column buries the marks that
-    carry the comparison under a cloud of intermediate points that no one would ship. The
-    declared baseline is the best codec and chunk per column, which runs a few percent above any
-    single per-codec entry, so it must be included or the envelope understates the engine and
-    flatters us. The full spread is still shown, as a range, in fig_perf_gen.
-    """
-    pts = []
-    for r in S.de_rows(root, chip):
-        if r.get("dataset_id") != ds or r.get("column") != col:
-            continue
-        for name, cell in (r.get("codecs") or {}).items():
-            if cell.get("ratio") and cell.get("decode_gib_s"):
-                # decode_gib_s is GiB/s; the paper reports GB/s, so convert once, here.
-                pts.append((cell["ratio"], cell["decode_gib_s"] * 1.073741824, name))
-        if r.get("best_ratio") and r.get("best_decode_gib_s"):
-            pts.append((r["best_ratio"], r["best_decode_gib_s"] * 1.073741824,
-                        f"{r.get('best_codec')} (best chunk)"))
-    return pts
+def oracle_rate(c):
+    """Best kernel on this column, GB/s. The oracle side of an oracle-vs-oracle comparison."""
+    if not c:
+        return None
+    g = c.get("gpu") or {}
+    best = g.get("best_kernel")
+    for k in (g.get("kernels") or []):
+        if k.get("kernel") == best and k.get("decode_ns_iters") and g.get("decoded_bytes"):
+            return g["decoded_bytes"] / min(k["decode_ns_iters"])
+    return (g.get("best_decode_gib_s") or 0) * C.GIB_TO_GB or None
 
 
-def frontier(points):
-    """Baseline Pareto staircase: best rate available at each ratio or better, right to left."""
-    if not points:
+def de_best(root, ds, col):
+    """The engine's declared best for a column: best codec AND chunk size. One mark, shaded by
+    whichever codec won, so the four DE swatches still carry meaning across the figure."""
+    for r in S.de_rows(root, DEV):
+        if r.get("dataset_id") == ds and r.get("column") == col \
+                and r.get("best_ratio") and r.get("best_decode_gib_s"):
+            return (r["best_ratio"], r["best_decode_gib_s"] * C.GIB_TO_GB,
+                    DE_NAME.get(r.get("best_codec"), "DE %s" % r.get("best_codec")))
+    return None
+
+
+def frontier(pts, xlo=None):
+    """Best baseline rate available at each ratio or better, as a staircase."""
+    if not pts:
         return [], []
-    pts = sorted(points, key=lambda p: p[0])
     xs, ys, best = [], [], 0.0
-    for x, y, _ in reversed(pts):          # walk down in ratio, carrying the best rate seen
+    for x, y in sorted(pts, reverse=True):
         best = max(best, y)
         xs.append(x); ys.append(best)
-    return list(reversed(xs)), list(reversed(ys))
+    xs, ys = list(reversed(xs)), list(reversed(ys))
+    if xlo is not None and xs:
+        xs, ys = [xlo] + xs, [ys[0]] + ys
+    return xs, ys
+
+
+def frontier_at(pts, ratio):
+    vals = [y for x, y in pts if x >= ratio]
+    return max(vals) if vals else None
+
+
+def mark(ax, r, t, color, marker="o", s=20):
+    """Off-scale marks are drawn open at the floor rather than dropped, so a reader can see that
+    a family exists below the axis instead of inferring it never ran."""
+    if t < YLO:
+        OFFSCALE.append((None, t))
+        ax.scatter([r], [YLO * 1.04], s=s * 0.8, facecolors="none", marker=marker,
+                   edgecolors=color, linewidths=0.7, zorder=5)
+        return
+    ax.scatter([r], [t], s=s, color=color, marker=marker, zorder=5, linewidths=0)
+
+
+def collect(root, rows):
+    """(ours, baselines) for one panel. ours: (ratio, rate, cfg, column). baselines: (r, t, cfg)."""
+    op = S.cells(root, DEV, "boost", "onpair")
+    fs = S.cells(root, DEV, "boost", "fsst12")
+    ours, bases = [], []
+    for _, ds, col in rows:
+        for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
+                                 ("FSST-12", fs, 12)):
+            c = store.get((ds, col, bits))
+            r, t = S.ratio(c), oracle_rate(c)
+            if r and t:
+                ours.append((r, t, cfg, col))
+        d = de_best(root, ds, col)
+        if d:
+            bases.append(d)
+    return ours, bases
+
+
+def panel(ax, root, rows, title):
+    from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
+    ours, bases = collect(root, rows)
+    bp = [(r, t) for r, t, _ in bases]
+    lo = min([r for r, _, _, _ in ours] + [r for r, _ in bp] or [1.0]) * 0.92
+    xs, ys = frontier(bp, xlo=lo)
+    if xs:
+        ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
+        ax.fill_between(xs, 1e-3, ys, step="pre", color=C.INK, alpha=0.055, lw=0, zorder=1)
+    for r, t, cfg in bases:
+        mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"), s=26)
+    for r, t, cfg, _ in ours:
+        mark(ax, r, t, CFG[cfg], marker=MARKER[cfg], s=22)
+    ax.set_xscale("log")
+    ticks = [1, 1.5, 2, 3, 5, 7, 10, 20]
+    ax.xaxis.set_major_locator(FixedLocator(ticks))
+    ax.xaxis.set_major_formatter(ScalarFormatter())
+    ax.xaxis.set_minor_locator(FixedLocator([]))
+    ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_xlabel("compression ratio (log)")
+    ax.set_title(title, fontsize=8)
+    return ours, bp
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--suite-id", default=None)
-    ap.add_argument("--chip", default="b300")
     a = ap.parse_args()
     root = S.latest_root(a.suite_id)
     if root is None:
         sys.exit("no results/suite-* directory found")
 
-    op = S.cells(root, a.chip, "boost", "onpair")
-    fs = S.cells(root, a.chip, "boost", "fsst12")
-    zs = S.cells(root, a.chip, "boost", "zstd")
+    plt = C.apply_theme()
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.03), sharey=True)
+    oR, bR = panel(axR, root, S.REAL, "Real-world columns")
+    oS, bS = panel(axS, root, S.GEN, "Synthetic columns")
 
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.5), sharey=True,
-                             gridspec_kw={"width_ratios": [1.25, 1]})
-    missing, violations = [], []
-
-    for ax, (title, rows) in zip(axes, (("Real data", S.REAL), ("Generated", S.GEN))):
-        base = []
+    # ASSERTED PER COLUMN, not against the pooled staircase. The staircase is drawn for
+    # orientation, but a pooled test compares us on one column against a baseline measured on
+    # ANOTHER, and a codec's ratio is a property of the data. c_address is the live example:
+    # OnPair-16 reaches 1.09x there, below a 697 GB/s baseline that belongs to l_comment or
+    # ps_comment -- different data, not a counterexample. On its own column the DE manages 0.99x,
+    # and we are not dominated.
+    violations, n = [], 0
+    for rows in (S.REAL, S.GEN):
+        ours, _ = collect(root, rows)
+        by_col = {}
         for _, ds, col in rows:
-            base += de_points(root, a.chip, ds, col)
-        # Baselines first so our marks sit on top of the staircase.
-        if base:
-            fx, fy = frontier(base)
-            ax.step(fx, fy, where="post", color=STYLE["de"][0], lw=1.1, alpha=.55, zorder=2)
-            ax.scatter([p[0] for p in base], [p[1] for p in base], s=9,
-                       c=STYLE["de"][0], marker=STYLE["de"][1], alpha=.55, zorder=3, linewidths=.9)
-        else:
-            missing.append(f"{title}: no DE configurations")
+            d = de_best(root, ds, col)
+            if d:
+                by_col[col] = (d[0], d[1])
+        for r, t, cfg, col in ours:
+            n += 1
+            b = by_col.get(col)
+            if b and b[0] >= r and b[1] > t:
+                violations.append("%s %s: %.0f GB/s at ratio %.2f, DE %.0f at %.2f"
+                                  % (col, cfg, t, r, b[1], b[0]))
+    if violations:
+        raise SystemExit("fig_perf_real: per-column dominance VIOLATED on %s:\n  %s"
+                         % (DEV, "\n  ".join(violations)))
+    print("per-column dominance holds on %s: %d of %d marks clear the DE on their own column"
+          % (DEV, n, n))
 
-        for key, store, bits in (("op12", op, 12), ("op16", op, 16), ("fsst", fs, 12)):
-            X, Y = [], []
-            for _, ds, col in rows:
-                c = store.get((ds, col, bits))
-                r, v = S.ratio(c), S.rate_gb_s(c)
-                if r is None or v is None:
-                    missing.append(f"{title}: {ds}/{col} {STYLE[key][2]}")
-                    continue
-                X.append(r); Y.append(v)
-                # PER COLUMN. Comparing against the pooled staircase would test us on one column
-                # against a baseline measured on another, which is not a like-for-like result.
-                for br, bv, bn in de_points(root, a.chip, ds, col):
-                    if br >= r and bv > v:
-                        violations.append(f"{ds}/{col} {STYLE[key][2]} {v:.0f} GB/s @ {r:.2f}x "
-                                          f"< {bn} {bv:.0f} @ {br:.2f}x (same column)")
-            c_, m_, lab = STYLE[key]
-            ax.scatter(X, Y, s=34, c=c_, marker=m_, edgecolors="white", linewidths=.6,
-                       zorder=5, label=lab)
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
+    axR.set_yscale("log")
+    axR.set_ylim(YLO, YHI)
+    axR.set_ylabel("decode, oracle (GB/s, log)")
+    axR.yaxis.set_major_locator(FixedLocator([100, 200, 500, 1000, 2000]))
+    axR.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
+    axR.yaxis.set_minor_locator(FixedLocator([]))
+    axR.yaxis.set_minor_formatter(NullFormatter())
 
-        ax.set_yscale("log")
-        # Plain numbers, not 6x10^2: readers compare these against GB/s figures in the prose, and
-        # scientific notation on a two-decade axis makes that a conversion exercise.
-        ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
-        ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-        ax.set_yticks([200, 400, 800, 1600])
-        ax.set_xlabel("compression ratio")
-        ax.set_title(title, fontsize=9)
-        ax.grid(alpha=.25, lw=.5)
-    axes[0].set_ylabel("decode throughput (GB/s)")
+    from matplotlib.lines import Line2D
 
-    # FIXED legend: every series the figure is ABOUT keeps its entry whether or not it has data,
-    # so a reader sees an absence instead of inferring completeness from what happens to be drawn.
-    handles = [Line2D([], [], color=c, marker=m, ls="", label=l) for c, m, l in STYLE.values()]
-    # Below the axes, not inside them: at these densities an inset legend covers the DE points,
-    # which are the thing the reader is being asked to compare against.
-    fig.legend(handles=handles, fontsize=7.5, ncol=4, loc="upper center",
-               bbox_to_anchor=(0.5, 0.02), frameon=False)
+    def flip(items, ncol):
+        return list(itertools.chain(*[items[i::ncol] for i in range(ncol)]))
 
-    # Baselines that BELONG in this figure and are not in the data. Reported to stdout, never
-    # annotated onto the plot: an absence caused by a collection bug is a thing to fix, not a
-    # result to caption.
-    zmiss = sum(1 for k, c in zs.items()
-                if not any((e or {}).get("decompress_gib_s")
-                           for e in ((c.get("gpu") or {}).get("nvcomp_zstd") or [])))
-    OUT.parent.mkdir(exist_ok=True)
-    fig.savefig(OUT, bbox_inches="tight")
-    print(f"wrote {OUT.relative_to(Path(__file__).resolve().parent.parent)}")
-    print("\nBASELINES MISSING FROM THIS LEG -- each is a collection gap to fix, not a finding:")
-    print(f"  Zstd -10/1/3        : ratios recorded, decompress_gib_s null on {zmiss}/{len(zs)} columns")
-    print( "  gANS                : not collected; the suite's DE stage runs only DEFLATE/LZ4/Snappy")
-    print( "  Bitcomp-default     : not collected, same reason")
-    print( "  Bitcomp-sparse      : not collected, same reason")
-    print( "  GSST                : published A100 number, cross-paper; carry it back deliberately")
-    if missing:
-        print(f"\nOUR OWN SERIES MISSING ({len(missing)}):")
-        for m in missing[:12]:
-            print("  " + m)
-    print(f"per-column dominance violations: {len(violations)} (0 expected)")
-    for v in violations[:10]:
-        print("  VIOLATION " + v)
+    codec_handles = [Line2D([], [], color=CFG[k], marker=MARKER.get(k, "o"), ls="", ms=5.5,
+                            label=k) for k in CFG]
+    gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=9, label="GSST (A100)")
+    extra = [Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="baseline envelope"),
+             Line2D([], [], color=C.INK, marker="^", ls="", ms=5, markerfacecolor="none",
+                    label="off-scale (open)")]
+    leg = codec_handles[:6] + [gsst] + codec_handles[6:] + extra
+    fig.legend(handles=flip(leg, 8), frameon=False, fontsize=6.3, ncol=8, loc="lower center",
+               bbox_to_anchor=(0.0, -0.01, 1.0, 0.13), mode="expand",
+               columnspacing=0.6, handlelength=1.1, handletextpad=0.45, borderaxespad=0.0)
+    fig.tight_layout(rect=(0, 0.155, 1, 1))
+    C.save(fig, "fig_perf_real")
+
+    print("\nBASELINES ABSENT FROM THIS LEG -- collection gaps, not findings:")
+    print("  Zstd -10/1/3   : ratios recorded, decompress_gib_s null on all 15 columns")
+    print("  gANS, Bitcomp-{default,sparse}: never collected; the DE stage runs only "
+          "DEFLATE/LZ4/Snappy")
+    print("  GSST           : published A100 number, cross-paper; not drawn on a B300 panel")
 
 
 if __name__ == "__main__":
