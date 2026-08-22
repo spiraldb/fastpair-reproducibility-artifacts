@@ -2,37 +2,25 @@
 # requires-python = ">=3.9"
 # dependencies = ["matplotlib", "numpy"]
 # ///
-"""Fig. hoist: three configurations per K, as bars.
+"""Fig. hoist: decode rate over (K, H), at two launch bounds.
 
-A grouped bar chart, because the comparison is categorical: three named configurations at each K.
-Earlier drafts drew it as lines and then as arrows, both of which asked the reader to decode a
-custom encoding for something a bar chart states directly.
+The hoist is not a one-parameter change, which is why lines, arrows and bars all read badly here:
+each series had to carry which B AND which H at once, so the reader was asked to hold two
+encodings in mind to see a single comparison. It is a surface. Two inputs, K and H, one output,
+repeated at the launch bound that decides whether registers are scarce.
 
-H holds up to H-1 long-token requests across rounds instead of re-issuing them. Measured at
-B=8 it looks like the campaign's largest single win: the H=1 baseline at K=6, T=256 sits at
-362 GB/s and the best H rung lifts it to 617, about +70%.
+So: a grid. K across, H up, decode rate as colour, one panel per B, ONE shared scale so the panels
+can be compared directly. Cells above H = min(K,4) do not exist and are left blank.
 
-THAT COMPARISON HAS THE WRONG BASELINE, and this figure is the correction. The 362 is not a
-neutral starting point; it is what the kernel degrades to once B=8 caps registers at 32 and the
-working set at K=6 no longer fits. Setting B=1 -- asking the scheduler for nothing and letting
-ptxas keep its 56 registers -- reaches 1191 GB/s at the same K and T with no hoist at all.
+WHAT TO LOOK AT. At B=1 the colour is flat up each column: raising H changes nothing, because
+registers were never scarce. At B=8 the H=1 row darkens sharply from K=5 on -- that is the
+register cap, not the hoist -- and raising H lightens it again without ever reaching the shade the
+B=1 panel holds at the same K. The hoist recovers ground the launch bound gave away.
 
-So the recovery closes about half of a hole that the launch bound dug. The shaded band is what
-the hoist never gets back. Read against the configuration one would actually ship, the best H
-result is a 48% REGRESSION, not a 70% gain.
-
-At K=2 and K=3 the picture legitimately reverses and B=8 leads: the register cap is affordable
-while the working set is small, which is the same threshold fig_grid shows from the other side.
-The hoist is not what changes there either.
-
-One column, Loghub Windows at OnPair-12, T=256, min-of-100 per cell.
-
-Source: results/suite-<id>/b300/sweep_summary_*_boost.json, dh family against dg at the same
-coordinate.
+Source: results/suite-<id>/b300/sweep_summary_*_boost.json, dh family for H>1 and dg for H=1, at
+matched (K,T,B).
 """
 import argparse
-import re
-import statistics as st
 import sys
 from pathlib import Path
 
@@ -41,6 +29,8 @@ import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
 KS = list(range(2, 9))
+HS = [1, 2, 3, 4]
+BS = [1, 8]
 T = 256
 DEV, BITS = "b300", 12
 COLUMN = ("loghub-windows", "line")
@@ -63,47 +53,57 @@ def main():
     R = {k["kernel"]: db / min(k["decode_ns_iters"])
          for k in (g.get("kernels") or []) if k.get("decode_ns_iters") and db}
 
-    def med(name):
-        return R.get(name)
-
-    ref, coll, rec = [], [], []
-    for K in KS:
-        ref.append(med(f"onpair_dg_k{K}_t{T}_b1"))
-        coll.append(med(f"onpair_dg_k{K}_t{T}_b8"))
-        hs = [med(f"onpair_dh_k{K}_t{T}_b8_h{h}") for h in range(2, min(K, 4) + 1)]
-        hs = [x for x in hs if x]
-        rec.append(max(hs) if hs else None)
-    if not any(ref):
+    import numpy as np
+    grids = {}
+    for B in BS:
+        M = np.full((len(HS), len(KS)), np.nan)
+        for j, K in enumerate(KS):
+            for i, H in enumerate(HS):
+                if H > min(K, 4):
+                    continue
+                name = (f"onpair_dg_k{K}_t{T}_b{B}" if H == 1
+                        else f"onpair_dh_k{K}_t{T}_b{B}_h{H}")
+                if name in R:
+                    M[i, j] = R[name]
+        grids[B] = M
+    allv = np.concatenate([m[~np.isnan(m)] for m in grids.values()])
+    if not allv.size:
         sys.exit("no dg/dh coordinates found; is this a full-grid pass?")
+    vmin, vmax = allv.min(), allv.max()
 
     plt = C.apply_theme()
-    import numpy as np
-    fig, ax = plt.subplots(figsize=(7.0, 2.2))
-    x = np.arange(len(KS))
-    w = 0.27
-    for off, vals, color, lab in ((-w, ref, "#08519c", "B=1, H=1"),
-                                  (0.0, coll, "#9ecae1", "B=8, H=1"),
-                                  (w, rec, "#b0413e", "B=8, best H")):
-        ax.bar(x + off, [v or 0 for v in vals], width=w, color=color, label=lab,
-               linewidth=0, zorder=3)
-    ax.set_xticks(x)
-    ax.set_xticklabels([str(k) for k in KS])
-    ax.set_xlabel("K (codes per lane), T=256")
-    ax.set_ylabel("decode (GB/s)")
-    from matplotlib.ticker import FixedLocator
-    ax.set_ylim(0, 2000)
-    ax.yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
-    ax.grid(axis="y", alpha=.25, lw=.4)
-    ax.set_axisbelow(True)
-    ax.legend(fontsize=6.6, frameon=False, ncol=3, loc="upper right", handlelength=1.2)
-    fig.tight_layout()
+    fig, axes = plt.subplots(1, len(BS), figsize=(7.0, 1.9), sharey=True)
+    im = None
+    for ax, B in zip(axes, BS):
+        im = ax.imshow(grids[B], origin="lower", aspect="auto", cmap="viridis",
+                       vmin=vmin, vmax=vmax,
+                       extent=(-0.5, len(KS) - 0.5, -0.5, len(HS) - 0.5))
+        # The rate is printed in the cell: a reader comparing two panels should not have to
+        # estimate a number from a colour.
+        for j in range(len(KS)):
+            for i in range(len(HS)):
+                v = grids[B][i, j]
+                if not np.isnan(v):
+                    ax.text(j, i, f"{v:.0f}", ha="center", va="center", fontsize=5.0,
+                            color="white" if v < (vmin + vmax) / 2 else "#222222")
+        ax.set_xticks(range(len(KS)))
+        ax.set_xticklabels([str(k) for k in KS])
+        ax.set_yticks(range(len(HS)))
+        ax.set_yticklabels([str(h) for h in HS])
+        ax.set_xlabel("K (codes per lane)")
+        ax.set_title(f"B={B}", fontsize=7.5)
+        ax.grid(False)
+    axes[0].set_ylabel("H (held rounds)")
+    cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015)
+    cb.set_label("decode (GB/s)", fontsize=6.5)
+    cb.ax.tick_params(labelsize=6)
     C.save(fig, "fig_hoist")
 
-    print(f"{'K':>3}{'B=1 H=1':>10}{'B=8 H=1':>10}{'B=8 bestH':>11}{'% of B=1':>10}")
-    for i, K in enumerate(KS):
-        if ref[i] and coll[i] and rec[i]:
-            print(f"{K:>3}{ref[i]:>10.0f}{coll[i]:>10.0f}{rec[i]:>11.0f}"
-                  f"{100 * rec[i] / ref[i]:>9.1f}%")
+    for B in BS:
+        for K in (6,):
+            vals = [(H, grids[B][HS.index(H), KS.index(K)]) for H in HS
+                    if not np.isnan(grids[B][HS.index(H), KS.index(K)])]
+            print(f"B={B}, K={K}: " + "  ".join(f"H={h} {v:.0f}" for h, v in vals))
 
 
 if __name__ == "__main__":

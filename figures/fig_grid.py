@@ -122,16 +122,12 @@ def main():
                 ax2.plot([k for k, _ in occ], [b for _, b in occ], color=OCC_COLOR, lw=1.0,
                          ls=dash, zorder=1)
         ax2.set_ylim(0, 20)
-        ax2.set_yticks([0, 5, 10, 15])
+        ax2.set_yticks([4, 9, 18])
         ax2.tick_params(axis="y", colors=OCC_COLOR, labelsize=6)
         if B == PANELS[-1][0]:
             ax2.set_ylabel("blocks/SM", color=OCC_COLOR, fontsize=6.5)
         else:
             ax2.set_yticklabels([])
-        regs = res.get((6, 256, B), {}).get("regs_per_thread")
-        if regs:
-            ax.annotate(f"{regs} regs/thread", xy=(0.04, 0.06), xycoords="axes fraction",
-                        fontsize=6.0, color=C.INK)
         ax.set_title(title, fontsize=7.5)
         ax.set_xticks([1, 2, 4, 6, 8])
         ax.set_xlabel("K (codes per lane)")
@@ -145,12 +141,18 @@ def main():
     from matplotlib.lines import Line2D
     handles = [Line2D([], [], color=T_COLOR[T], marker="o", ms=3, lw=1.2, label=f"T={T}")
                for T in TS]
-    handles += [Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (1, 1)), label="blocks/SM, T=64"),
-                Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (1, 1.6)), label="blocks/SM, T=128"),
-                Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (3, 2)), label="blocks/SM, T=256")]
-    fig.legend(handles=handles, frameon=False, fontsize=6.5, ncol=6, loc="lower center",
-               bbox_to_anchor=(0.5, -0.03), columnspacing=1.1, handlelength=1.6)
-    fig.tight_layout(rect=(0, 0.10, 1, 1))
+    occ_handles = [Line2D([], [], color=OCC_COLOR, lw=1.0, ls=d, label=f"T={T}")
+                   for T, d in ((64, (0, (1, 1))), (128, (0, (1, 1.6))), (256, (0, (3, 2))))]
+    # Two legends, set apart, because the two groups share their T labels and the axis names the
+    # quantity. Repeating "blocks/SM" on every swatch spent three labels saying one thing.
+    l1 = fig.legend(handles=handles, frameon=False, fontsize=6.5, ncol=3, loc="lower center",
+                    bbox_to_anchor=(0.27, -0.04), columnspacing=1.0, handlelength=1.6,
+                    title="decode", title_fontsize=6.5)
+    fig.add_artist(l1)
+    fig.legend(handles=occ_handles, frameon=False, fontsize=6.5, ncol=3, loc="lower center",
+               bbox_to_anchor=(0.73, -0.04), columnspacing=1.0, handlelength=1.6,
+               title="blocks/SM", title_fontsize=6.5)
+    fig.tight_layout(rect=(0, 0.13, 1, 1))
     C.save(fig, "fig_grid")
 
     for B, _ in PANELS:
