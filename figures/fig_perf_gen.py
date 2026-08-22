@@ -9,8 +9,12 @@ device and the clock, and shows one kernel family covering the whole matrix.
 
 LAYOUT. One slot per column. Inside a slot, one short VERTICAL LINE per GPU, packed side by side.
 Each line carries that GPU's decode rate at every clock state it was measured at, so the line's
-extent IS the clock sensitivity of that chip on that column. A horizontal stripe per column marks
-the B300 Decompression Engine's range over its configurations.
+extent IS the clock sensitivity of that chip on that column. Horizontal BARS across the slot mark
+the B300 Decompression Engine's configurations.
+
+DRAWN AT ITS PRINTED SIZE. This is a two-column float landing at about seven inches, so figsize
+matches that. An earlier version was drawn ten inches wide and scaled down on the page, which
+shrank every label by a third and made the figure unreadable in print.
 
 ENCODING. Colour is the GPU, because "which chip is this" must survive without a leader line and
 the chip ramp is already established across the paper. Marker shape is the CLOCK STATE, and it is
@@ -25,9 +29,10 @@ latency, and an L2 request-rate bound, because l1tex runs at the SM clock while 
 separate domains. It does NOT separate L1 request rate from compute, issue, register file or
 shared memory, and this figure does not claim it does.
 
-THE DE STRIPE SHOWS MULTIPLE CONFIGURATIONS, not one number. The engine's rate depends on the
-codec family and the chunk size, and quoting only its best hides that spread; the stripe spans
-min to max over all valid configurations with the best marked.
+THE DE IS SHOWN AS MULTIPLE CONFIGURATIONS, not one number. Its rate depends on the codec family
+and the chunk size, and quoting only its best hides that. Each family at the default chunk gets a
+light bar and the engine's declared best (best codec AND chunk) a solid one. Bars rather than a
+shaded band: the band implied a continuum between configurations that does not exist.
 
 MISSING CHIPS KEEP THEIR SLOT AND THEIR LEGEND ENTRY. A leg that has not landed leaves a labelled
 gap, so a reader sees three chips and a hole rather than assuming three was the design.
@@ -67,17 +72,21 @@ def nominal_states(root, chip):
     return out
 
 
-def de_span(root, ds, col, chip="b300"):
-    """(min, max, best) GB/s over every valid DE configuration for a column."""
-    vals = []
+def de_bars(root, ds, col, chip="b300"):
+    """One rate per DE configuration worth drawing: each codec family at the default chunk
+    size, plus the engine's declared best (best codec AND chunk). Returned as bars, not a
+    shaded span -- the span implied a continuum between configurations that does not exist,
+    and the reader wants to see the individual operating points."""
+    out = []
     for r in S.de_rows(root, chip):
         if r.get("dataset_id") != ds or r.get("column") != col:
             continue
-        for e in (r.get("chunk_sweep") or []):
-            for cell in (e.get("codecs") or {}).values():
-                if cell.get("valid") and cell.get("supported") and cell.get("decode_gib_s"):
-                    vals.append(cell["decode_gib_s"] * 1.073741824)
-    return (min(vals), max(vals), max(vals)) if vals else (None, None, None)
+        for name, cell in (r.get("codecs") or {}).items():
+            if cell.get("decode_gib_s"):
+                out.append((name, cell["decode_gib_s"] * 1.073741824, False))
+        if r.get("best_decode_gib_s"):
+            out.append((r.get("best_codec"), r["best_decode_gib_s"] * 1.073741824, True))
+    return out
 
 
 def main():
@@ -93,20 +102,23 @@ def main():
     states = {c: nominal_states(root, c) for c in S.CHIPS}
     data = {c: {t: S.cells(root, c, t, "onpair") for t in S.clock_tags(root, c)} for c in S.CHIPS}
 
-    fig, ax = plt.subplots(figsize=(10.4, 3.9))
+    # SIZED TO ITS RENDERED WIDTH. This is a two-column float, so it lands at about 7 inches. A
+    # 10-inch figsize is scaled down by a third on the page and takes every font with it, which
+    # is why the previous version could not be read at print size. Draw it the size it is shown.
+    fig, ax = plt.subplots(figsize=(7.1, 3.6))
     slot = 1.0
-    per_chip = (slot * 0.78) / len(S.CHIPS)
+    per_chip = (slot * 0.72) / len(S.CHIPS)
     absent, drawn = [], 0
 
     for i, (lab, ds, col, grp) in enumerate(rows):
         x0 = i * slot
-        lo, hi, best = de_span(root, ds, col)
-        if lo is not None:
-            # The DE stripe: full configuration spread, best marked, behind the chip lines.
-            ax.add_patch(plt.Rectangle((x0 - slot * 0.42, lo), slot * 0.84, max(hi - lo, 1e-9),
-                                       color=DE_COLOR, alpha=.10, lw=0, zorder=1))
-            ax.hlines(best, x0 - slot * 0.42, x0 + slot * 0.42, color=DE_COLOR, lw=1.0,
-                      alpha=.85, zorder=2)
+        # A BAR PER DE CONFIGURATION, no shaded span. The span implied a continuum between
+        # configurations that does not exist; the reader wants the operating points themselves.
+        # The declared best is solid and full width, per-codec entries lighter and inset.
+        for name, v, is_best in de_bars(root, ds, col):
+            w = 0.42 if is_best else 0.28
+            ax.hlines(v, x0 - slot * w, x0 + slot * w, color=DE_COLOR,
+                      lw=1.4 if is_best else 0.7, alpha=.9 if is_best else .5, zorder=2)
 
         for j, chip in enumerate(S.CHIPS):
             xc = x0 - slot * 0.39 + per_chip * (j + 0.5)
@@ -129,8 +141,17 @@ def main():
                 drawn += 1
 
     ax.set_xticks([i * slot for i in range(len(rows))])
-    ax.set_xticklabels([lab.replace("\\texttt{", "").replace("}", "").replace("\\_", "_")
-                        for lab, _, _, _ in rows], rotation=38, ha="right", fontsize=6.8)
+    SHORT = {"FineWeb2 Mandarin": "FineWeb2", "Loghub \\texttt{Android}": "Android",
+             "ClickBench \\texttt{URL}": "URL", "ClickBench \\texttt{Title}": "Title",
+             "Loghub \\texttt{HDFS}": "HDFS", "Loghub \\texttt{Thunderbird}": "Thunderbird",
+             "Loghub \\texttt{Spark}": "Spark", "Loghub \\texttt{Windows}": "Windows",
+             "TPC-H \\texttt{c\\_address}": "c_address",
+             "TPC-H \\texttt{l\\_comment}": "l_comment",
+             "TPC-H \\texttt{o\\_clerk}": "o_clerk",
+             "TPC-H \\texttt{l\\_shipinstruct}": "l_shipinstruct",
+             "TPC-H \\texttt{ps\\_comment}": "ps_comment"}
+    ax.set_xticklabels([SHORT.get(lab, lab) for lab, _, _, _ in rows],
+                       rotation=40, ha="right", fontsize=7)
     # The rule between real and generated columns: they are never pooled into one claim.
     ax.axvline(len(S.REAL) * slot - slot * 0.5, color="#444444", lw=.9, ls=":")
     ax.text(len(S.REAL) * slot - slot * 0.45, ax.get_ylim()[1], " generated",
@@ -143,12 +164,12 @@ def main():
                     label=CHIP_LABEL[c] + ("" if S.clock_tags(root, c) else " (not measured)"))
              for c in S.CHIPS]
     marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
-    de = [Line2D([], [], color=DE_COLOR, lw=6, alpha=.3, label="DE config. spread"),
-          Line2D([], [], color=DE_COLOR, lw=1.2, label="DE best")]
+    de = [Line2D([], [], color=DE_COLOR, lw=.9, alpha=.5, label="DE per codec"),
+          Line2D([], [], color=DE_COLOR, lw=1.6, label="DE best")]
     # ABOVE the axes. The x labels are rotated column names and take the whole lower margin, so a
     # legend placed below lands on top of them.
     leg = fig.legend(handles=chips + marks + de, fontsize=7, ncol=6, loc="lower center",
-                     bbox_to_anchor=(0.5, 0.97), frameon=False)
+                     bbox_to_anchor=(0.5, 0.94), frameon=False)
     leg.set_title(f"OnPair-{BITS}, shipped selector — marker = SM clock state", prop={"size": 7})
 
     OUT.parent.mkdir(exist_ok=True)

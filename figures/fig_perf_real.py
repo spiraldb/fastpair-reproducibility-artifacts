@@ -64,17 +64,27 @@ STYLE = {          # (colour, marker, label)
 
 
 def de_points(root, chip, ds, col):
-    """Every valid DE configuration for one column: 4 codec families x 5 chunk sizes."""
+    """The DE marks for one column: each codec family at the DEFAULT chunk size, plus the
+    engine's declared best (best codec AND chunk size).
+
+    NOT all twenty configurations. The chunk sweep exists to find the engine's best operating
+    point, not to be plotted -- drawing 4 families x 5 sizes per column buries the marks that
+    carry the comparison under a cloud of intermediate points that no one would ship. The
+    declared baseline is the best codec and chunk per column, which runs a few percent above any
+    single per-codec entry, so it must be included or the envelope understates the engine and
+    flatters us. The full spread is still shown, as a range, in fig_perf_gen.
+    """
     pts = []
     for r in S.de_rows(root, chip):
         if r.get("dataset_id") != ds or r.get("column") != col:
             continue
-        for e in (r.get("chunk_sweep") or []):
-            for name, cell in (e.get("codecs") or {}).items():
-                if cell.get("valid") is True and cell.get("supported") is True \
-                        and cell.get("ratio") and cell.get("decode_gib_s"):
-                    # decode_gib_s is GiB/s; the paper reports GB/s, so convert once, here.
-                    pts.append((cell["ratio"], cell["decode_gib_s"] * 1.073741824, name))
+        for name, cell in (r.get("codecs") or {}).items():
+            if cell.get("ratio") and cell.get("decode_gib_s"):
+                # decode_gib_s is GiB/s; the paper reports GB/s, so convert once, here.
+                pts.append((cell["ratio"], cell["decode_gib_s"] * 1.073741824, name))
+        if r.get("best_ratio") and r.get("best_decode_gib_s"):
+            pts.append((r["best_ratio"], r["best_decode_gib_s"] * 1.073741824,
+                        f"{r.get('best_codec')} (best chunk)"))
     return pts
 
 
@@ -153,25 +163,28 @@ def main():
     # FIXED legend: every series the figure is ABOUT keeps its entry whether or not it has data,
     # so a reader sees an absence instead of inferring completeness from what happens to be drawn.
     handles = [Line2D([], [], color=c, marker=m, ls="", label=l) for c, m, l in STYLE.values()]
-    handles.append(Line2D([], [], color="#888888", marker="", ls="--",
-                          label="Zstd −10/1/3: ratio only, rate not measured"))
-    # Below the axes, not inside them: at these densities an inset legend covers the DE cloud,
-    # which is the thing the reader is being asked to compare against.
-    fig.legend(handles=handles, fontsize=7.5, ncol=5, loc="upper center",
+    # Below the axes, not inside them: at these densities an inset legend covers the DE points,
+    # which are the thing the reader is being asked to compare against.
+    fig.legend(handles=handles, fontsize=7.5, ncol=4, loc="upper center",
                bbox_to_anchor=(0.5, 0.02), frameon=False)
 
+    # Baselines that BELONG in this figure and are not in the data. Reported to stdout, never
+    # annotated onto the plot: an absence caused by a collection bug is a thing to fix, not a
+    # result to caption.
     zmiss = sum(1 for k, c in zs.items()
                 if not any((e or {}).get("decompress_gib_s")
                            for e in ((c.get("gpu") or {}).get("nvcomp_zstd") or [])))
-    fig.suptitle(f"{a.chip.upper()} — {root.name}"
-                 + (f"   [{len(missing)} series absent]" if missing else ""),
-                 fontsize=8, y=1.02)
     OUT.parent.mkdir(exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
     print(f"wrote {OUT.relative_to(Path(__file__).resolve().parent.parent)}")
-    print(f"Zstd columns with no decode rate: {zmiss}/{len(zs)}")
+    print("\nBASELINES MISSING FROM THIS LEG -- each is a collection gap to fix, not a finding:")
+    print(f"  Zstd -10/1/3        : ratios recorded, decompress_gib_s null on {zmiss}/{len(zs)} columns")
+    print( "  gANS                : not collected; the suite's DE stage runs only DEFLATE/LZ4/Snappy")
+    print( "  Bitcomp-default     : not collected, same reason")
+    print( "  Bitcomp-sparse      : not collected, same reason")
+    print( "  GSST                : published A100 number, cross-paper; carry it back deliberately")
     if missing:
-        print(f"MISSING ({len(missing)}):")
+        print(f"\nOUR OWN SERIES MISSING ({len(missing)}):")
         for m in missing[:12]:
             print("  " + m)
     print(f"per-column dominance violations: {len(violations)} (0 expected)")
