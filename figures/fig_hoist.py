@@ -103,11 +103,9 @@ def main():
     axes[0].set_ylabel("H (held rounds)")
     # Every cell carries its rate, so the bar orients the reader between dark and light rather
     # than being read off. Five ticks keep the ramp legible without competing with the numbers.
-    # Five ticks spanning the ACTUAL range, rounded inward to the nearest 50. Rounding the
-    # endpoints outward put a tick below the minimum, where it clipped and only four showed; a
-    # generic locator picks round spacings that happen to fit four in this interval.
-    ticks = [round((vmin + (vmax - vmin) * f) / 50) * 50 for f in (0, .25, .5, .75, 1)]
-    ticks = [min(max(t, vmin), vmax) for t in ticks]
+    # EVENLY SPACED and inside the range. Spanning vmin..vmax in equal fractions gave five ticks
+    # at uneven round numbers, which reads worse than four on a regular interval.
+    ticks = [t for t in range(750, 1501, 250) if vmin <= t <= vmax]
     cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015, ticks=ticks)
     cb.set_label("decode (GB/s)", fontsize=6.5)
     cb.ax.tick_params(labelsize=6)
