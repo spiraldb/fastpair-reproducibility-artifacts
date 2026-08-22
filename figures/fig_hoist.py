@@ -78,7 +78,7 @@ def main():
     vmin, vmax = allv.min(), allv.max()
 
     plt = C.apply_theme()
-    fig, axes = plt.subplots(1, len(BS), figsize=(7.0, 1.9), sharey=True)
+    fig, axes = plt.subplots(1, len(BS), figsize=(7.0, 1.45), sharey=True)
     im = None
     for ax, B in zip(axes, BS):
         im = ax.imshow(grids[B], origin="lower", aspect="auto", cmap="viridis",
@@ -100,7 +100,10 @@ def main():
         ax.set_title(f"B={B}", fontsize=7.5)
         ax.grid(False)
     axes[0].set_ylabel("H (held rounds)")
-    cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015)
+    # Every cell carries its rate, so the bar only has to orient the reader between dark and
+    # light. Three ticks do that; a dense ramp competes with the numbers it is redundant with.
+    cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015,
+                      ticks=[round(vmin, -2), round((vmin + vmax) / 2, -2), round(vmax, -2)])
     cb.set_label("decode (GB/s)", fontsize=6.5)
     cb.ax.tick_params(labelsize=6)
     C.save(fig, "fig_hoist")
