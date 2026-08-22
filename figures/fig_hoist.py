@@ -2,7 +2,11 @@
 # requires-python = ">=3.9"
 # dependencies = ["matplotlib", "numpy"]
 # ///
-"""Fig. hoist: the hoist's best result is worth less than not asking for occupancy.
+"""Fig. hoist: three configurations per K, as bars.
+
+A grouped bar chart, because the comparison is categorical: three named configurations at each K.
+Earlier drafts drew it as lines and then as arrows, both of which asked the reader to decode a
+custom encoding for something a bar chart states directly.
 
 H holds up to H-1 long-token requests across rounds instead of re-issuing them. Measured at
 B=8 it looks like the campaign's largest single win: the H=1 baseline at K=6, T=256 sits at
@@ -21,7 +25,7 @@ At K=2 and K=3 the picture legitimately reverses and B=8 leads: the register cap
 while the working set is small, which is the same threshold fig_grid shows from the other side.
 The hoist is not what changes there either.
 
-Curves are the median over the ten real columns at OnPair-12, T=256, min-of-100 per cell.
+One column, Loghub Windows at OnPair-12, T=256, min-of-100 per cell.
 
 Source: results/suite-<id>/b300/sweep_summary_*_boost.json, dh family against dg at the same
 coordinate.
@@ -39,6 +43,7 @@ import suite as S  # noqa: E402
 KS = list(range(2, 9))
 T = 256
 DEV, BITS = "b300", 12
+COLUMN = ("loghub-windows", "line")
 
 
 def main():
@@ -50,19 +55,16 @@ def main():
         sys.exit("no results/suite-* directory found")
 
     cells = S.cells(root, DEV, "boost", "onpair")
-    real = {(ds, col) for _, ds, col in S.REAL}
-    R = {}
-    for (ds, col, bits), c in cells.items():
-        if (ds, col) not in real or bits != BITS:
-            continue
-        g = c.get("gpu") or {}
-        db = g.get("decoded_bytes")
-        for k in (g.get("kernels") or []):
-            if k.get("decode_ns_iters") and db:
-                R.setdefault(k["kernel"], []).append(db / min(k["decode_ns_iters"]))
+    c = cells.get((COLUMN[0], COLUMN[1], BITS))
+    if c is None:
+        sys.exit(f"column {COLUMN} absent from this leg")
+    g = c.get("gpu") or {}
+    db = g.get("decoded_bytes")
+    R = {k["kernel"]: db / min(k["decode_ns_iters"])
+         for k in (g.get("kernels") or []) if k.get("decode_ns_iters") and db}
 
     def med(name):
-        return st.median(R[name]) if name in R else None
+        return R.get(name)
 
     ref, coll, rec = [], [], []
     for K in KS:
@@ -75,32 +77,25 @@ def main():
         sys.exit("no dg/dh coordinates found; is this a full-grid pass?")
 
     plt = C.apply_theme()
+    import numpy as np
     fig, ax = plt.subplots(figsize=(7.0, 2.2))
-    # A DUMBBELL, not lines. Each line in the previous form encoded two parameters at once (which
-    # B, which H), so the reader had to decode a legend to see a comparison that is categorical.
-    # Here one arrow per K IS the hoist -- from the H=1 baseline to the best H at the same B=8 --
-    # and the reference marker is what B=1 reaches without it. The arrow either reaches the
-    # reference or it does not.
-    for i, K in enumerate(KS):
-        if coll[i] is None or rec[i] is None:
-            continue
-        ax.annotate("", xy=(K, rec[i]), xytext=(K, coll[i]),
-                    arrowprops=dict(arrowstyle="-|>", lw=1.4, color="#b0413e",
-                                    shrinkA=0, shrinkB=0, mutation_scale=7))
-    ax.scatter(KS, coll, s=13, color="#9ecae1", zorder=4, linewidths=0)
-    ax.scatter(KS, ref, s=34, marker="_", color="#08519c", zorder=5, linewidths=1.6)
-    ax.set_xticks(KS)
+    x = np.arange(len(KS))
+    w = 0.27
+    for off, vals, color, lab in ((-w, ref, "#08519c", "B=1, H=1"),
+                                  (0.0, coll, "#9ecae1", "B=8, H=1"),
+                                  (w, rec, "#b0413e", "B=8, best H")):
+        ax.bar(x + off, [v or 0 for v in vals], width=w, color=color, label=lab,
+               linewidth=0, zorder=3)
+    ax.set_xticks(x)
+    ax.set_xticklabels([str(k) for k in KS])
     ax.set_xlabel("K (codes per lane), T=256")
     ax.set_ylabel("decode (GB/s)")
-    ax.set_ylim(0, None)
-    ax.grid(alpha=.25, lw=.4)
+    from matplotlib.ticker import FixedLocator
+    ax.set_ylim(0, 2000)
+    ax.yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
+    ax.grid(axis="y", alpha=.25, lw=.4)
     ax.set_axisbelow(True)
-    from matplotlib.lines import Line2D
-    ax.legend(handles=[
-        Line2D([], [], color="#08519c", marker="_", ls="", ms=7, mew=1.6, label="B=1, H=1"),
-        Line2D([], [], color="#9ecae1", marker="o", ls="", ms=3.6, label="B=8, H=1"),
-        Line2D([], [], color="#b0413e", lw=1.4, label="B=8, H=1 to best H"),
-    ], fontsize=6.4, frameon=False, loc="lower left", ncol=1, handlelength=1.8)
+    ax.legend(fontsize=6.6, frameon=False, ncol=3, loc="upper right", handlelength=1.2)
     fig.tight_layout()
     C.save(fig, "fig_hoist")
 

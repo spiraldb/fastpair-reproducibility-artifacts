@@ -32,9 +32,10 @@ peak at K=4, T=256 at K=6, and T=256 reaches the highest rate of the three. T=12
 choice because it is never far from either regime -- a median 1.1% and at most 3.0% below the best
 T per column -- and it is never the best one.
 
-Curves are the MEDIAN over the ten real columns at OnPair-12; the shape is the claim, and one
-column would invite a reader to take its peak as a rate. Registers and residency come from the
-resource probe at the same coordinate, so the annotation is measured, not modelled.
+ONE COLUMN, NAMED. Loghub Windows at OnPair-12, the fastest real column on this device. A median
+over ten columns left the reader unable to tell whether the column behind a point changed from K
+to K, which is the one thing a shape argument cannot afford. Residency and registers come from the
+resource probe at the same coordinate.
 
 Source: results/suite-<id>/b300/sweep_summary_*_boost.json (dg family) joined to
 kernel_resources.jsonl on (K, T, B).
@@ -56,6 +57,7 @@ PANELS = [(1, "B=1"), (4, "B=4"), (8, "B=8")]
 T_COLOR = {64: "#9ecae1", 128: "#4292c6", 256: "#08519c"}
 OCC_COLOR = "#b0413e"
 DEV, BITS = "b300", 12
+COLUMN = ("loghub-windows", "line")   # fastest real column on the B300 at OnPair-12
 
 
 def dg_rates(cell):
@@ -94,8 +96,11 @@ def main():
 
     cells = S.cells(root, DEV, "boost", "onpair")
     real = {(ds, col) for _, ds, col in S.REAL}
-    grids = [g for g in (dg_rates(c) for (ds, col, bits), c in cells.items()
-                         if (ds, col) in real and bits == BITS) if g]
+    cell = cells.get((COLUMN[0], COLUMN[1], BITS))
+    if cell is None:
+        sys.exit(f"column {COLUMN} absent from this leg")
+    grid = dg_rates(cell)
+    grids = [grid]
     res = resources(root, DEV)
     if not grids:
         sys.exit("no dg coordinates found; is this a full-grid pass?")
@@ -104,15 +109,14 @@ def main():
     fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.35), sharey=True)
     for ax, (B, title) in zip(axes, PANELS):
         for T in TS:
-            ys = [st.median([g[(K, T, B)] for g in grids if (K, T, B) in g]) or None
-                  if any((K, T, B) in g for g in grids) else None for K in KS]
+            ys = [grid.get((K, T, B)) for K in KS]
             xs = [k for k, y in zip(KS, ys) if y]
             yy = [y for y in ys if y]
             ax.plot(xs, yy, marker="o", ms=3.0, lw=1.2, color=T_COLOR[T], label=f"T={T}")
         # Residency for the two widest blocks, so the reader can see it is flat at B=1 for both
         # and falls at B=8 for both, rather than taking one T on trust.
         ax2 = ax.twinx()
-        for T, dash in ((128, (0, (1, 1.6))), (256, (0, (3, 2)))):
+        for T, dash in ((64, (0, (1, 1))), (128, (0, (1, 1.6))), (256, (0, (3, 2)))):
             occ = [(K, res[(K, T, B)]["blocks_per_sm"]) for K in KS if (K, T, B) in res]
             if occ:
                 ax2.plot([k for k, _ in occ], [b for _, b in occ], color=OCC_COLOR, lw=1.0,
@@ -133,29 +137,33 @@ def main():
         ax.set_xlabel("K (codes per lane)")
         ax.grid(alpha=.25, lw=.4)
         ax.set_axisbelow(True)
+    from matplotlib.ticker import FixedLocator
     axes[0].set_ylabel("decode (GB/s)")
-    axes[0].set_ylim(0, None)
+    axes[0].set_ylim(0, 2000)
+    axes[0].yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
 
     from matplotlib.lines import Line2D
     handles = [Line2D([], [], color=T_COLOR[T], marker="o", ms=3, lw=1.2, label=f"T={T}")
                for T in TS]
-    handles += [Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (1, 1.6)), label="blocks/SM, T=128"),
+    handles += [Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (1, 1)), label="blocks/SM, T=64"),
+                Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (1, 1.6)), label="blocks/SM, T=128"),
                 Line2D([], [], color=OCC_COLOR, lw=1.0, ls=(0, (3, 2)), label="blocks/SM, T=256")]
-    fig.legend(handles=handles, frameon=False, fontsize=6.5, ncol=5, loc="lower center",
+    fig.legend(handles=handles, frameon=False, fontsize=6.5, ncol=6, loc="lower center",
                bbox_to_anchor=(0.5, -0.03), columnspacing=1.1, handlelength=1.6)
     fig.tight_layout(rect=(0, 0.10, 1, 1))
     C.save(fig, "fig_grid")
 
     for B, _ in PANELS:
         row = res.get((6, 256, B), {})
-        peak = max(((K, st.median([g[(K, 256, B)] for g in grids if (K, 256, B) in g]))
-                    for K in KS if any((K, 256, B) in g for g in grids)), key=lambda kv: kv[1])
+        peak = max([(K, grid[(K, 256, B)]) for K in KS if (K, 256, B) in grid],
+                   key=lambda kv: kv[1])
         print(f"B={B}: T=256 regs={row.get('regs_per_thread')} "
               f"blocks(K=6)={row.get('blocks_per_sm')}  peak at K={peak[0]} ({peak[1]:.0f} GB/s)")
     for T in TS:
-        peak = max(((K, st.median([g[(K, T, 1)] for g in grids if (K, T, 1) in g]))
-                    for K in KS if any((K, T, 1) in g for g in grids)), key=lambda kv: kv[1])
-        print(f"B=1, T={T}: peak at K={peak[0]} ({peak[1]:.0f} GB/s)")
+        pts = [(K, grid[(K, T, 1)]) for K in KS if (K, T, 1) in grid]
+        if pts:
+            peak = max(pts, key=lambda kv: kv[1])
+            print(f"B=1, T={T}: peak at K={peak[0]} ({peak[1]:.0f} GB/s)")
 
 
 if __name__ == "__main__":
