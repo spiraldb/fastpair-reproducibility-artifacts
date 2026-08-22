@@ -548,11 +548,88 @@ def campaign_stats(cells):
                     "GB/s, shipped selector, real columns; %s" % who)
 
 
+
+# Section 4's launch-shape and hoist claims. These are derived from ONE named column, Loghub
+# Windows at OnPair-12, because that is what fig_grid and fig_hoist draw: a median over ten
+# columns leaves a reader unable to tell whether the column behind a point changed, and a prose
+# number derived on a different basis from its figure is how the two drift apart.
+HOIST_COL = ("loghub-windows", "line")
+HOIST_T = 256
+
+
+def launch_stats(cells, rows):
+    key = ("b300", HOIST_COL[0], HOIST_COL[1], 12)
+    c = cells.get(key)
+    if not c:
+        print("WARNING: %s absent; section 4 launch claims not derived" % (HOIST_COL,),
+              file=sys.stderr)
+        return
+    nb = c["gpu"]["decoded_bytes"]
+    R = {k["kernel"]: nb / min(k["decode_ns_iters"])
+         for k in c["gpu"]["kernels"] if k.get("decode_ns_iters")}
+
+    # Where the K optimum sits for each block width, at the unconstrained launch bound.
+    for T in (64, 128, 256):
+        pts = [(K, R[f"onpair_dg_k{K}_t{T}_b1"]) for K in range(1, 9)
+               if f"onpair_dg_k{K}_t{T}_b1" in R]
+        if pts:
+            put("s4.peak_k_t%d" % T, max(pts, key=lambda kv: kv[1])[0],
+                "K at which %s peaks, T=%d, B=1" % ("/".join(HOIST_COL), T))
+
+    # The hoist, at the coordinate the prose works through.
+    K = 6
+    b1 = R.get(f"onpair_dg_k{K}_t{HOIST_T}_b1")
+    b8 = R.get(f"onpair_dg_k{K}_t{HOIST_T}_b8")
+    hs = [R[n] for h in range(2, 5)
+          for n in [f"onpair_dh_k{K}_t{HOIST_T}_b{8}_h{h}"] if n in R]
+    if b1 and b8 and hs:
+        put("s4.hoist_b8_h1", round(b8), "GB/s, B=8 H=1 baseline at K=6 T=256")
+        put("s4.hoist_b8_best", round(max(hs)), "GB/s, best H>1 at the same coordinate")
+        put("s4.hoist_b1", round(b1), "GB/s, B=1 at the same K and T, no hoist")
+        put("s4.hoist_gain_pct", round(100 * (max(hs) / b8 - 1)), "% the hoist lifts its own baseline")
+        put("s4.hoist_of_b1_pct", round(100 * max(hs) / b1),
+            "% of the B=1 rate the best hoist configuration reaches")
+    # Flatness where registers are not scarce: H changes nothing at B=1 or B=4.
+    for B in (1, 4):
+        v = [R[n] for h in range(1, 5)
+             for n in [(f"onpair_dg_k{K}_t{HOIST_T}_b{B}" if h == 1
+                        else f"onpair_dh_k{K}_t{HOIST_T}_b{B}_h{h}")] if n in R]
+        if len(v) == 4:
+            put("s4.hoist_flat_b%d_pct" % B, round(100 * (max(v) / min(v) - 1), 1),
+                "%% spread across H=1..4 at B=%d, K=6, T=256" % B)
+
+    # Registers and residency at the two regimes, from the probe rather than the model.
+    for B in (1, 4, 8):
+        for r in rows:
+            if (r.get("_chip") == "b300" and r.get("tokens_per_thread") == K
+                    and r.get("block_threads") == HOIST_T and r.get("min_blocks") == B
+                    and r.get("held_high", 1) == 1):
+                put("s4.regs_b%d" % B, r["regs_per_thread"],
+                    "registers/thread, K=6 T=256 B=%d" % B)
+                put("s4.blocks_b%d" % B, r["blocks_per_sm"],
+                    "resident blocks/SM at the same coordinate")
+                break
+
+
 # Values the paper cites, mapped to a LaTeX macro name and a format. THIS REPLACES TRANSCRIPTION:
 # the paper says \claimKSpreadMedian, not "80%", so a number cannot go stale in prose. A key absent
 # from `derived` is a hard error rather than an empty macro, because an empty macro renders as
 # nothing and would silently delete a number from a sentence.
 TEX = [
+    ("s4.peak_k_t64",               "claimPeakKTsixtyfour",   "{:d}"),
+    ("s4.peak_k_t128",              "claimPeakKTonetwoeight", "{:d}"),
+    ("s4.peak_k_t256",              "claimPeakKTtwofivesix",  "{:d}"),
+    ("s4.hoist_b8_h1",              "claimHoistBeightBase",   "{:d}"),
+    ("s4.hoist_b8_best",            "claimHoistBeightBest",   "{:d}"),
+    ("s4.hoist_b1",                 "claimHoistBone",         "{:d}"),
+    ("s4.hoist_gain_pct",           "claimHoistGain",         "{:d}\\%"),
+    ("s4.hoist_of_b1_pct",          "claimHoistOfBone",       "{:d}\\%"),
+    ("s4.hoist_flat_b1_pct",        "claimHoistFlatBone",     "{:.1f}\\%"),
+    ("s4.hoist_flat_b4_pct",        "claimHoistFlatBfour",    "{:.1f}\\%"),
+    ("s4.regs_b1",                  "claimRegsBoneLaunch",    "{:d}"),
+    ("s4.regs_b8",                  "claimRegsBeightLaunch",  "{:d}"),
+    ("s4.blocks_b1",                "claimBlocksBone",        "{:d}"),
+    ("s4.blocks_b8",                "claimBlocksBeight",      "{:d}"),
     ("s4.k_spread_median_pct",      "claimKSpreadMedian",     "{:.0f}\\%"),
     ("s4.k_spread_max_pct",         "claimKSpreadMax",        "{:.0f}\\%"),
     ("s4.b_low_spread_median_pct",  "claimBLowSpread",        "{:.2f}\\%"),
@@ -663,6 +740,7 @@ def main():
     cells = load_campaign()
     if cells:
         campaign_stats(cells)
+        launch_stats(cells, rows)
     else:
         print("WARNING: no campaign cells under %s; section 4 claims not derived" % CAMPAIGN,
               file=sys.stderr)
