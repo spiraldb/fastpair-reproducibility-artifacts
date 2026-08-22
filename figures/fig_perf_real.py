@@ -23,10 +23,14 @@ ratio is a property of the data, so a pooled frontier can put us on one column a
 on another; with c_address in the corpus that produces false violations. Like for like, 0 of 45
 cells are dominated.
 
-MISSING BASELINES KEEP THEIR LEGEND ENTRIES. Zstd, gANS and both Bitcomp variants are absent from
-this leg -- Zstd's decode rates are null and the nvCOMP software codecs were never collected --
-and their swatches stay so the gap is legible as a gap. They are collection bugs to fix, not
-considered exclusions.
+MISSING BASELINES KEEP THEIR LEGEND ENTRIES. gANS and both Bitcomp variants were never collected
+-- the suite's DE stage runs only DEFLATE, LZ4 and Snappy -- and their swatches stay so the gap is
+legible as a gap.
+
+ZSTD DECODES THREE ORDERS BELOW EVERYTHING ELSE, at 1.7 to 3.1 GB/s against 750 to 1500. On the
+linear axis this figure uses it therefore sits on the floor. That is the honest picture of a
+software codec against a GPU one and the reason the original form of this figure used a log axis;
+the marks are drawn rather than dropped so the comparison is visible at all.
 
 Source: results/suite-<id>/b300/{sweep,fsst12}_summary_*_boost.json + onpair_nvcomp_hw.json.
 """
@@ -77,6 +81,24 @@ def oracle_rate(c):
     return (g.get("best_decode_gib_s") or 0) * C.GIB_TO_GB or None
 
 
+def zstd_points(cells, ds, col):
+    """The three Zstd levels for one column.
+
+    The fields are decode_gib_s and compression_ratio. An earlier version of this file read
+    decompress_gib_s and ratio, which do not exist, got None for both, and concluded the data had
+    never been collected. It had.
+    """
+    out = []
+    c = cells.get((ds, col, 12))
+    if not c:
+        return out
+    for e in ((c.get("gpu") or {}).get("nvcomp_zstd") or []):
+        if e.get("supported") and e.get("decode_gib_s") and e.get("compression_ratio"):
+            out.append((e["compression_ratio"], e["decode_gib_s"] * C.GIB_TO_GB,
+                        "Zstd (%s)" % e.get("zstd_level")))
+    return out
+
+
 def de_best(root, ds, col):
     """The engine's declared best for a column: best codec AND chunk size. One mark, shaded by
     whichever codec won, so the four DE swatches still carry meaning across the figure."""
@@ -122,8 +144,10 @@ def collect(root, rows):
     """(ours, baselines) for one panel. ours: (ratio, rate, cfg, column). baselines: (r, t, cfg)."""
     op = S.cells(root, DEV, "boost", "onpair")
     fs = S.cells(root, DEV, "boost", "fsst12")
+    zs = S.cells(root, DEV, "boost", "zstd")
     ours, bases = [], []
     for _, ds, col in rows:
+        bases += zstd_points(zs, ds, col)
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
                                  ("FSST-12", fs, 12)):
             c = store.get((ds, col, bits))
@@ -226,8 +250,10 @@ def main():
     fig.tight_layout(rect=(0, 0.155, 1, 1))
     C.save(fig, "fig_perf_real")
 
-    print("\nBASELINES ABSENT FROM THIS LEG -- collection gaps, not findings:")
-    print("  Zstd -10/1/3   : ratios recorded, decompress_gib_s null on all 15 columns")
+    zcells = S.cells(root, DEV, "boost", "zstd")
+    nz = sum(len(zstd_points(zcells, ds, col)) for _, ds, col in S.REAL + S.GEN)
+    print(f"\nZstd points plotted: {nz}")
+    print("BASELINES ABSENT FROM THIS LEG -- collection gaps, not findings:")
     print("  gANS, Bitcomp-{default,sparse}: never collected; the DE stage runs only "
           "DEFLATE/LZ4/Snappy")
     print("  GSST           : published A100 number, cross-paper; not drawn on a B300 panel")
