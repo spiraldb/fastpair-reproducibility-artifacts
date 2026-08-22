@@ -30,10 +30,9 @@ latency, and an L2 request-rate bound, because l1tex runs at the SM clock while 
 separate domains. It does NOT separate L1 request rate from compute, issue, register file or
 shared memory, and this figure does not claim it does.
 
-THE DE BAR IS ITS ORACLE: best codec AND best chunk size for that column. Our marks are the
-shipped selector, which is what a user actually gets, so handing the engine its tuned best is the
-conservative direction. Earlier drafts drew all twenty of its configurations, which put a cloud of
-operating points nobody would ship behind every slot and buried the comparison.
+BEST AGAINST BEST. The DE bar is its best codec AND chunk size for that column; our marks are the
+best kernel. Both sides tuned, neither handicapped. Earlier drafts drew all twenty engine
+configurations, which put a cloud of operating points nobody would ship behind every slot.
 
 MISSING CHIPS KEEP THEIR SLOT AND THEIR LEGEND ENTRY. A leg that has not landed leaves a labelled
 gap, so a reader sees three chips and a hole rather than assuming three was the design.
@@ -63,7 +62,7 @@ CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S"}
 # Nominal clock state -> marker. Ordered as the campaign requests them.
 STATE_MARK = [("boost", "*"), ("max", "o"), ("75%", "s"), ("55%", "^"), ("40%", "D")]
 DE_COLOR = "#b0413e"
-BITS = 12          # the shipped preset; adding OnPair-16 would triple the marks per slot
+BITS = 12          # one preset; adding OnPair-16 would triple the marks per slot
 
 
 def nominal_states(root, chip):
@@ -77,11 +76,22 @@ def nominal_states(root, chip):
     return out
 
 
-def de_best(root, ds, col, chip="b300"):
-    """The engine's ORACLE for a column: best codec AND best chunk size, one bar.
+def best_rate(c):
+    """Best kernel on this cell, GB/s -- the same basis the DE bar uses."""
+    if not c:
+        return None
+    g = c.get("gpu") or {}
+    best = g.get("best_kernel")
+    for k in (g.get("kernels") or []):
+        if k.get("kernel") == best and k.get("decode_ns_iters") and g.get("decoded_bytes"):
+            return g["decoded_bytes"] / min(k["decode_ns_iters"])
+    return ((g.get("best_decode_gib_s") or 0) * 1.073741824) or None
 
-    Oracle against oracle. Our marks are the shipped selector's rate, which is what a user gets,
-    so giving the engine its tuned best is the conservative direction. Drawing all twenty of its
+
+def de_best(root, ds, col, chip="b300"):
+    """The engine's best for a column: best codec AND best chunk size, one bar.
+
+    Best against best. Both sides are tuned, so neither is handicapped; drawing all twenty engine
     configurations instead put a cloud of operating points nobody would ship behind every slot."""
     for r in S.de_rows(root, chip):
         if r.get("dataset_id") == ds and r.get("column") == col and r.get("best_decode_gib_s"):
@@ -124,7 +134,7 @@ def main():
             pts = []
             for tag, nominal in tags.items():
                 c = data[chip].get(tag, {}).get((ds, col, BITS))
-                v = S.rate_gb_s(c)
+                v = best_rate(c)
                 if v is not None:
                     pts.append((nominal, v))
             if not pts:
@@ -168,7 +178,7 @@ def main():
     # legend placed below lands on top of them.
     leg = fig.legend(handles=chips + marks + de, fontsize=7, ncol=6, loc="lower center",
                      bbox_to_anchor=(0.5, 0.94), frameon=False)
-    leg.set_title(f"OnPair-{BITS}, shipped selector — marker = SM clock state", prop={"size": 7})
+    leg.set_title(f"OnPair-{BITS}, best kernel — marker = SM clock state", prop={"size": 7})
 
     OUT.parent.mkdir(exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")

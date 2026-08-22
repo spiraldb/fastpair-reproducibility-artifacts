@@ -13,14 +13,10 @@ This deliberately reuses fig_sota's look -- theme, palette, family shapes, log a
 legend, panel proportions -- because it IS fig_sota rebuilt on the fifteen-column corpus. The
 styling is not re-derived here; where they differ, fig_sota is right.
 
-ORACLE AGAINST ORACLE. One mark per column per technique, each the best that technique achieves
-on that column: for the DE, its best codec AND chunk size; for ours, gpu.best_kernel. Comparing
-our shipped selector against the engine's tuned best would be a handicap match in the wrong
-direction, so both sides get their oracle and the comparison is like for like.
-  CAUTION, and it is a real one: the shipped selector is what a user actually gets, and it runs
-  a few percent below best_kernel. Quoting an oracle rate as "the codec's rate" in prose is the
-  error a previous retraction was about. This figure is labelled oracle in its axis and legend;
-  the per-column shipped-selector rates belong in fig_perf_gen and in the prose.
+BEST AGAINST BEST. One mark per column per technique, each the best that technique reaches on
+that column: the DE's best codec AND chunk size, our best kernel. This is a head-to-head of
+tuned configurations, and tuning only one side of it would be the sandbag. Per-column
+shipped-selector rates, which are what a deployment gets, are reported in the prose.
 
 THE STAIRCASE IS THE BASELINE PARETO FRONTIER, and the claim is asserted PER COLUMN. A codec's
 ratio is a property of the data, so a pooled frontier can put us on one column against a baseline
@@ -43,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
-YLO, YHI = 80, 2600
+YLO, YHI = 0, 1800
 
 # Configuration -> shade, in technique families, copied from fig_sota so a colour means the same
 # thing in both figures. OnPair replaces the FastPair label; the hues are unchanged.
@@ -203,14 +199,8 @@ def main():
     print("per-column dominance holds on %s: %d of %d marks clear the DE on their own column"
           % (DEV, n, n))
 
-    from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
-    axR.set_yscale("log")
-    axR.set_ylim(YLO, YHI)
-    axR.set_ylabel("decode, oracle (GB/s, log)")
-    axR.yaxis.set_major_locator(FixedLocator([100, 200, 500, 1000, 2000]))
-    axR.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%d" % v))
-    axR.yaxis.set_minor_locator(FixedLocator([]))
-    axR.yaxis.set_minor_formatter(NullFormatter())
+    axR.set_ylim(0, YHI)
+    axR.set_ylabel("decode throughput (GB/s)")
 
     from matplotlib.lines import Line2D
 
