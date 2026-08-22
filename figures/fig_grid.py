@@ -52,7 +52,7 @@ import suite as S  # noqa: E402
 
 KS = list(range(1, 9))
 TS = [64, 128, 256]
-PANELS = [(1, "B=1: compiler unconstrained"), (8, "B=8: eight blocks demanded")]
+PANELS = [(1, "B=1"), (8, "B=8")]
 T_COLOR = {64: "#9ecae1", 128: "#4292c6", 256: "#08519c"}
 DEV, BITS = "b300", 12
 
@@ -118,7 +118,7 @@ def main():
             ax2.set_yticks([0, 4, 8])
             ax2.tick_params(axis="y", colors="#b0413e", labelsize=6)
             if B == PANELS[-1][0]:
-                ax2.set_ylabel("blocks/SM at T=256", color="#b0413e", fontsize=6.5)
+                ax2.set_ylabel("blocks/SM, T=256", color="#b0413e", fontsize=6.5)
             else:
                 ax2.set_yticklabels([])
         regs = res.get((6, 256, B), {}).get("regs_per_thread")
@@ -137,7 +137,7 @@ def main():
     handles = [Line2D([], [], color=T_COLOR[T], marker="o", ms=3, lw=1.2, label=f"T={T}")
                for T in TS]
     handles.append(Line2D([], [], color="#b0413e", lw=1.0, ls=(0, (3, 2)),
-                          label="resident blocks/SM (T=256, measured)"))
+                          label="blocks/SM, T=256"))
     fig.legend(handles=handles, frameon=False, fontsize=6.5, ncol=4, loc="lower center",
                bbox_to_anchor=(0.5, -0.03), columnspacing=1.1, handlelength=1.6)
     fig.tight_layout(rect=(0, 0.10, 1, 1))

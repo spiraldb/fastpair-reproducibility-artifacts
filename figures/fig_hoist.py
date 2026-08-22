@@ -83,16 +83,11 @@ def main():
                     color="#b0413e", alpha=.10, lw=0, zorder=1,
                     interpolate=False)
     ax.plot(KS, ref, marker="o", ms=3.2, lw=1.4, color="#08519c",
-            label="B=1, no hoist — what you would ship")
+            label="B=1, H=1")
     ax.plot(KS, coll, marker="s", ms=3.0, lw=1.1, color="#9ecae1",
-            label="B=8, no hoist — baseline the cap collapses")
+            label="B=8, H=1")
     ax.plot(KS, rec, marker="^", ms=3.2, lw=1.2, color="#b0413e", ls=(0, (4, 2)),
-            label="B=8, best hoist — the +70% result")
-    # Name the case the prose quotes, so figure and text cannot drift apart.
-    if rec[KS.index(6)] and ref[KS.index(6)]:
-        ax.annotate("hoist recovers 52%\nof the free configuration",
-                    xy=(6, rec[KS.index(6)]), xytext=(6.15, 250), fontsize=6.3, color=C.INK,
-                    arrowprops=dict(arrowstyle="-", lw=.6, color=C.INK))
+            label="B=8, best H")
     ax.set_xticks(KS)
     ax.set_xlabel("K (codes per lane), T=256")
     ax.set_ylabel("decode (GB/s)")
