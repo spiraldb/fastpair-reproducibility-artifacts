@@ -71,6 +71,10 @@ DEV = "b300"
 OFFSCALE = []
 
 
+# BASIS: production-only (see the "EXPERIMENTAL DOES NOT MEAN IGNORE" block in suite.py).
+# The generated grid reaches ~7.5% higher on some columns and is excluded here only
+# because this figure reports what the shipped selector can choose. If a baseline on
+# this plot is quoted at ITS best configuration, revisit that choice.
 def oracle_rate(c):
     """Best kernel on this column, GB/s. The oracle side of an oracle-vs-oracle comparison."""
     if not c:

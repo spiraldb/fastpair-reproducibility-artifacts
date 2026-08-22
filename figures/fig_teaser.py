@@ -39,6 +39,10 @@ SERIES = [("OnPair-16", FP16), ("OnPair-12", FP12), ("FSST-12", FSST),
           ("Zstd (3)", "#5b616b")]
 
 
+# BASIS: production-only (see the "EXPERIMENTAL DOES NOT MEAN IGNORE" block in suite.py).
+# The generated grid reaches ~7.5% higher on some columns and is excluded here only
+# because this figure reports what the shipped selector can choose. If a baseline on
+# this plot is quoted at ITS best configuration, revisit that choice.
 def zstd_at(cell, level):
     """Best nvCOMP-Zstd decode GB/s at one compression level for a cell, or None."""
     best = None

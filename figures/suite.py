@@ -36,6 +36,46 @@ import os
 import re
 from pathlib import Path
 
+
+# ============================================================================================
+# "EXPERIMENTAL" DOES NOT MEAN "IGNORE THIS". READ THIS BEFORE CHOOSING A RATE.
+# ============================================================================================
+# Every kernel the grid generator emits carries role: KernelRole::Experimental. That is a
+# BUILD-SYSTEM DEFAULT -- gen_packed_grid.py stamps it on line 126 of every variant it writes --
+# and it is not a judgement about validity, correctness or deployability. All 564 generated
+# kernels (the dg, dw, dh and ds families) are byte-validated on every leg exactly like the
+# production ones, and they are the entire evidence base for Section 4.
+#
+# The 20 kernels marked production are the older hand-written set (onpair_decompress_1tpt..8tpt,
+# onpair_shmem_*). They expose K, and they do NOT expose T, B or S. So gpu.best_kernel and
+# gpu.best_decode_gib_s, which range over production only, are the best rate reachable through
+# the CURRENT SELECTOR -- not the best rate the codec achieves. On Wikipedia at OnPair-12 the
+# difference is 916 against 985 GB/s, 7.5%, and the winner is onpair_ds_k6_t128_b4_s14.
+#
+# WHY THIS MATTERS FOR A COMPARISON. We hand every baseline its own parameter sweep and then
+# quote its best: the Decompression Engine gets four codec families crossed with five chunk
+# sizes and we report best_codec AND best_chunk_bytes; nvCOMP Zstd gets three levels; a
+# dictionary codec gets its dictionary size. Varying K, T, B and S is the SAME KIND of tuning --
+# a compile-time configuration of one decoder, chosen per column -- and excluding it while
+# including theirs is not conservatism, it is an asymmetric handicap that understates this work
+# against baselines we tuned freely.
+#
+# So: pick the basis deliberately and say which one, per figure.
+#   - "best deployable"   -> production only. Honest for "what a user gets today", and it is
+#                            what gpu.best_kernel gives you.
+#   - "best configured"   -> max over all timed kernels. The right basis against a baseline
+#                            whose own best configuration is being quoted.
+# Neither is wrong. Silently taking best_kernel because it is the field that exists, while the
+# other side of the plot gets its full sweep, IS wrong.
+#
+# There is a standing caution in this repo against quoting the fastest probe as "the codec's
+# rate". It is worth knowing what it does and does not rest on: the two retractions in the
+# paper's history are the 1.7x port-versus-GSST claim (cd70a94, our port got pre-staged offsets
+# outside the timed region while GSST paid for positioning inside its own) and a revert of wrong
+# DE corrections (064c8dc). Neither concerned quoting our own best probe. Treat the caution as a
+# prompt to name the basis, not as a reason to discard 564 measurements.
+# ============================================================================================
+
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
 
