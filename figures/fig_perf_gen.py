@@ -179,11 +179,12 @@ def main():
     marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
     de = [Line2D([], [], color=DE_SHADE[k], lw=1.7, label=f"DE {DE_LABEL[k]} (best)")
           for k in DE_SHADE if k in de_seen]
-    # ABOVE the axes. The x labels are rotated column names and take the whole lower margin, so a
-    # legend placed below lands on top of them.
-    fig.legend(handles=chips + marks + de, fontsize=6.6, ncol=7, loc="lower center",
-               bbox_to_anchor=(0.5, 0.955), frameon=False, columnspacing=0.9,
-               handlelength=1.3, handletextpad=0.45)
+    # BELOW the axes, matching fig_perf_real so the two read as a pair. The x labels are rotated
+    # column names and occupy the lower margin, so the anchor sits below them rather than at the
+    # axes edge; bbox_inches="tight" then grows the canvas to include it.
+    fig.legend(handles=chips + marks + de, fontsize=6.6, ncol=7, loc="upper center",
+               bbox_to_anchor=(0.0, -0.26, 1.0, 0.08), mode="expand", frameon=False,
+               columnspacing=0.9, handlelength=1.3, handletextpad=0.45)
 
     OUT.parent.mkdir(exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
