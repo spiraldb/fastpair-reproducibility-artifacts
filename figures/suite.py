@@ -112,6 +112,36 @@ def latest_root(suite_id=None):
     return cands[-1] if cands else None
 
 
+def baselines_root(baselines_id=None):
+    """The software-baseline leg (gANS, Bitcomp), which is SEPARATE from latest_root()'s leg.
+
+    Its stages are MATERIALIZE SW, so it carries onpair_nvcomp_sw.json and nothing the paper suite
+    already has. Verified comparable to suite-paper-20260821 before the two were put on one axis:
+    same vortex_rev (94905b572), same training_seed (20260819), same fifteen columns, and
+    raw_bytes agrees with sample_bytes per column on every real column.
+    """
+    if baselines_id:
+        p = RESULTS / (baselines_id if baselines_id.startswith("suite-") else f"suite-{baselines_id}")
+        return p if p.is_dir() else None
+    cands = sorted(RESULTS.glob("suite-baselines-*"), key=lambda p: p.name)
+    return cands[-1] if cands else None
+
+
+def sw_rows(root, chip="b300"):
+    """nvCOMP software-codec cells (gANS, Bitcomp-*), keyed by (dataset_id, column).
+
+    Empty dict when the leg is absent, so a figure degrades to the baselines it does have rather
+    than raising."""
+    if root is None:
+        return {}
+    f = Path(root) / chip / "onpair_nvcomp_sw.json"
+    try:
+        rows = json.load(open(f))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return {(r.get("dataset_id"), r.get("column")): r for r in rows}
+
+
 def clock_tags(root, chip):
     """Clock tags present for a chip, boost first then ascending pinned MHz."""
     d = Path(root) / chip

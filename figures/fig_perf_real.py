@@ -28,9 +28,12 @@ like. Its GPU rate tracks the FRAME COUNT a column yields, not the codec: Loghub
 2022 frames and decodes at 165-200 GB/s with a 25-50x ratio, while Wikipedia's long documents give
 115 frames and 1.7-3.1 GB/s. It is therefore in the per-column dominance test, not just the plot.
 
-MISSING BASELINES KEEP THEIR LEGEND ENTRIES. gANS and both Bitcomp variants were never collected
--- the suite's DE stage runs only DEFLATE, LZ4 and Snappy -- and their swatches stay so the gap is
-legible as a gap.
+gANS AND BOTH BITCOMP VARIANTS COME FROM A SECOND LEG. The paper suite's DE stage runs only
+DEFLATE, LZ4 and Snappy, so these three are measured by the MATERIALIZE+SW leg
+(results/suite-baselines-*) and merged here. The two legs share a vortex_rev, a training seed, the
+fifteen columns and raw_bytes per column, which is what makes one axis legitimate; see
+suite.baselines_root(). None of the three reaches our compression ratio on any real column, so
+they sit left of every OnPair mark rather than under it.
 
 
 
@@ -105,6 +108,18 @@ def zstd_points(cells, ds, col):
     return out
 
 
+def sw_points(sw, ds, col):
+    """gANS and both Bitcomp variants for one column, from the SW baseline leg.
+
+    Each is quoted at its own measured ratio and decode rate, the same basis the Zstd and DE
+    points use, so the per-column dominance test compares stored size against stored size."""
+    out = []
+    for name, e in ((sw.get((ds, col)) or {}).get("codecs") or {}).items():
+        if e.get("supported") and e.get("valid") and e.get("decode_gib_s") and e.get("ratio"):
+            out.append((e["ratio"], e["decode_gib_s"] * C.GIB_TO_GB, name))
+    return out
+
+
 def de_best(root, ds, col):
     """The engine's declared best for a column: best codec AND chunk size. One mark, shaded by
     whichever codec won, so the four DE swatches still carry meaning across the figure."""
@@ -151,9 +166,11 @@ def collect(root, rows):
     op = S.cells(root, DEV, "boost", "onpair")
     fs = S.cells(root, DEV, "boost", "fsst12")
     zs = S.cells(root, DEV, "boost", "zstd")
+    sw = S.sw_rows(S.baselines_root(), DEV)
     ours, bases = [], []
     for _, ds, col in rows:
         bases += zstd_points(zs, ds, col)
+        bases += sw_points(sw, ds, col)
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
                                  ("FSST-12", fs, 12)):
             c = store.get((ds, col, bits))
@@ -268,9 +285,9 @@ def main():
     zcells = S.cells(root, DEV, "boost", "zstd")
     nz = sum(len(zstd_points(zcells, ds, col)) for _, ds, col in S.REAL + S.GEN)
     print(f"\nZstd points plotted: {nz}")
-    print("BASELINES ABSENT FROM THIS LEG -- collection gaps, not findings:")
-    print("  gANS, Bitcomp-{default,sparse}: never collected; the DE stage runs only "
-          "DEFLATE/LZ4/Snappy")
+    print("BASELINE PROVENANCE, so a reader of this output knows what came from where:")
+    print("  gANS, Bitcomp-{default,sparse}: the MATERIALIZE+SW leg, not the paper suite, whose")
+    print("                 DE stage runs only DEFLATE/LZ4/Snappy. Same rev, seed and columns.")
     print("  GSST           : drawn on the synthetic panel as a cross-device reference (A100, l_comment)")
 
 
