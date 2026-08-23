@@ -611,76 +611,159 @@ def launch_stats(cells, rows):
                 break
 
 
-# Values the paper cites, mapped to a LaTeX macro name and a format. THIS REPLACES TRANSCRIPTION:
-# the paper says \claimKSpreadMedian, not "80%", so a number cannot go stale in prose. A key absent
-# from `derived` is a hard error rather than an empty macro, because an empty macro renders as
-# nothing and would silently delete a number from a sentence.
-TEX = [
-    ("s4.peak_k_t64",               "claimPeakKTsixtyfour",   "{:d}"),
-    ("s4.peak_k_t128",              "claimPeakKTonetwoeight", "{:d}"),
-    ("s4.peak_k_t256",              "claimPeakKTtwofivesix",  "{:d}"),
-    ("s4.hoist_b8_h1",              "claimHoistBeightBase",   "{:d}"),
-    ("s4.hoist_b8_best",            "claimHoistBeightBest",   "{:d}"),
-    ("s4.hoist_b1",                 "claimHoistBone",         "{:d}"),
-    ("s4.hoist_gain_pct",           "claimHoistGain",         "{:d}\\%"),
-    ("s4.hoist_of_b1_pct",          "claimHoistOfBone",       "{:d}\\%"),
-    ("s4.hoist_flat_b1_pct",        "claimHoistFlatBone",     "{:.1f}\\%"),
-    ("s4.hoist_flat_b4_pct",        "claimHoistFlatBfour",    "{:.1f}\\%"),
-    ("s4.regs_b1",                  "claimRegsBoneLaunch",    "{:d}"),
-    ("s4.regs_b8",                  "claimRegsBeightLaunch",  "{:d}"),
-    ("s4.blocks_b1",                "claimBlocksBone",        "{:d}"),
-    ("s4.blocks_b8",                "claimBlocksBeight",      "{:d}"),
-    ("s4.k_spread_median_pct",      "claimKSpreadMedian",     "{:.0f}\\%"),
-    ("s4.k_spread_max_pct",         "claimKSpreadMax",        "{:.0f}\\%"),
-    ("s4.b_low_spread_median_pct",  "claimBLowSpread",        "{:.2f}\\%"),
-    ("s4.b_high_spread_median_pct", "claimBHighSpread",       "{:.1f}\\%"),
-    ("s4.b_p90_k4_pct",             "claimBPninetyKfour",     "{:.1f}\\%"),
-    ("s4.b_p90_k5_pct",             "claimBPninetyKfive",     "{:.1f}\\%"),
-    ("s4.b_p90_k6_pct",             "claimBPninetyKsix",      "{:.1f}\\%"),
-    ("s4.b_p90_k7_pct",             "claimBPninetyKseven",    "{:.1f}\\%"),
-    ("s4.t256_argmax_count",        "claimTargmaxTwoFiveSix", "{:d}"),
-    ("s4.t64_argmax_count",         "claimTargmaxSixtyFour",  "{:d}"),
-    ("s4.t128_median_deficit_pct",  "claimTonetwoeightDeficit", "{:.1f}\\%"),
-    ("s4.top4096_min",              "claimTopFourKMin",       "{:.2f}"),
-    ("s4.top4096_max",              "claimTopFourKMax",       "{:.2f}"),
-    ("s4.partial_r_top4096_op16_b300", "claimPartialRBthreehundred", "{:+.2f}"),
-    ("s4.partial_r_top4096_op16_h100", "claimPartialRHonehundred",   "{:+.2f}"),
-    ("s4.partial_r_top4096_op16_a100", "claimPartialRAonehundred",   "{:+.2f}"),
-    ("s4.preset_flip_worst_pct",    "claimPresetFlipWorst",   "{:.0f}\\%"),
-    ("s4.h_configs_queue_deep",     "claimHDeepConfigs",      "{:d}"),
-    ("s4.h_configs_queue_shallow",  "claimHShallowConfigs",   "{:d}"),
-    ("s4.h_best_gain_median_pct",   "claimHGainMedian",       "{:.1f}\\%"),
-    ("s4.h_best_gain_p90_pct",      "claimHGainPninety",      "{:.1f}\\%"),
-    ("s4.h_configs_improved",       "claimHImproved",         "{:d}"),
-    ("s3.M_bytes_K6_S16_T256",      "claimMbytes",            "{:d}"),
-    ("s3.block_kib_with_reserve",   "claimBlockKiB",          "{:.2f}"),
-    ("s3.four_blocks_kib",          "claimFourBlocksKiB",     "{:.0f}"),
-    ("s3.regs_T256_B4",             "claimRegsBfour",         "{:d}"),
-    ("s3.quotient_T256_B6",         "claimQuotientBsix",      "{:.1f}"),
-    ("s3.alloc_T256_B6",            "claimAllocBsix",         "{:d}"),
-    ("s3.low_plane_kib_op12",       "claimLowPlaneTwelve",    "{:d}"),
-    ("s3.low_plane_kib_op16",       "claimLowPlaneSixteen",   "{:d}"),
-    ("occ.configs",                 "claimOccConfigs",        "{:d}"),
-    ("occ.exact",                   "claimOccExact",          "{:d}"),
-    ("occ.exact_no_reservation",    "claimOccNoReserve",      "{:d}"),
-    ("occ.exact_no_shared_granule", "claimOccNoSharedGran",   "{:d}"),
+# Values the paper cites, as LaTeX macros. THIS REPLACES TRANSCRIPTION: the paper says
+# \claimKSpreadMedian, not "80%", so a number cannot go stale in prose. A key absent from
+# `derived` is a hard error rather than an empty macro, because an empty macro renders as
+# nothing and a missing number is invisible in a PDF.
+#
+# Grouped, with a description per group and per macro, because the emitted file is read by
+# people who know the paper's argument but not this script's internals.
+#   (key, macro, format, one-line description)
+TEX_GROUPS = [
+    ("Launch shape: K, T, B", [
+        "How the decoder is configured. K is codes per lane, T threads per block, B the minimum",
+        "resident blocks the launch bound demands. B is the one that bites: asking for B blocks",
+        "caps registers at R/(T*B), and that cap is what breaks the large-K regime.",
+    ], [
+        ("s4.k_spread_median_pct", "claimKSpreadMedian", "{:.0f}\\%",
+         "median rate spread sweeping K=1..8 at fixed (T,B) -- K is the dominant parameter"),
+        ("s4.k_spread_max_pct", "claimKSpreadMax", "{:.0f}\\%",
+         "worst such spread: a misparameterised K costs a factor, not a few percent"),
+        ("s4.peak_k_t64", "claimPeakKTsixtyfour", "{:d}",
+         "K at which rate peaks when T=64 -- the optimum moves with T"),
+        ("s4.peak_k_t128", "claimPeakKTonetwoeight", "{:d}", "same at T=128"),
+        ("s4.peak_k_t256", "claimPeakKTtwofivesix", "{:d}",
+         "same at T=256, which also reaches the highest rate"),
+        ("s4.b_low_spread_median_pct", "claimBLowSpread", "{:.2f}\\%",
+         "median spread across B in {1,2,4}, where the cap does not bind: the noise floor"),
+        ("s4.b_high_spread_median_pct", "claimBHighSpread", "{:.1f}\\%",
+         "median spread across B in {4,6,8}, where it starts to"),
+        ("s4.b_p90_k4_pct", "claimBPninetyKfour", "{:.1f}\\%",
+         "90th percentile of that spread at K=4 -- the tail grows with K as the model predicts"),
+        ("s4.b_p90_k5_pct", "claimBPninetyKfive", "{:.1f}\\%", "same at K=5"),
+        ("s4.b_p90_k6_pct", "claimBPninetyKsix", "{:.1f}\\%", "same at K=6"),
+        ("s4.b_p90_k7_pct", "claimBPninetyKseven", "{:.1f}\\%", "same at K=7"),
+        ("s4.t256_argmax_count", "claimTargmaxTwoFiveSix", "{:d}",
+         "column-preset pairs (of 20) whose best T is 256"),
+        ("s4.t64_argmax_count", "claimTargmaxSixtyFour", "{:d}",
+         "pairs whose best T is 64 -- all text-heavy at OnPair-12"),
+        ("s4.t128_median_deficit_pct", "claimTonetwoeightDeficit", "{:.1f}\\%",
+         "how far T=128 trails the best T: safe everywhere, optimal nowhere"),
+        ("s4.regs_b1", "claimRegsBoneLaunch", "{:d}",
+         "registers/thread ptxas keeps at B=1, where nothing was demanded of it"),
+        ("s4.regs_b8", "claimRegsBeightLaunch", "{:d}",
+         "registers/thread at B=8, capped by R/(T*B)"),
+        ("s4.blocks_b1", "claimBlocksBone", "{:d}",
+         "blocks/SM the scheduler reaches at B=1 anyway, unasked"),
+        ("s4.blocks_b8", "claimBlocksBeight", "{:d}",
+         "blocks/SM at B=8 once K is large: demanding eight yields fewer"),
+    ]),
+    ("The hoist (H)", [
+        "H holds up to H-1 long-token requests across rounds instead of re-issuing them. The",
+        "numbers below are one worked coordinate (K=6, T=256, Loghub Windows) plus corpus-wide",
+        "distributions. The point of the first five is that H's apparent win has the wrong",
+        "baseline: it is measured against a rate the register cap already collapsed.",
+    ], [
+        ("s4.hoist_b8_h1", "claimHoistBeightBase", "{:d}",
+         "GB/s without the hoist at B=8 -- the collapsed baseline H is credited against"),
+        ("s4.hoist_b8_best", "claimHoistBeightBest", "{:d}", "GB/s with the best H at B=8"),
+        ("s4.hoist_gain_pct", "claimHoistGain", "{:d}\\%", "the gain those two imply"),
+        ("s4.hoist_b1", "claimHoistBone", "{:d}",
+         "GB/s at B=1 with NO hoist -- the configuration one would actually ship"),
+        ("s4.hoist_of_b1_pct", "claimHoistOfBone", "{:d}\\%",
+         "what the best hoist reaches as a fraction of that: a regression, not a gain"),
+        ("s4.hoist_flat_b1_pct", "claimHoistFlatBone", "{:.1f}\\%",
+         "spread across H=1..4 at B=1: where registers are plentiful, H does nothing"),
+        ("s4.hoist_flat_b4_pct", "claimHoistFlatBfour", "{:.1f}\\%", "same at B=4"),
+        ("s4.h_configs_queue_deep", "claimHDeepConfigs", "{:d}",
+         "configurations whose expected queue is deep enough for H to fire"),
+        ("s4.h_configs_queue_shallow", "claimHShallowConfigs", "{:d}", "and those where it is not"),
+        ("s4.h_best_gain_median_pct", "claimHGainMedian", "{:.1f}\\%",
+         "median gain of the best H rung over H=1, across the corpus"),
+        ("s4.h_best_gain_p90_pct", "claimHGainPninety", "{:.1f}\\%", "the 90th percentile of it"),
+        ("s4.h_configs_improved", "claimHImproved", "{:d}",
+         "configurations improving by more than the 0.5% noise floor"),
+    ]),
+    ("Dictionary width and residency", [
+        "The two presets are two different problems rather than two points on a curve. OnPair-12's",
+        "low plane fits in cache and OnPair-16's does not, so what predicts rate changes with it.",
+    ], [
+        ("s3.low_plane_kib_op12", "claimLowPlaneTwelve", "{:.0f}",
+         "KiB of low plane at OnPair-12 -- resident everywhere"),
+        ("s3.low_plane_kib_op16", "claimLowPlaneSixteen", "{:.0f}",
+         "KiB at OnPair-16 -- cannot be resident, so access concentration starts to matter"),
+        ("s4.top4096_min", "claimTopFourKMin", "{:.3f}",
+         "lowest fraction of accesses landing in the hottest 4096 dictionary entries"),
+        ("s4.top4096_max", "claimTopFourKMax", "{:.3f}", "and the highest"),
+        ("s4.partial_r_top4096_op16_b300", "claimPartialRBthreehundred", "{:+.2f}",
+         "partial correlation of that concentration with rate on the B300, mean length held fixed"),
+        ("s4.partial_r_top4096_op16_h100", "claimPartialRHonehundred", "{:+.2f}", "same on the H100"),
+        ("s4.partial_r_top4096_op16_a100", "claimPartialRAonehundred", "{:+.2f}", "same on the A100"),
+        ("s4.preset_flip_worst_pct", "claimPresetFlipWorst", "{:.0f}\\%",
+         "worst penalty from choosing OnPair-16 on a column that wanted -12"),
+    ]),
+    ("Occupancy model", [
+        "Section 3's allocation rule predicts how many blocks fit per SM from registers, shared",
+        "memory and warp slots. These say how often it is exactly right, and which term matters:",
+        "dropping a term and re-counting shows what that term was doing.",
+    ], [
+        ("occ.configs", "claimOccConfigs", "{:d}",
+         "kernel configurations measured across every chip"),
+        ("occ.exact", "claimOccExact", "{:d}",
+         "of them the rule predicts exactly -- the headline is that these two are equal"),
+        ("occ.exact_no_reservation", "claimOccNoReserve", "{:d}",
+         "how many survive if the per-block runtime reservation is dropped"),
+        ("occ.exact_no_shared_granule", "claimOccNoSharedGran", "{:d}",
+         "and if shared memory is not rounded to its granule"),
+        ("s3.block_kib_with_reserve", "claimBlockKiB", "{:.0f}",
+         "KiB one block occupies including that reservation"),
+        ("s3.four_blocks_kib", "claimFourBlocksKiB", "{:.0f}",
+         "KiB four resident blocks need -- the number that decides whether a chip fits them"),
+    ]),
+    ("Design model: worked values", [
+        "Section 3 works the allocation rule through one concrete configuration. These are the",
+        "intermediate quantities that walkthrough names, kept so the prose can cite them rather",
+        "than restate arithmetic the reader would otherwise have to trust.",
+    ], [
+        ("s3.M_bytes_K6_S16_T256", "claimMbytes", "{:d}",
+         "bytes of shared memory one block needs at K=6, S=16, T=256"),
+        ("s3.regs_T256_B4", "claimRegsBfour", "{:d}",
+         "registers/thread the ceiling allows at T=256, B=4"),
+        ("s3.quotient_T256_B6", "claimQuotientBsix", "{:.1f}",
+         "the raw R/(T*B) quotient at B=6, before rounding to the granule"),
+        ("s3.alloc_T256_B6", "claimAllocBsix", "{:d}",
+         "what that rounds down to -- the granule is why these differ"),
+    ]),
 ]
+TEX = [(k, m, f) for _, _, items in TEX_GROUPS for k, m, f, _ in items]
 
 
 def emit_tex(path):
-    lines = ["% GENERATED by experiments/paper_claims.py -- do not edit.",
-             "% Every number below is re-derived from committed results/. The paper cites these",
-             "% macros instead of transcribing values, so prose cannot go stale.",
-             f"%% probe source: {os.path.relpath(PROBE, ROOT)}",
-             f"%% campaign source: {os.path.relpath(CAMPAIGN, ROOT)}", ""]
+    """Write the macro file, grouped and annotated.
+
+    The reader of this file knows the paper's argument and not this script, so each group says
+    what it is about in two or three lines and each macro carries a one-line gloss. Without that
+    the file is fifty opaque numbers and the only way to learn what one means is to grep the
+    prose that cites it."""
     missing = [k for k, _, _ in TEX if k not in derived]
     if missing:
         raise SystemExit("cannot emit: %d claim(s) not derived: %s" % (len(missing), ", ".join(missing)))
-    for key, macro, fmt in TEX:
-        lines.append("\\newcommand{\\%s}{%s}" % (macro, fmt.format(derived[key])))
+    W = 62      # macro column width; keeps the trailing glosses aligned and readable
+    lines = ["% GENERATED by experiments/paper_claims.py -- do not edit.",
+             "% Every value is re-derived from committed results/. The paper cites these macros",
+             "% instead of transcribing numbers, so prose cannot drift from the data.",
+             f"%   probe:    {os.path.relpath(PROBE, ROOT)}",
+             f"%   campaign: {os.path.relpath(CAMPAIGN, ROOT)}"]
+    for title, blurb, items in TEX_GROUPS:
+        lines += ["", "% " + "-" * 74, "% " + title.upper()]
+        lines += ["% " + b for b in blurb]
+        lines.append("% " + "-" * 74)
+        for key, macro, fmt, desc in items:
+            cmd = "\\newcommand{\\%s}{%s}" % (macro, fmt.format(derived[key]))
+            lines.append("%-*s %% %s" % (W, cmd, desc))
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
-    print("wrote %s (%d macros)" % (path, len(TEX)))
+    print("wrote %s (%d macros in %d groups)" % (path, len(TEX), len(TEX_GROUPS)))
 
 
 def newer_suites(consumed):
