@@ -19,14 +19,15 @@ DEFINITIONS, matched to figures/tab_datasets.py so a number means the same thing
           NOT gpu.dict_mean_len, which is the unweighted mean over dictionary ENTRIES and runs
           about 25% higher.
   le8     gpu.frac_le8
-  ratio   sample_bytes / gpu.compressed_bytes -- the string bytes in against the bytes the GPU
-          reads. This is the basis the committed tab:datasets already prints (FineWeb2 1.5x
-          reproduces exactly) and the one its caption claims.
-          NOT mem_ratio, which divides the in-memory Arrow representation -- data PLUS the
-          offset array -- by the same denominator and so runs 15-25% HIGHER (FineWeb2 1.99 vs
-          1.49), reaching +57% on l_shipinstruct, whose five distinct values make the offsets
-          dominate. mem_ratio is defensible for a different question, but it is the flattering
-          one here, so a table that mixes the two would overstate compression.
+  ratio   sample_bytes / on_disk_bytes -- AT REST: string bytes in against the stored .vortex
+          file, which holds the bit-packed codes, the dictionary and the offset sidecar.
+          CORRECTED 2026-08-22. This read gpu.compressed_bytes, which is the in-memory UNPACK
+          (exactly 2.0001 B per code, 12-bit codes widened to u16), so it understated OnPair-12
+          by 17-33% and overstated OnPair-16 by up to 12%. See ratio() for the measurements.
+          The prior docstring rejected mem_ratio as "the flattering one" and kept the unpack.
+          That was backwards: mem_ratio's denominator is within 0.001% of on_disk_bytes, so the
+          number it rejected (FineWeb2 1.99) is the correct at-rest ratio and the one it kept
+          (1.49) divides by an array that only exists after decode begins.
   rate    decoded_bytes / min(decode_ns_iters) for the SHIPPED selector (gpu.auto_kernel), in
           GB/s. bytes/ns is exactly GB/s. min-of-N per Lemire, matching every prior campaign.
 """
@@ -168,7 +169,12 @@ def tokens(c):
 
 
 def mean_len(c):
-    """Token-weighted mean decoded bytes per code. Codes are u16, so compressed/2 is the count."""
+    """Token-weighted mean decoded bytes per code.
+
+    The /2 is deliberate and stays on gpu.compressed_bytes: that array is exactly 2 B per code
+    (the unpack), so dividing by 2 recovers the CODE COUNT. Do not "fix" this to on_disk_bytes
+    the way ratio() was fixed -- on_disk_bytes includes the dictionary and sidecar and is
+    bit-packed, so it does not carry a clean bytes-per-code factor."""
     if not c:
         return None
     comp = ((c.get("gpu") or {}).get("compressed_bytes")) or 0
@@ -181,12 +187,41 @@ def frac_le8(c):
 
 
 def ratio(c):
-    """sample_bytes / compressed_bytes. See the module docstring on why not mem_ratio."""
+    """At-rest compression ratio: sample_bytes / on_disk_bytes.
+
+    THE DENOMINATOR IS THE .vortex FILE, not gpu.compressed_bytes. Corrected 2026-08-22 after
+    the field names misled an earlier version of this file. Measured on the B300, ClickBench URL
+    at OnPair-12:
+
+        on_disk_bytes         346,042,804   the file: bit-packed codes + dictionary + sidecar
+        in_memory_bytes       346,039,324   the same arrays, less ~3.5 KB of file framing
+        gpu.compressed_bytes  426,552,691   exactly 2.0001 B per code -- the in-memory UNPACK
+
+    gpu.compressed_bytes widens 12-bit codes to u16 for the decode path, so dividing by it
+    understated OnPair-12 by 17-33% (exactly 4/3 where codes dominate: 1.5 B at rest against
+    2 B read) and overstated OnPair-16 by up to 12%, since it excludes the dictionary and
+    sidecar that on_disk_bytes includes. A compression ratio is about data at rest.
+
+    This matters beyond the table: fig_perf_real's dominance test puts these points against
+    Zstd's raw_bytes/compressed_bytes and the DE's best_ratio, both of which ARE stored ratios.
+    Using the unpack here compared us against baselines on a denominator we alone paid."""
     if not c:
         return None
-    comp = ((c.get("gpu") or {}).get("compressed_bytes")) or 0
     sb = c.get("sample_bytes")
-    return (sb / comp) if (comp and sb) else None
+    return (sb / at_rest_bytes(c)) if (at_rest_bytes(c) and sb) else None
+
+
+def at_rest_bytes(c):
+    """The stored size: on_disk_bytes, falling back to in_memory_bytes when nothing was written.
+
+    The FSST-12 leg keeps its output in memory and reports on_disk_bytes = 0 and
+    disk_ratio = 0.0, so on_disk_bytes alone would blank that codec's whole column. The fallback
+    is sound because the two are the same arrays: across the OnPair cells, where both exist,
+    on_disk_bytes exceeds in_memory_bytes by 3.3-5.0 KB of file framing, i.e. 0.001%. Both are
+    the packed form; neither is gpu.compressed_bytes."""
+    if not c:
+        return 0
+    return (c.get("on_disk_bytes") or 0) or (c.get("in_memory_bytes") or 0)
 
 
 def de_rows(root, chip="b300"):
