@@ -75,7 +75,9 @@ CFG = {
     "DE Deflate (0)": C.colour("tech-engine", "DE Deflate (0)"),
     "DE LZ4": C.colour("tech-engine", "DE LZ4"),
     "DE Snappy": C.colour("tech-engine", "DE Snappy"),
-    "Zstd (-10)": C.neutral(0), "Zstd (1)": C.neutral(1), "Zstd (3)": C.neutral(3),
+    # The DARK three of the neutral ramp, not the light three. Every Zstd mark falls inside the
+    # envelope wash, so the lightest grey (#d9d9d9) was a mark you had to already know was there.
+    "Zstd (-10)": C.neutral(1), "Zstd (1)": C.neutral(2), "Zstd (3)": C.neutral(3),
     "Bitcomp-default": C.colour("tech-nvcomp", "Bitcomp-default"),
     "Bitcomp-sparse": C.colour("tech-nvcomp", "Bitcomp-sparse"),
     "gANS": C.colour("tech-nvcomp", "gANS"),
@@ -171,7 +173,9 @@ def panel(ax, root, rows, title):
         # Carry the last step out to the right edge so the envelope spans the panel.
         xs, ys = xs + [xmax], ys + [ys[-1]]
         ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
-        ax.fill_between(xs, 1e-3, ys, step="pre", color=C.INK, alpha=0.055, lw=0, zorder=1)
+        # C.WASH, not a grey at low alpha: the three Zstd levels are drawn from C.NEUTRAL and
+        # sit inside this region, so a grey ground swallowed them. See common.WASH.
+        ax.fill_between(xs, 1e-3, ys, step="pre", color=C.WASH, lw=0, zorder=1)
     ax.set_xlim(xmin, xmax)
     for r, t, cfg in bases:
         mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"))
@@ -272,17 +276,18 @@ def main():
     # No off-scale entry. YLO is 0, so mark()'s t < YLO branch needs a negative decode rate and
     # never fires; the legend was advertising a convention that never appears on the page. The
     # branch stays as a guard in case the floor is ever raised.
-    extra = [Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="baseline envelope")]
-    # GSST closes the FIRST row, right after the Engine's four. That is what pushes Zstd (-10)
-    # onto the second row, so all three Zstd levels sit together and the whole software side --
-    # Zstd and nvCOMP -- occupies one line. Splicing it at index 6 instead broke the Engine's
-    # entries apart; at 7 it lands after them.
-    leg = codec_handles[:7] + [gsst] + codec_handles[7:] + extra
+    # NO ENVELOPE ENTRY EITHER, for the same reason one step further: the caption already says
+    # what the step line is, and a key that repeats the caption spends a slot to say nothing.
+    # SEVEN COLUMNS, so the two rows fall where the reader wants them without a filler: our
+    # three codecs and the Engine's four on the first, the whole software side -- three Zstd
+    # levels, two Bitcomp variants, gANS -- on the second, and GSST last, since it is the one
+    # mark measured on another device.
+    leg = codec_handles + [gsst]
     fig.tight_layout(pad=0.3)
-    # Twelve entries over eight columns at full width. mode="expand" spreads them across the
+    # Fourteen entries over seven columns at full width. mode="expand" spreads them across the
     # whole canvas rather than centring a block, so the two rows align; anchored by their top
     # edge C.LEGEND_GAP under the figure, as every other below-axes key is.
-    fig.legend(handles=flip(leg, 8), frameon=False, fontsize=C.FS["legend"], ncol=8,
+    fig.legend(handles=flip(leg, 7), frameon=False, fontsize=C.FS["legend"], ncol=7,
                loc="upper center", bbox_to_anchor=(0.0, -C.LEGEND_GAP, 1.0, 0.001),
                mode="expand", columnspacing=0.6, handlelength=1.1, handletextpad=0.45,
                borderaxespad=0.0)

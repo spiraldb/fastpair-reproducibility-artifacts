@@ -629,6 +629,15 @@ HATCHES = ["", "/", ".", "x", "\\", "+", "o", "-"]
 # the reader's attention and never collide with one. Light to dark.
 NEUTRAL = ["#d9d9d9", "#a6a6a6", "#6e6e6e", "#404040"]
 
+# GROUND, not a member: a region wash that says "under here is worse", never an
+# encoding of a value. Ice rather than grey ON PURPOSE. fig_perf_real fills the
+# baseline envelope and draws the three Zstd levels from NEUTRAL on top of it, so a
+# grey wash under grey marks left the dark end (#404040) sitting in its own tint and
+# the light end (#d9d9d9) invisible. A tint differing in HUE from the marks it sits
+# behind separates them at almost no ink. Opaque, not alpha over white, so nothing
+# composites with a mark drawn above it.
+WASH = "#e8f0f7"
+
 
 def neutral(i=0):
     """i-th context grey, light to dark."""

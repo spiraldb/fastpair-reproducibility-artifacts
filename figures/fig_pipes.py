@@ -140,10 +140,11 @@ def main():
     ax.set_ylabel("throughput (% of that unit's peak)")
     ax.set_ylim(0, 100)
     fig.tight_layout(pad=0.3)
-    # TWO COLUMNS of the full-length labels, four rows deep. Four per row forced 4.6pt type,
-    # which was the smallest thing on any page; two per row fits FS["legend_dense"], and the
-    # labels name each segment outright so the caption does not have to.
-    C.legend_below(fig, ncol=2, fontsize=C.FS["legend_dense"], columnspacing=1.0,
+    # TWO COLUMNS of the full-length labels, four rows deep, at the paper's ordinary legend
+    # size. The labels name each segment outright so the caption does not have to, and four per
+    # row was what forced them down to 4.6pt -- the smallest type on any page. Four rows cost
+    # about a quarter inch of height, which is the right trade for a readable key.
+    C.legend_below(fig, ncol=2, columnspacing=1.0,
                    handlelength=1.1, handletextpad=0.3, labelspacing=0.25)
     C.save(fig, "fig_pipes", width="column")
 
