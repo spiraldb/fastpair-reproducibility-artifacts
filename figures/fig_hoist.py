@@ -35,7 +35,11 @@ import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
 KS = list(range(1, 9))
-HS = [1, 2, 3, 4]
+# H=0 is the NO-HOIST control, and it is the row that lets this figure answer its own question.
+# H=1 is the shipped decoder and already hoists one round, so a grid of H>=1 shows whether MORE
+# hoisting helps and cannot show whether hoisting helps at all. The guard below is
+# `H > min(K,4)`, and 0 exceeds nothing, so H=0 is valid at every K and needs no exception.
+HS = [0, 1, 2, 3, 4]
 BS = [1, 4, 8]
 T = 256
 DEV, BITS = "b300", 12
@@ -67,6 +71,7 @@ def main():
             for i, H in enumerate(HS):
                 if H > min(K, 4):
                     continue
+                # dg IS H=1 (the shipped decoder); dh carries every other H, including h0.
                 name = (f"onpair_dg_k{K}_t{T}_b{B}" if H == 1
                         else f"onpair_dh_k{K}_t{T}_b{B}_h{H}")
                 if name in R:

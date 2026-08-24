@@ -35,6 +35,7 @@ import glob
 import json
 import os
 import re
+import sys
 from pathlib import Path
 
 
@@ -100,15 +101,80 @@ GEN = [
     ("TPC-H \\texttt{l\\_shipinstruct}", "tpch-sf15",  "l_shipinstruct"),
     ("TPC-H \\texttt{ps\\_comment}",     "tpch-sf15",  "ps_comment"),
 ]
-CHIPS = ["b300", "h100", "a100", "l40s"]     # fixed order; absent chips still get a legend slot
+# THE LEG THE PAPER READS, DECLARED. Every figure that does not take an explicit --suite-id gets
+# this one. It used to be "the newest results/suite-* by name", which made a directory name into
+# a load-bearing decision: any leg whose id sorted after "paper-" silently re-pointed seven
+# figures and the claims reducer at data the paper does not describe. The software-baseline leg
+# was named "suite-baselines-*" to sort BEFORE this one, which is a workaround for the sort rather
+# than a reason the sort is right. Name legs whatever describes them; change this line to move the
+# paper.
+PAPER_SUITE = "suite-paper-20260821"
+
+CHIPS_CORE = ["b300", "h100", "a100", "l40s"]   # fixed order; absent chips still get a legend slot
+
+# A chip that is being brought up appears ONLY once its leg has landed. The four above are the
+# paper's committed set and always get a slot, because a labelled gap is the honest rendering of a
+# leg that was meant to exist and did not. A fifth chip has no such promise attached yet, so an
+# empty slot for it would advertise a hole nobody was told to expect -- and it would change every
+# committed figure before there is anything to show. Listing it here instead means the figures
+# light up by themselves when the data arrives, with no code change at that moment.
+CHIPS_EMERGING = ["rtxpro"]
+
+
+def _present(chip):
+    return chip_root(chip) is not None
+
+
+def chip_root(chip, suite_id=None):
+    """The suite directory that holds THIS chip, preferring the declared paper campaign.
+
+    A campaign is no longer one directory. The paper suite carries four chips; a chip brought up
+    later lands in its own leg, and fig:perf_gen has to draw all of them on one axis. Resolving the
+    root per chip is what makes that possible, and it is the same merge fig_perf_real already does
+    for the software-baseline leg.
+
+    COMPARABILITY IS NOT ASSUMED HERE -- it is the caller's to state. The rtxpro leg qualifies
+    because it shares the paper campaign's vortex_rev (94905b572), training seed (20260819), the
+    fifteen-column corpus and the identical clock protocol (boost:full max:full 75%:prod 55%:prod
+    40%:prod). A leg that differed in any of those would need saying so beside the figure."""
+    if suite_id:
+        r = latest_root(suite_id)
+        return r if r is not None and (r / chip).is_dir() else None
+    declared = RESULTS / PAPER_SUITE
+    if (declared / chip).is_dir():
+        return declared
+    for d in sorted(RESULTS.glob("suite-*"), key=lambda p: p.name):
+        if d.is_dir() and (d / chip).is_dir():
+            return d
+    return None
+
+
+def chips():
+    """The chips to draw: the committed four, plus any emerging chip whose data exists."""
+    return CHIPS_CORE + [c for c in CHIPS_EMERGING if _present(c)]
+
+
+CHIPS = chips()
+
+
 
 
 def latest_root(suite_id=None):
-    """The suite directory to read. Explicit id wins; otherwise the newest results/suite-*."""
+    """The suite directory the paper reads. An explicit id always wins.
+
+    Falls back to the newest suite-* by name only when PAPER_SUITE is absent, so a fresh clone or
+    a renamed campaign still resolves to something rather than to None -- but it says so, because
+    silently reading a different campaign than the declared one is the failure this replaced."""
     if suite_id:
         p = RESULTS / (suite_id if suite_id.startswith("suite-") else f"suite-{suite_id}")
         return p if p.is_dir() else None
+    declared = RESULTS / PAPER_SUITE
+    if declared.is_dir():
+        return declared
     cands = sorted(RESULTS.glob("suite-*"), key=lambda p: p.name)
+    if cands:
+        print("suite: declared %s is absent; falling back to %s"
+              % (PAPER_SUITE, cands[-1].name), file=sys.stderr)
     return cands[-1] if cands else None
 
 
@@ -281,3 +347,105 @@ def coverage(root):
             "complete": (Path(root) / chip / "suite-complete.txt").exists(),
         }
     return rep
+
+
+# ============================================================================================
+# BASELINE POINT SETS. One definition, shared by fig_perf_real (which plots them and asserts
+# per-column dominance) and experiments/paper_claims.py (which derives the numbers the prose
+# cites). They used to live only in the figure, so the reducer would have needed a second copy
+# of the same extraction -- and two copies of one rule drifting apart is this repository's
+# recurring defect, not a hypothetical one.
+#
+# Every point is (ratio, GB/s, label). Rate is raw min-of-N where the per-iteration timings
+# survive, matching rate_gb_s() on our own side of the comparison, and falls back to the
+# harness's decode_gib_s only when they do not. The two agree to a tenth of a GB/s wherever
+# both exist, so the fallback is a completeness measure rather than a second basis.
+# ============================================================================================
+GIB_TO_GB = (2 ** 30) / 1e9
+
+DE_NAME = {"DEFLATE-hi": "DE Deflate (5)", "DEFLATE-fast": "DE Deflate (0)",
+           "LZ4": "DE LZ4", "Snappy": "DE Snappy"}
+
+
+def _rate(entry, raw_bytes):
+    it = entry.get("decode_ns_iters") or []
+    if it and raw_bytes:
+        return raw_bytes / min(it)
+    return (entry.get("decode_gib_s") or 0) * GIB_TO_GB or None
+
+
+def _pareto(pts):
+    """Drop points another point of the SAME baseline beats on both axes.
+
+    A dominated configuration cannot move the frontier or the dominance verdict, and dropping it
+    keeps the engine's twenty cells per column from becoming a cloud nobody would ship. This is
+    the rule already applied by hand to the Zstd levels."""
+    return [p for p in pts
+            if not any(q[0] >= p[0] and q[1] >= p[1] and (q[0], q[1]) != (p[0], p[1])
+                       for q in pts)]
+
+
+def de_points(root, chip, ds, col):
+    """The Decompression Engine's whole sweep for a column: four codecs by five chunk sizes.
+
+    NOT best_codec/best_chunk_bytes alone. Those name the engine's FASTEST setting, so quoting
+    only that mark drops its high-ratio half -- and that half is the interesting one. On Loghub
+    Thunderbird, DEFLATE-hi at 512 KB stores 18.8x against OnPair-16's 5.2x, at 629 GB/s. It
+    loses on rate, which is the claim; a test that never saw it was not testing the claim."""
+    raw = []
+    for r in de_rows(root, chip):
+        if r.get("dataset_id") != ds or r.get("column") != col:
+            continue
+        passes = [(r.get("chunk_bytes"), r.get("codecs") or {})]
+        passes += [(p.get("chunk_bytes"), p.get("codecs") or {})
+                   for p in (r.get("chunk_sweep") or [])]
+        seen = set()
+        for chunk, codecs in passes:
+            for name, e in codecs.items():
+                if (name, chunk) in seen:
+                    continue
+                seen.add((name, chunk))
+                if not e.get("valid") or e.get("validation_failed") or not e.get("ratio"):
+                    continue
+                rate = _rate(e, r.get("raw_bytes"))
+                if rate:
+                    raw.append((e["ratio"], rate, DE_NAME.get(name, "DE %s" % name)))
+    return _pareto(raw)
+
+
+def zstd_points(zcells, ds, col):
+    """The three nvCOMP Zstd levels for one column, from the OnPair-12 cell that carries them.
+
+    The fields are decode_gib_s and compression_ratio. An earlier reader asked for
+    decompress_gib_s and ratio, got None for both, and concluded the data had never been
+    collected. It had."""
+    c = zcells.get((ds, col, 12))
+    out = []
+    for e in (((c or {}).get("gpu") or {}).get("nvcomp_zstd") or []):
+        if e.get("supported") and e.get("decode_gib_s") and e.get("compression_ratio"):
+            out.append((e["compression_ratio"], e["decode_gib_s"] * GIB_TO_GB,
+                        "Zstd (%s)" % e.get("zstd_level")))
+    return _pareto(out)
+
+
+def sw_points(sw, ds, col):
+    """gANS and both Bitcomp variants for one column, from the MATERIALIZE+SW leg."""
+    row = sw.get((ds, col)) or {}
+    out = []
+    for name, e in (row.get("codecs") or {}).items():
+        if not e.get("supported") or not e.get("valid") or not e.get("ratio"):
+            continue
+        rate = _rate(e, row.get("raw_bytes"))
+        if rate:
+            out.append((e["ratio"], rate, name))
+    return _pareto(out)
+
+
+def baseline_points(root, chip, ds, col, zcells=None, sw=None):
+    """Every baseline configuration measured for one column on one chip."""
+    pts = de_points(root, chip, ds, col)
+    if zcells is not None:
+        pts += zstd_points(zcells, ds, col)
+    if sw is not None:
+        pts += sw_points(sw, ds, col)
+    return pts

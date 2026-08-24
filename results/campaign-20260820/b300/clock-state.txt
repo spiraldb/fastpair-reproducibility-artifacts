@@ -1,0 +1,54 @@
+requested_lock: 1
+NVIDIA B300 SXM6 AC, 2032 MHz, 3996 MHz
+throttle_field: clocks_event_reasons.active
+--- box facts
+NVIDIA B300 SXM6 AC, Enabled, Enabled, Enabled, Disabled, [Requested functionality has been deprecated], 580.159.04, 97.10.64.00.0C
+power_limits(limit,enforced,min,max): 1100.00 W, 1100.00 W, 200.00 W, 1100.00 W
+compute_procs: 
+policy_boost_released_at: 15:19:36
+locked_sm_mhz: none (boost/floating)
+sample: 2032 MHz, 3996 MHz, 30, 195.79 W, 0x0000000000000000  throttle=ok
+soak_boost: 30C -> 29C
+sample[post-soak-boost]: 120 MHz, 3996 MHz, 29, 129.84 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[boost-fineweb2-pre]: 120 MHz, 3996 MHz, 29, 129.84 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[boost-wikipedia-pre]: 2032 MHz, 3996 MHz, 33, 354.94 W, 0x0000000000000000  throttle=ok
+sample[boost-codeparrot-pre]: 2032 MHz, 3996 MHz, 32, 347.91 W, 0x0000000000000000  throttle=ok
+sample[boost-android-pre]: 2032 MHz, 3996 MHz, 32, 316.94 W, 0x0000000000000000  throttle=ok
+sample[boost-url-pre]: 2032 MHz, 3996 MHz, 31, 287.66 W, 0x0000000000000000  throttle=ok
+sample[boost-thunderbird-pre]: 2032 MHz, 3996 MHz, 31, 299.54 W, 0x0000000000000000  throttle=ok
+sample[boost-title-pre]: 2032 MHz, 3996 MHz, 31, 276.06 W, 0x0000000000000000  throttle=ok
+sample[boost-hdfs-pre]: 2032 MHz, 3996 MHz, 31, 303.72 W, 0x0000000000000000  throttle=ok
+sample[boost-spark-pre]: 2032 MHz, 3996 MHz, 30, 286.62 W, 0x0000000000000000  throttle=ok
+sample[boost-windows-pre]: 2032 MHz, 3996 MHz, 31, 296.06 W, 0x0000000000000000  throttle=ok
+sample[boost-caddress-pre]: 2032 MHz, 3996 MHz, 31, 274.21 W, 0x0000000000000000  throttle=ok
+sample[boost-lcomment-pre]: 2032 MHz, 3996 MHz, 33, 372.16 W, 0x0000000000000000  throttle=ok
+sample[boost-oclerk-pre]: 2032 MHz, 3996 MHz, 31, 308.64 W, 0x0000000000000000  throttle=ok
+sample[boost-shipinstruct-pre]: 2032 MHz, 3996 MHz, 31, 282.77 W, 0x0000000000000000  throttle=ok
+sample[boost-pscomment-pre]: 2032 MHz, 3996 MHz, 32, 285.04 W, 0x0000000000000000  throttle=ok
+policy_locked_applied_at: 17:11:53
+clock_samples_under_load_mhz: 1905,1905,1905,1905,1905,1905,1905,1905,1905,1905,1905,1905
+locked_sm_mhz_requested: 2032
+locked_sm_mhz_observed_under_load: 1905
+clock_samples_under_load_mhz: 1905,1905,1905,1905,1905,1905,1905,1905,1905,1905,1905,1905
+locked_sm_mhz_recalibrated: 1905
+locked_sm_mhz_observed_after_recalibration: 1905
+locked_sm_mhz_effective: 1905
+sample: 1905 MHz, 3996 MHz, 31, 181.59 W, 0x0000000000000001  throttle=ok (benign,idle)
+soak_locked: 31C -> 31C
+sample[post-soak-locked]: 1905 MHz, 3996 MHz, 31, 181.59 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[locked-fineweb2-pre]: 1905 MHz, 3996 MHz, 31, 181.59 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[locked-wikipedia-pre]: 1905 MHz, 3996 MHz, 34, 353.88 W, 0x0000000000000000  throttle=ok
+sample[locked-codeparrot-pre]: 1905 MHz, 3996 MHz, 34, 339.72 W, 0x0000000000000000  throttle=ok
+sample[locked-android-pre]: 1905 MHz, 3996 MHz, 33, 313.80 W, 0x0000000000000000  throttle=ok
+sample[locked-url-pre]: 1905 MHz, 3996 MHz, 33, 295.25 W, 0x0000000000000000  throttle=ok
+sample[locked-thunderbird-pre]: 1905 MHz, 3996 MHz, 33, 303.22 W, 0x0000000000000000  throttle=ok
+sample[locked-title-pre]: 1905 MHz, 3996 MHz, 33, 276.23 W, 0x0000000000000000  throttle=ok
+sample[locked-hdfs-pre]: 1905 MHz, 3996 MHz, 33, 294.55 W, 0x0000000000000000  throttle=ok
+sample[locked-spark-pre]: 1905 MHz, 3996 MHz, 33, 285.91 W, 0x0000000000000000  throttle=ok
+sample[locked-windows-pre]: 1905 MHz, 3996 MHz, 32, 280.14 W, 0x0000000000000000  throttle=ok
+sample[locked-caddress-pre]: 1905 MHz, 3996 MHz, 32, 280.75 W, 0x0000000000000000  throttle=ok
+sample[locked-lcomment-pre]: 1905 MHz, 3996 MHz, 34, 387.85 W, 0x0000000000000000  throttle=ok
+sample[locked-oclerk-pre]: 1905 MHz, 3996 MHz, 32, 308.17 W, 0x0000000000000000  throttle=ok
+sample[locked-shipinstruct-pre]: 1905 MHz, 3996 MHz, 32, 302.61 W, 0x0000000000000000  throttle=ok
+sample[locked-pscomment-pre]: 1905 MHz, 3996 MHz, 31, 276.90 W, 0x0000000000000000  throttle=ok
+sample: 1905 MHz, 3996 MHz, 32, 297.52 W, 0x0000000000000000  throttle=ok

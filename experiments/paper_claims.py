@@ -80,11 +80,17 @@ PER_BLOCK_RESERVED = 1024       # runtime reservation, in neither static_shared 
 # Tolerance 0 everywhere: every value is already rounded to its reporting precision, so a
 # nonzero tolerance spans whole display units and would hide a real regression rather than
 # absorb floating-point noise.
+# THREE ENTRIES REMOVED 2026-08-23, and why, so they are not restored as a fix:
+#   occ.l40s_shared_limited (77), occ.h100_regs_limited (116), occ.a100_shared_limited (35)
+# Section 3.1 states no per-chip limiter count -- it argues the feasibility rule B*M <= A
+# qualitatively and cites only \claimOccConfigs and \claimOccExact, both generated. So these
+# asserted numbers the paper does not make, which is not a check that can pass or fail
+# meaningfully. They were also measured on the 480-configuration standalone probe (120 per chip)
+# while the emitted macros already read the suite leg's 1560 (390 per chip), so on the current
+# basis they read 306, 374 and 140. The counts are still derived below and land in
+# results/paper-claims.json; promote them to TEX if a sentence ever needs them.
 DECLARED = {
     "s3.regs_per_sm":              (65536, 0, "3.1"),
-    "occ.l40s_shared_limited":     (77, 0, "3.1"),
-    "occ.h100_regs_limited":       (116, 0, "3.1"),
-    "occ.a100_shared_limited":     (35, 0, "3.1"),
 }
 
 derived = {}
@@ -611,6 +617,174 @@ def launch_stats(cells, rows):
                 break
 
 
+def field_stats():
+    """Section 5's field comparison: FastPair against every baseline configuration measured.
+
+    WHY THIS IMPORTS figures/suite.py. That module already defines at-rest ratio, min-of-N rate
+    and the three baseline point sets, and fig_perf_real asserts the dominance property from
+    them. A second copy of those rules here is how the number in the prose and the number in the
+    figure come to disagree, which has happened in this repository before. suite.py has no third-
+    party dependencies, so importing it does not change this script's dependency set.
+
+    THE TEST IS PER COLUMN, AND ON THE REAL COLUMNS. A codec's ratio is a property of the data,
+    so comparing our mark on one column against a baseline measured on another is not a
+    comparison. The generated five are pooled into no real-data claim anywhere in the paper, and
+    they are where the single counterexample lives -- gANS beats OnPair-16 on c_address, random
+    characters that a pair-merging dictionary cannot merge. It is derived and reported here
+    rather than filtered out, because the scope belongs in the sentence, not in a filter.
+    """
+    sys.path.insert(0, os.path.join(ROOT, "figures"))
+    import suite as S
+    from pathlib import Path
+
+    # HONOUR --suite-root. The rest of this script reads CAMPAIGN, so resolving the leg
+    # independently here would let one invocation derive Section 4 from one campaign and Section 5
+    # from another and report both as one set of claims.
+    root = Path(CAMPAIGN) if os.path.isdir(CAMPAIGN) else S.latest_root()
+    brt = S.baselines_root()
+    if root is None:
+        print("WARNING: no suite root; section 5 field claims not derived", file=sys.stderr)
+        return
+    chip = "b300"                     # the DE is Blackwell-only, so the field panel is one chip
+    op = S.cells(root, chip, "boost", "onpair")
+    fs = S.cells(root, chip, "boost", "fsst12")
+    zc = S.cells(root, chip, "boost", "zstd")
+    sw = S.sw_rows(brt, chip)
+    if not (op and sw):
+        print("WARNING: field legs incomplete; section 5 field claims not derived", file=sys.stderr)
+        return
+
+    def ours(ds, col):
+        out = []
+        for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16), ("FSST-12", fs, 12)):
+            c = store.get((ds, col, bits))
+            r, t = S.ratio(c), S.rate_gb_s(c)
+            if r and t:
+                out.append((r, t, cfg))
+        return out
+
+    # Raw configuration count per column, BEFORE the per-baseline Pareto reduction the figure
+    # draws. The reduction cannot change a verdict -- a point beaten on both axes by another of
+    # the same baseline cannot dominate anything the beater does not -- so the honest count to
+    # quote as "what it was tested against" is the measured one.
+    de_raw = 0
+    for r in S.de_rows(root, chip):
+        if (r.get("dataset_id"), r.get("column")) == (S.REAL[0][1], S.REAL[0][2]):
+            seen = set()
+            for chunk, codecs in ([(r.get("chunk_bytes"), r.get("codecs") or {})]
+                                  + [(p.get("chunk_bytes"), p.get("codecs") or {})
+                                     for p in (r.get("chunk_sweep") or [])]):
+                for name, e in codecs.items():
+                    if e.get("valid") and not e.get("validation_failed"):
+                        seen.add((name, chunk))
+            de_raw = len(seen)
+    z_raw = len(S.zstd_points(zc, S.REAL[0][1], S.REAL[0][2]))
+    sw_raw = len((sw.get((S.REAL[0][1], S.REAL[0][2])) or {}).get("codecs") or {})
+    put("s5.field_configs_per_col", de_raw + z_raw + sw_raw,
+        "baseline configurations measured per column: DE codecs x chunk sizes, Zstd levels, "
+        "nvCOMP software codecs")
+
+    marks = dominated = 0
+    beaten_on_rate = 0            # columns where SOME baseline is faster, at any ratio
+    fastest = (0.0, 0.0, "")      # the quickest baseline anywhere on the real panel
+    biggest = (0.0, 0.0, "")      # and the one that stores the most
+    biggest_col = None            # which column that was, so ours on it can be quoted beside it
+    de_biggest = (0.0, 0.0, "")   # the engine alone, which is what Section 6 discusses
+    for _, ds, col in S.REAL:
+        base = S.baseline_points(root, chip, ds, col, zc, sw)
+        if not base:
+            continue
+        best_rate = max(base, key=lambda p: p[1])
+        best_ratio = max(base, key=lambda p: p[0])
+        if best_rate[1] > fastest[1]:
+            fastest = best_rate
+        if best_ratio[0] > biggest[0]:
+            biggest, biggest_col = best_ratio, (ds, col)
+        de = S.de_points(root, chip, ds, col)
+        if de:
+            d = max(de, key=lambda p: p[0])
+            if d[0] > de_biggest[0]:
+                de_biggest = d
+        mine = ours(ds, col)
+        if mine and best_rate[1] > max(t for _, t, _ in mine):
+            beaten_on_rate += 1
+        for r, t, _cfg in mine:
+            marks += 1
+            if any(b[0] >= r and b[1] > t for b in base):
+                dominated += 1
+    put("s5.field_marks", marks, "our per-column marks on the ten real columns, three codecs each")
+    put("s5.field_dominated", dominated,
+        "how many a baseline beats at an equal or better at-rest ratio on the same column")
+    put("s5.field_beaten_on_rate", beaten_on_rate,
+        "real columns where some baseline decodes faster than us at ANY ratio")
+    put("s5.field_fastest_rate", round(fastest[1]), "GB/s of the quickest baseline configuration")
+    put("s5.field_fastest_ratio", round(fastest[0], 2), "and what it stores at that rate")
+    put("s5.field_biggest_ratio", round(biggest[0], 1), "the best at-rest ratio any baseline reaches")
+    put("s5.field_biggest_rate", round(biggest[1]), "and the rate it reaches it at")
+    put("s5.field_de_biggest_ratio", round(de_biggest[0], 1),
+        "best at-rest ratio the Decompression Engine reaches on a real column")
+    put("s5.field_de_biggest_rate", round(de_biggest[1]),
+        "and its rate there -- the engine's high-ratio arm, not its fastest setting")
+    if biggest_col:
+        mine = max(ours(*biggest_col), key=lambda p: p[1])
+        put("s5.field_biggest_ours_ratio", round(mine[0], 2),
+            "our at-rest ratio on the column where that baseline ratio occurs")
+        put("s5.field_biggest_ours_rate", round(mine[1]),
+            "and our rate there: the trade the positional claim is about")
+
+    # THE OTHER TWO CHIPS, TESTED THE SAME WAY. The software-codec leg also ran on the h100 and
+    # l40s, and the test there has to stay PER COLUMN. A tempting shortcut -- a ratio belongs to
+    # the data, not the device, so compare the best software ratio anywhere against our worst
+    # anywhere and be done -- does not work: the best software ratio on a real column (1.70x,
+    # gANS) is above our worst mark (1.62x, FSST-12 on a different column), so the pooled form
+    # reports a violation that no column exhibits. That is the pooled-frontier error this
+    # comparison already avoids on the b300. No Decompression Engine on either part, so the
+    # baseline set there is the three software codecs and the three Zstd levels.
+    other = {}
+    for c in ("h100", "l40s"):
+        cop = S.cells(root, c, "boost", "onpair")
+        cfs = S.cells(root, c, "boost", "fsst12")
+        czc = S.cells(root, c, "boost", "zstd")
+        csw = S.sw_rows(brt, c)
+        if not (cop and csw):
+            continue
+        m = d = 0
+        for _, ds, col in S.REAL:
+            base = S.zstd_points(czc, ds, col) + S.sw_points(csw, ds, col)
+            if not base:
+                continue
+            for cfg, store, bits in (("OnPair-12", cop, 12), ("OnPair-16", cop, 16),
+                                     ("FSST-12", cfs, 12)):
+                cell = store.get((ds, col, bits))
+                r, t = S.ratio(cell), S.rate_gb_s(cell)
+                if not (r and t):
+                    continue
+                m += 1
+                if any(b[0] >= r and b[1] > t for b in base):
+                    d += 1
+        other[c] = (m, d)
+    if other:
+        put("s5.field_other_marks", sum(m for m, _ in other.values()),
+            "our marks on the real columns of the two non-Blackwell chips the software leg covered")
+        put("s5.field_other_dominated", sum(d for _, d in other.values()),
+            "how many of those a baseline beats at an equal or better ratio on the same column")
+
+    # The one generated-column counterexample, worked out in full so the prose can state it.
+    gen = {c: (ds, c) for _, ds, c in S.GEN}
+    ds, col = gen["c_address"]
+    base = S.baseline_points(root, chip, ds, col, zc, sw)
+    for r, t, cfg in ours(ds, col):
+        tag = {"OnPair-12": "twelve", "OnPair-16": "sixteen"}.get(cfg)
+        if not tag:
+            continue
+        put("s5.caddress_%s_ratio" % tag, round(r, 2), "c_address at %s: at-rest ratio" % cfg)
+        put("s5.caddress_%s_rate" % tag, round(t), "c_address at %s: GB/s" % cfg)
+    dom = [b for b in base if b[2] == "gANS"]
+    if dom:
+        put("s5.caddress_gans_ratio", round(dom[0][0], 2), "gANS on c_address: at-rest ratio")
+        put("s5.caddress_gans_rate", round(dom[0][1]), "gANS on c_address: GB/s")
+
+
 # Values the paper cites, as LaTeX macros. THIS REPLACES TRANSCRIPTION: the paper says
 # \claimKSpreadMedian, not "80%", so a number cannot go stale in prose. A key absent from
 # `derived` is a hard error rather than an empty macro, because an empty macro renders as
@@ -734,6 +908,48 @@ TEX_GROUPS = [
         ("s3.alloc_T256_B6", "claimAllocBsix", "{:d}",
          "what that rounds down to -- the granule is why these differ"),
     ]),
+    ("Field comparison: every baseline, per column", [
+        "Section 5's positional claim. A baseline gets its whole sweep and is compared to us on",
+        "ITS OWN column, because a compression ratio is a property of the data. Our side is the",
+        "SHIPPED SELECTOR's rate, not the best kernel, so the claim is about what a deployment",
+        "gets. The last four say what the frontier looks like either side of us: the quick",
+        "baselines barely compress, and the one that compresses hardest is slow.",
+    ], [
+        ("s5.field_configs_per_col", "claimFieldConfigs", "{:d}",
+         "baseline configurations measured per column: DE codecs x chunks, Zstd levels, nvCOMP sw"),
+        ("s5.field_marks", "claimFieldMarks", "{:d}",
+         "our marks on the ten real columns: three codecs each"),
+        ("s5.field_dominated", "claimFieldDominated", "{:d}",
+         "how many a baseline beats at an equal or better at-rest ratio on the same column"),
+        ("s5.field_beaten_on_rate", "claimFieldBeatenOnRate", "{:d}",
+         "real columns where a baseline decodes faster than us at ANY ratio"),
+        ("s5.field_fastest_rate", "claimFieldFastestRate", "{:d}",
+         "GB/s of the quickest baseline configuration measured"),
+        ("s5.field_fastest_ratio", "claimFieldFastestRatio", "{:.2f}",
+         "what it stores while doing it"),
+        ("s5.field_de_biggest_ratio", "claimFieldDeRatio", "{:.1f}",
+         "the engine's best at-rest ratio on a real column: its high-ratio arm"),
+        ("s5.field_de_biggest_rate", "claimFieldDeRate", "{:d}", "and its rate there"),
+        ("s5.field_biggest_ratio", "claimFieldBestRatio", "{:.1f}",
+         "the best at-rest ratio ANY baseline reaches on a real column"),
+        ("s5.field_biggest_rate", "claimFieldBestRatioRate", "{:d}", "and the rate it reaches it at"),
+        ("s5.field_biggest_ours_ratio", "claimFieldBestRatioOurs", "{:.2f}",
+         "our at-rest ratio on that same column"),
+        ("s5.field_biggest_ours_rate", "claimFieldBestRatioOursRate", "{:d}", "and our rate there"),
+        ("s5.field_other_marks", "claimFieldOtherMarks", "{:d}",
+         "our marks on the real columns of the H100 and L40S, where the software leg also ran"),
+        ("s5.field_other_dominated", "claimFieldOtherDominated", "{:d}",
+         "how many of those a baseline beats at an equal or better ratio on the same column"),
+        ("s5.caddress_twelve_ratio", "claimCaddrTwelveRatio", "{:.2f}",
+         "c_address, OnPair-12: at-rest ratio. Random characters, so nothing merges"),
+        ("s5.caddress_twelve_rate", "claimCaddrTwelveRate", "{:d}", "and its rate"),
+        ("s5.caddress_sixteen_ratio", "claimCaddrSixteenRatio", "{:.2f}",
+         "OnPair-16 on the same column: worse than OnPair-12 on BOTH axes"),
+        ("s5.caddress_sixteen_rate", "claimCaddrSixteenRate", "{:d}", "and its rate"),
+        ("s5.caddress_gans_ratio", "claimCaddrGansRatio", "{:.2f}",
+         "gANS there: the corpus's one baseline that dominates one of our marks"),
+        ("s5.caddress_gans_rate", "claimCaddrGansRate", "{:d}", "and its rate"),
+    ]),
 ]
 TEX = [(k, m, f) for _, _, items in TEX_GROUPS for k, m, f, _ in items]
 
@@ -769,11 +985,54 @@ def emit_tex(path):
 def newer_suites(consumed):
     """Suite directories this invocation is NOT reading. The reducer used to hard-code the August
     campaign, so a freshly ingested leg was invisible: `--check` went green against stale data and
-    read as confirmation of the run that had just finished. Never let that be silent again."""
+    read as confirmation of the run that had just finished. Never let that be silent again.
+
+    ONLY A CAMPAIGN COUNTS AS UNREAD. The guard is about deriving Section 3-4 statistics from a
+    stale campaign while a newer one sits unread, and those statistics come from the GRID stage
+    over the fixed fifteen columns. A leg with no GRID cannot supply them, so it is not a
+    candidate and naming it here would only force --allow-unconsumed -- a flag that then covers a
+    genuinely unread campaign as collateral, which is the failure this guard exists to prevent.
+    That covers the baseline leg (MATERIALIZE + SW) and any narrowed single-question leg, without
+    either having to be special-cased by name."""
     root = os.path.join(ROOT, "results")
     consumed = os.path.abspath(consumed)
-    return sorted(d for d in glob.glob(os.path.join(root, "suite-*"))
-                  if os.path.isdir(d) and os.path.abspath(d) != consumed)
+    out = []
+    for d in glob.glob(os.path.join(root, "suite-*")):
+        if not os.path.isdir(d) or os.path.abspath(d) == consumed:
+            continue
+        if not _is_campaign(d):
+            continue
+        out.append(d)
+    return sorted(out)
+
+
+def _is_campaign(suite_dir):
+    """Could this leg supply the Section 3-4 claims? It needs a GRID stage AND a chip we derive from.
+
+    THE CHIP CONDITION MATTERS. The claims come from CHIPS_CAMPAIGN, so a leg that ran GRID on some
+    OTHER chip cannot move them however complete it is. The rtxpro leg is the case that showed this:
+    a full five-state GRID over fifteen columns, read by fig:perf_gen and tab:arch, containing no
+    chip this reducer derives from. Reporting it as an unread campaign forced --allow-unconsumed,
+    and that flag then covers a genuinely unread campaign as collateral -- the exact failure the
+    guard exists to prevent.
+
+    Reads each chip's suite-complete.txt, the file every leg writes for provenance. A leg with no
+    readable record is treated AS a campaign: unreadable provenance should make the guard louder,
+    not quieter."""
+    if not any(os.path.isdir(os.path.join(suite_dir, c)) for c in CHIPS_CAMPAIGN):
+        return False
+    records = [r for r in glob.glob(os.path.join(suite_dir, "*", "suite-complete.txt"))
+               if os.path.basename(os.path.dirname(r)) in CHIPS_CAMPAIGN]
+    if not records:
+        return True
+    for rec in records:
+        try:
+            text = open(rec).read()
+        except OSError:
+            return True
+        if re.search(r"^stage_GRID_\S*_rc:", text, re.M):
+            return True
+    return False
 
 
 def main():
@@ -824,6 +1083,7 @@ def main():
     if cells:
         campaign_stats(cells)
         launch_stats(cells, rows)
+        field_stats()
     else:
         print("WARNING: no campaign cells under %s; section 4 claims not derived" % CAMPAIGN,
               file=sys.stderr)

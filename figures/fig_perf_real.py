@@ -13,15 +13,18 @@ This deliberately reuses fig_sota's look -- theme, palette, family shapes, log a
 legend, panel proportions -- because it IS fig_sota rebuilt on the fifteen-column corpus. The
 styling is not re-derived here; where they differ, fig_sota is right.
 
-BEST AGAINST BEST. One mark per column per technique, each the best that technique reaches on
-that column: the DE's best codec AND chunk size, our best kernel. This is a head-to-head of
-tuned configurations, and tuning only one side of it would be the sandbag. Per-column
-shipped-selector rates, which are what a deployment gets, are reported in the prose.
+BEST AGAINST BEST, AND EVERY CONFIGURATION OF THEIRS. Our mark is the best kernel. A baseline
+gets its whole sweep -- the engine's four codecs crossed with five chunk sizes, three Zstd
+levels, three nvCOMP software codecs -- reduced per column to the configurations nothing else of
+that baseline beats on both axes. Tuning only one side would be the sandbag, and quoting only
+the engine's fastest setting would have hidden its high-ratio half, which is the interesting
+one. Per-column shipped-selector rates, what a deployment gets, are reported in the prose.
 
 THE STAIRCASE IS THE BASELINE PARETO FRONTIER, and the claim is asserted PER COLUMN. A codec's
 ratio is a property of the data, so a pooled frontier can put us on one column against a baseline
-on another; with c_address in the corpus that produces false violations. Like for like, 0 of 45
-cells are dominated.
+on another; with c_address in the corpus that produces false violations. Like for like, 26
+baseline configurations per column: 30 of 30 real-column marks clear all of them, and the
+generated panel has exactly one exception, pinned by name in main().
 
 ZSTD IS A REAL COMPETITOR ON LOG-STRUCTURED COLUMNS, not the floor-dwelling series it first looks
 like. Its GPU rate tracks the FRAME COUNT a column yields, not the codec: Loghub Windows gives
@@ -33,7 +36,10 @@ DEFLATE, LZ4 and Snappy, so these three are measured by the MATERIALIZE+SW leg
 (results/suite-baselines-*) and merged here. The two legs share a vortex_rev, a training seed, the
 fifteen columns and raw_bytes per column, which is what makes one axis legitimate; see
 suite.baselines_root(). None of the three reaches our compression ratio on any real column, so
-they sit left of every OnPair mark rather than under it.
+they sit left of every OnPair mark rather than under it -- Bitcomp-sparse is the fastest thing on
+the panel on four of the ten, and stores 1.00 to 1.10x while doing it. The one place a software
+codec dominates us is gANS on c_address, generated random characters where a pair-merging
+dictionary has nothing to merge and an entropy coder still has a character distribution.
 
 
 
@@ -60,8 +66,6 @@ CFG = {
     "Zstd (-10)": "#cccccc", "Zstd (1)": "#969696", "Zstd (3)": "#525252",
     "gANS": "#41ab5d", "Bitcomp-default": "#a1d99b", "Bitcomp-sparse": "#006d2c",
 }
-DE_NAME = {"DEFLATE-hi": "DE Deflate (5)", "DEFLATE-fast": "DE Deflate (0)", "LZ4": "DE LZ4",
-           "Snappy": "DE Snappy"}
 FAMILY_MARKER = {"OnPair": "o", "DE": "s", "Zstd": "^", "nvCOMP-sw": "D"}
 FAMILY = {
     "OnPair-12": "OnPair", "OnPair-16": "OnPair", "FSST-12": "OnPair",
@@ -89,46 +93,6 @@ def oracle_rate(c):
             return g["decoded_bytes"] / min(k["decode_ns_iters"])
     return (g.get("best_decode_gib_s") or 0) * C.GIB_TO_GB or None
 
-
-def zstd_points(cells, ds, col):
-    """The three Zstd levels for one column.
-
-    The fields are decode_gib_s and compression_ratio. An earlier version of this file read
-    decompress_gib_s and ratio, which do not exist, got None for both, and concluded the data had
-    never been collected. It had.
-    """
-    out = []
-    c = cells.get((ds, col, 12))
-    if not c:
-        return out
-    for e in ((c.get("gpu") or {}).get("nvcomp_zstd") or []):
-        if e.get("supported") and e.get("decode_gib_s") and e.get("compression_ratio"):
-            out.append((e["compression_ratio"], e["decode_gib_s"] * C.GIB_TO_GB,
-                        "Zstd (%s)" % e.get("zstd_level")))
-    return out
-
-
-def sw_points(sw, ds, col):
-    """gANS and both Bitcomp variants for one column, from the SW baseline leg.
-
-    Each is quoted at its own measured ratio and decode rate, the same basis the Zstd and DE
-    points use, so the per-column dominance test compares stored size against stored size."""
-    out = []
-    for name, e in ((sw.get((ds, col)) or {}).get("codecs") or {}).items():
-        if e.get("supported") and e.get("valid") and e.get("decode_gib_s") and e.get("ratio"):
-            out.append((e["ratio"], e["decode_gib_s"] * C.GIB_TO_GB, name))
-    return out
-
-
-def de_best(root, ds, col):
-    """The engine's declared best for a column: best codec AND chunk size. One mark, shaded by
-    whichever codec won, so the four DE swatches still carry meaning across the figure."""
-    for r in S.de_rows(root, DEV):
-        if r.get("dataset_id") == ds and r.get("column") == col \
-                and r.get("best_ratio") and r.get("best_decode_gib_s"):
-            return (r["best_ratio"], r["best_decode_gib_s"] * C.GIB_TO_GB,
-                    DE_NAME.get(r.get("best_codec"), "DE %s" % r.get("best_codec")))
-    return None
 
 
 def frontier(pts, xlo=None):
@@ -169,17 +133,15 @@ def collect(root, rows):
     sw = S.sw_rows(S.baselines_root(), DEV)
     ours, bases = [], []
     for _, ds, col in rows:
-        bases += zstd_points(zs, ds, col)
-        bases += sw_points(sw, ds, col)
+        bases += S.zstd_points(zs, ds, col)
+        bases += S.sw_points(sw, ds, col)
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
                                  ("FSST-12", fs, 12)):
             c = store.get((ds, col, bits))
             r, t = S.ratio(c), oracle_rate(c)
             if r and t:
                 ours.append((r, t, cfg, col))
-        d = de_best(root, ds, col)
-        if d:
-            bases.append(d)
+        bases += S.de_points(root, DEV, ds, col)
     return ours, bases
 
 
@@ -234,30 +196,50 @@ def main():
     # OnPair-16 reaches 1.09x there, below a 697 GB/s baseline that belongs to l_comment or
     # ps_comment -- different data, not a counterexample. On its own column the DE manages 0.99x,
     # and we are not dominated.
-    violations, n = [], 0
+    # EVERY PLOTTED BASELINE IS IN THE TEST. gANS and both Bitcomp variants were drawn and
+    # folded into the staircase but left out of this loop, which is the wrong way round: they
+    # are the FAST baselines. Bitcomp-sparse reaches 1319 GB/s on FineWeb2, above every OnPair
+    # mark on the panel, so a test that skipped it asserted less than the paper's sentence does.
+    # It clears the test because it stores 1.00x against our 1.99x, and that is the reason to
+    # test it rather than a reason to omit it.
+    # ONE KNOWN EXCEPTION, PINNED BY NAME so that a NEW one still fails this build. gANS
+    # dominates OnPair-16 on c_address: 1.33x at 653 GB/s against 1.02x at 393. c_address is
+    # random characters, so a pair-merging dictionary finds nothing to merge while an entropy
+    # coder still finds a character distribution. It is a generated column, and the paper pools
+    # generated columns into no real-data claim. It is listed rather than skipped because the
+    # scope belongs in the sentence that makes the claim, not in a filter here.
+    #
+    # Note what is NOT dominated on that column: OnPair-12 reaches 1.19x at 783 GB/s, and
+    # gANS's better ratio comes with a lower rate. OnPair-16 is worse than OnPair-12 on BOTH
+    # axes there, so the dominated point is a preset no per-column selection would choose.
+    KNOWN = {("c_address", "OnPair-16")}
+    violations, n, excepted = [], 0, []
     for rows in (S.REAL, S.GEN):
         ours, _ = collect(root, rows)
         zc = S.cells(root, DEV, "boost", "zstd")
+        sw = S.sw_rows(S.baselines_root(), DEV)
         by_col = {}
         for _, ds, col in rows:
-            pts = []
-            d = de_best(root, ds, col)
-            if d:
-                pts.append((d[0], d[1], d[2]))
-            pts += zstd_points(zc, ds, col)
-            by_col[col] = pts
+            by_col[col] = S.baseline_points(root, DEV, ds, col, zc, sw)
         for r, t, cfg, col in ours:
             n += 1
             dom = [b for b in by_col.get(col, []) if b[0] >= r and b[1] > t]
             if dom:
                 b = max(dom, key=lambda p: p[1])
-                violations.append("%s %s: %.0f GB/s at ratio %.2f, %s %.0f at %.2f"
-                                  % (col, cfg, t, r, b[2], b[1], b[0]))
+                msg = ("%s %s: %.0f GB/s at ratio %.2f, %s %.0f at %.2f"
+                       % (col, cfg, t, r, b[2], b[1], b[0]))
+                (excepted if (col, cfg) in KNOWN else violations).append(msg)
     if violations:
         raise SystemExit("fig_perf_real: per-column dominance VIOLATED on %s:\n  %s"
                          % (DEV, "\n  ".join(violations)))
     print("per-column dominance holds on %s: %d of %d marks clear every baseline on their own "
-          "column" % (DEV, n, n))
+          "column, against %d pinned exception(s)" % (DEV, n - len(excepted), n, len(excepted)))
+    for m in excepted:
+        print("  pinned exception (generated column, in no real-data claim): %s" % m)
+    for k in sorted(KNOWN):
+        if not any(m.startswith("%s %s:" % k) for m in excepted):
+            raise SystemExit("fig_perf_real: pinned exception %s no longer occurs. Remove it "
+                             "from KNOWN and strengthen the claim." % (k,))
 
     from matplotlib.ticker import FixedLocator
     axR.set_ylim(YLO, YHI)
@@ -283,7 +265,7 @@ def main():
     C.save(fig, "fig_perf_real")
 
     zcells = S.cells(root, DEV, "boost", "zstd")
-    nz = sum(len(zstd_points(zcells, ds, col)) for _, ds, col in S.REAL + S.GEN)
+    nz = sum(len(S.zstd_points(zcells, ds, col)) for _, ds, col in S.REAL + S.GEN)
     print(f"\nZstd points plotted: {nz}")
     print("BASELINE PROVENANCE, so a reader of this output knows what came from where:")
     print("  gANS, Bitcomp-{default,sparse}: the MATERIALIZE+SW leg, not the paper suite, whose")

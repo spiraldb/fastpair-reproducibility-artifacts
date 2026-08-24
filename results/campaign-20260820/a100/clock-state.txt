@@ -1,0 +1,51 @@
+requested_lock: 1
+NVIDIA A100-SXM4-40GB, 1410 MHz, 1215 MHz
+throttle_field: clocks_event_reasons.active
+--- box facts
+NVIDIA A100-SXM4-40GB, Enabled, Enabled, Enabled, Disabled, [Requested functionality has been deprecated], 580.173.02, 92.00.45.00.03
+power_limits(limit,enforced,min,max): 400.00 W, 400.00 W, 100.00 W, 400.00 W
+compute_procs: 
+policy_boost_released_at: 15:36:25
+locked_sm_mhz: none (boost/floating)
+sample: 1095 MHz, 1215 MHz, 35, 54.69 W, 0x0000000000000000  throttle=ok
+soak_boost: 35C -> 34C
+sample[post-soak-boost]: 210 MHz, 1215 MHz, 34, 48.83 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[boost-fineweb2-pre]: 210 MHz, 1215 MHz, 34, 48.83 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[boost-wikipedia-pre]: 1410 MHz, 1215 MHz, 45, 79.11 W, 0x0000000000000000  throttle=ok
+sample[boost-codeparrot-pre]: 1410 MHz, 1215 MHz, 44, 78.23 W, 0x0000000000000000  throttle=ok
+sample[boost-android-pre]: 1410 MHz, 1215 MHz, 44, 77.08 W, 0x0000000000000000  throttle=ok
+sample[boost-url-pre]: 1410 MHz, 1215 MHz, 43, 77.08 W, 0x0000000000000000  throttle=ok
+sample[boost-thunderbird-pre]: 1410 MHz, 1215 MHz, 44, 78.23 W, 0x0000000000000000  throttle=ok
+sample[boost-title-pre]: 1410 MHz, 1215 MHz, 42, 76.21 W, 0x0000000000000000  throttle=ok
+sample[boost-hdfs-pre]: 1410 MHz, 1215 MHz, 44, 76.75 W, 0x0000000000000000  throttle=ok
+sample[boost-spark-pre]: 1410 MHz, 1215 MHz, 44, 77.36 W, 0x0000000000000000  throttle=ok
+sample[boost-windows-pre]: 1410 MHz, 1215 MHz, 43, 76.75 W, 0x0000000000000000  throttle=ok
+sample[boost-caddress-pre]: 1410 MHz, 1215 MHz, 42, 75.87 W, 0x0000000000000000  throttle=ok
+sample[boost-lcomment-pre]: 1410 MHz, 1215 MHz, 44, 77.68 W, 0x0000000000000000  throttle=ok
+sample[boost-oclerk-pre]: 1410 MHz, 1215 MHz, 44, 77.36 W, 0x0000000000000000  throttle=ok
+sample[boost-shipinstruct-pre]: 1410 MHz, 1215 MHz, 42, 76.21 W, 0x0000000000000000  throttle=ok
+sample[boost-pscomment-pre]: 1410 MHz, 1215 MHz, 41, 74.39 W, 0x0000000000000000  throttle=ok
+policy_locked_applied_at: 19:00:41
+clock_samples_under_load_mhz: 1410,1410,1410,1410,1410,1410,1410,1410,1410,1410,1410,1410
+locked_sm_mhz_requested: 1410
+locked_sm_mhz_observed_under_load: 1410
+locked_sm_mhz_effective: 1410
+sample: 1410 MHz, 1215 MHz, 40, 74.39 W, 0x0000000000000001  throttle=ok (benign,idle)
+soak_locked: 40C -> 36C
+sample[post-soak-locked]: 1410 MHz, 1215 MHz, 36, 71.84 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[locked-fineweb2-pre]: 1410 MHz, 1215 MHz, 36, 71.84 W, 0x0000000000000001  throttle=ok (benign,idle)
+sample[locked-wikipedia-pre]: 1410 MHz, 1215 MHz, 45, 78.23 W, 0x0000000000000000  throttle=ok
+sample[locked-codeparrot-pre]: 1410 MHz, 1215 MHz, 44, 77.15 W, 0x0000000000000000  throttle=ok
+sample[locked-android-pre]: 1410 MHz, 1215 MHz, 44, 77.68 W, 0x0000000000000000  throttle=ok
+sample[locked-url-pre]: 1410 MHz, 1215 MHz, 43, 76.75 W, 0x0000000000000000  throttle=ok
+sample[locked-thunderbird-pre]: 1410 MHz, 1215 MHz, 44, 77.36 W, 0x0000000000000000  throttle=ok
+sample[locked-title-pre]: 1410 MHz, 1215 MHz, 43, 76.28 W, 0x0000000000000000  throttle=ok
+sample[locked-hdfs-pre]: 1410 MHz, 1215 MHz, 44, 77.08 W, 0x0000000000000000  throttle=ok
+sample[locked-spark-pre]: 1410 MHz, 1215 MHz, 42, 75.33 W, 0x0000000000000000  throttle=ok
+sample[locked-windows-pre]: 1410 MHz, 1215 MHz, 42, 75.87 W, 0x0000000000000000  throttle=ok
+sample[locked-caddress-pre]: 1410 MHz, 1215 MHz, 42, 75.60 W, 0x0000000000000000  throttle=ok
+sample[locked-lcomment-pre]: 1410 MHz, 1215 MHz, 44, 77.08 W, 0x0000000000000000  throttle=ok
+sample[locked-oclerk-pre]: 1410 MHz, 1215 MHz, 44, 77.36 W, 0x0000000000000000  throttle=ok
+sample[locked-shipinstruct-pre]: 1410 MHz, 1215 MHz, 43, 76.21 W, 0x0000000000000000  throttle=ok
+sample[locked-pscomment-pre]: 1410 MHz, 1215 MHz, 42, 75.33 W, 0x0000000000000000  throttle=ok
+sample: 1410 MHz, 1215 MHz, 42, 75.33 W, 0x0000000000000000  throttle=ok

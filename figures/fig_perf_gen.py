@@ -56,9 +56,16 @@ OUT = Path(__file__).resolve().parent / "out" / "fig_perf_gen.pdf"
 # HBM parts take the blue ramp, the GDDR6 part green. Memory technology is the axis that
 # actually separates these chips for this kernel, and keeping the non-HBM part out of the blues
 # also keeps every chip clear of the orange the DE bars use.
-CHIP_COLOR = {"b300": "#08519c", "h100": "#4292c6", "a100": "#9ecae1", "l40s": "#41ab5d"}
-CHIP_MEM = {"b300": "HBM", "h100": "HBM", "a100": "HBM", "l40s": "GDDR6"}
-CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S"}
+# GDDR7 joins the GREEN family, not the blues, and takes the dark rung so the GDDR pair reads as a
+# ramp exactly like the HBM triple does. That keeps the figure's encoding honest: colour family is
+# memory technology, lightness is position within it. It also matters for what this chip is FOR --
+# RTX PRO 6000 is Blackwell silicon behind GDDR7, so it sits beside the B300 in architecture and
+# opposite it in memory, and a reader must be able to see which of those the colour tracks.
+CHIP_COLOR = {"b300": "#08519c", "h100": "#4292c6", "a100": "#9ecae1", "l40s": "#41ab5d",
+              "rtxpro": "#238b45"}
+CHIP_MEM = {"b300": "HBM", "h100": "HBM", "a100": "HBM", "l40s": "GDDR6", "rtxpro": "GDDR7"}
+CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S",
+              "rtxpro": "RTX PRO 6000"}
 # Nominal clock state -> marker. Ordered as the campaign requests them.
 STATE_MARK = [("boost", "*"), ("max", "o"), ("75%", "s"), ("55%", "^"), ("40%", "D")]
 DE_SHADE = {"DEFLATE-hi": "#fd8d3c", "DEFLATE-fast": "#fdd0a2", "LZ4": "#d94801",
@@ -112,8 +119,14 @@ def main():
 
     rows = [(lab, ds, col, "real") for lab, ds, col in S.REAL] + \
            [(lab, ds, col, "gen") for lab, ds, col in S.GEN]
-    states = {c: nominal_states(root, c) for c in S.CHIPS}
-    data = {c: {t: S.cells(root, c, t, "onpair") for t in S.clock_tags(root, c)} for c in S.CHIPS}
+    # PER-CHIP ROOT. The fifth chip was brought up after the paper campaign and lives in its own
+    # leg, at the same revision, seed, corpus and clock protocol -- so it belongs on this axis, but
+    # it is not in the same directory. Resolving the root per chip is what lets one figure draw a
+    # multi-leg campaign; using a single root silently drew it as an absent series.
+    roots = {c: (S.chip_root(c, a.suite_id) or root) for c in S.CHIPS}
+    states = {c: nominal_states(roots[c], c) for c in S.CHIPS}
+    data = {c: {t: S.cells(roots[c], c, t, "onpair") for t in S.clock_tags(roots[c], c)}
+            for c in S.CHIPS}
 
     # SIZED TO ITS RENDERED WIDTH. This is a two-column float, so it lands at about 7 inches. A
     # 10-inch figsize is scaled down by a third on the page and takes every font with it, which

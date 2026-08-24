@@ -56,17 +56,22 @@ fi
 # The paper cites GENERATED MACROS for these numbers rather than transcribing them, so the check
 # is not "does prose match data" -- it is "is the committed macro file what the data produces".
 # Transcription is the step that kept going stale; removing it removes the failure mode.
-echo "== regenerating the Section 3-4 claim macros from results/ =="
+# THE LEG IS NAMED, not defaulted. paper_claims.py still defaults to results/campaign-20260820,
+# the pre-suite campaign, and its unread-leg guard then refuses to derive anything -- so this step
+# exited non-zero for every caller of `make verify` until the leg was named here. Name it, and a
+# future campaign changes one line rather than being papered over with --allow-unconsumed.
+CLAIM_LEG="${CLAIM_LEG:-results/suite-paper-20260821}"
+echo "== regenerating the Section 3-5 claim macros from ${CLAIM_LEG} =="
 CLAIMS_TEX="${CLAIMS_TEX:-$HOME/repos/onpair-gpu-paper/sections/generated/claims.tex}"
-uv run experiments/paper_claims.py --emit-tex /tmp/claims.regen.tex || {
+uv run experiments/paper_claims.py --suite-root "$CLAIM_LEG" --emit-tex /tmp/claims.regen.tex || {
   echo "FATAL: could not derive the claim macros"; exit 1; }
 if [ -f "$CLAIMS_TEX" ] && ! diff -q "$CLAIMS_TEX" /tmp/claims.regen.tex >/dev/null; then
   echo "FATAL: $CLAIMS_TEX is stale. Diff:"
   diff "$CLAIMS_TEX" /tmp/claims.regen.tex || true
   exit 1
 fi
-echo "== re-deriving the declared Section 3-4 claims =="
-if ! uv run experiments/paper_claims.py --check; then
+echo "== re-deriving the declared Section 3-5 claims =="
+if ! uv run experiments/paper_claims.py --suite-root "$CLAIM_LEG" --check; then
   echo "FATAL: a Section 3-4 claim does not re-derive (see above)"
   exit 1
 fi
