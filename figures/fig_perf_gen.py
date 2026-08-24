@@ -43,9 +43,6 @@ import argparse
 import sys
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -146,6 +143,11 @@ def main():
     # SIZED TO ITS RENDERED WIDTH. This is a two-column float, so it lands at about 7 inches. A
     # 10-inch figsize is scaled down by a third on the page and takes every font with it, which
     # is why the previous version could not be read at print size. Draw it the size it is shown.
+    # THE THEME, which this generator went without: it imported pyplot directly and drew on
+    # matplotlib's defaults, so its ticks and axis labels came out at 10pt against the 7 and 8
+    # every other figure declares, and it kept the default four-sided box. That is why it was
+    # the one figure whose type looked oversized on the page.
+    plt = C.apply_theme()
     fig, ax = plt.subplots(figsize=(7.1, 2.65))
     slot = 1.0
     per_chip = (slot * 0.72) / len(ordered_chips())

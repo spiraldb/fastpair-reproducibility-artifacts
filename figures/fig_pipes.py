@@ -144,7 +144,14 @@ def main():
     # size. The labels name each segment outright so the caption does not have to, and four per
     # row was what forced them down to 4.6pt -- the smallest type on any page. Four rows cost
     # about a quarter inch of height, which is the right trade for a readable key.
-    C.legend_below(fig, ncol=2, columnspacing=1.0,
+    # THE FIRST COLUMN IS REVERSED, so it reads top to bottom in the order the segments stack
+    # bottom to top: the emit is the top of every bar and the top of the key. Handed to the
+    # legend explicitly, because the axes hand back artists in the order they were drawn, which
+    # is stacking order and therefore upside down here.
+    h, lab = ax.get_legend_handles_labels()
+    order = [3, 2, 1, 0] + list(range(4, len(h)))
+    C.legend_below(fig, handles=[h[i] for i in order], labels=[lab[i] for i in order],
+                   ncol=2, columnspacing=1.0,
                    handlelength=1.1, handletextpad=0.3, labelspacing=0.25)
     C.save(fig, "fig_pipes", width="column")
 
