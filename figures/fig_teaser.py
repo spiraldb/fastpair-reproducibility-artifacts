@@ -31,12 +31,17 @@ COLS = [
     ("wikipedia", "text", "Wikipedia"),
 ]
 
-FP16, FP12, FSST = C.PRIMARY, "#92c5de", "#c994c7"
+# Same banded technique families as fig_perf_real, so a hue means the same group in both:
+# the three codecs FastPair decodes take the "ours" band of viridis, the Engine takes its own
+# band, and software Zstd takes the neutral greys as context.
 # Zstd at both ends of the level range it was run at: -10 is its fastest setting and
 # 3 its highest-ratio one, so the pair brackets what software Zstd offers on this GPU.
-SERIES = [("OnPair-16", FP16), ("OnPair-12", FP12), ("FSST-12", FSST),
-          ("DE (best)", C.TECH["de"]), ("Zstd (-10)", C.TECH["software"]),
-          ("Zstd (3)", "#5b616b")]
+SERIES = [("OnPair-16", C.colour("tech-ours", "OnPair-16")),
+          ("OnPair-12", C.colour("tech-ours", "OnPair-12")),
+          ("FSST-12", C.colour("tech-ours", "FSST-12")),
+          ("DE (best)", C.colour("tech-engine", "DE Deflate (5)")),
+          ("Zstd (-10)", C.neutral(1)),
+          ("Zstd (3)", C.neutral(3))]
 
 
 # BASIS: production-only (see the "EXPERIMENTAL DOES NOT MEAN IGNORE" block in suite.py).
@@ -83,22 +88,21 @@ def main():
         for xi, v in zip(xs, vals[j]):
             if not np.isnan(v):
                 ax.text(xi, v + 25, ("%.0f" % v) if v >= 10 else ("%.1f" % v),
-                        ha="center", va="bottom", fontsize=4.0, color=C.INK, rotation=90)
+                        ha="center", va="bottom", fontsize=C.FS["annot"], color=C.INK, rotation=90)
 
     ax.set_ylim(0, 1500)
     ax.set_yticks([0, 250, 500, 750, 1000, 1250, 1500])
-    ax.tick_params(axis="y", labelsize=6)
-    ax.set_ylabel("decode (GB/s)", fontsize=7)
+    ax.set_ylabel("decode (GB/s)")
     ax.set_xticks(x)
-    ax.set_xticklabels([lbl for _, _, lbl in COLS], fontsize=6.5)
+    ax.set_xticklabels([lbl for _, _, lbl in COLS])
     ax.set_xlim(-0.55, len(COLS) - 0.45)
-    ax.legend(frameon=False, fontsize=5.2, loc="upper center", ncol=3,
+    ax.legend(frameon=False, fontsize=C.FS["legend_dense"], loc="upper center", ncol=3,
               bbox_to_anchor=(0.5, 1.30), handlelength=0.9, columnspacing=0.7,
               handletextpad=0.35)
     ax.grid(axis="y", color="#e6e6e6", lw=0.6, zorder=0)
     ax.set_axisbelow(True)
     fig.tight_layout()
-    C.save(fig, "fig_teaser")
+    C.save(fig, "fig_teaser", width="column")
 
     for j, (lab, _) in enumerate(SERIES):
         print(f"{lab:16s} " + "  ".join(f"{v:8.1f}" for v in vals[j]))

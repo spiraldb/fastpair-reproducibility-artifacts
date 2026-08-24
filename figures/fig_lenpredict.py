@@ -41,13 +41,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
-# (codec, bits, colour, label). Colours match fig_perf_real and fig_compressibility so a hue
-# means the same codec in every figure. FSST-12 is here because it is a THIRD codec the same
+# Colours come from tech-ours, the SAME family fig_perf_real and fig_teaser use, so a codec is
+# one colour paper-wide. This figure used to draw from the four-member "codec" family instead,
+# which put OnPair-16 at #24878e here and #440154 there -- same codec, two colours. FSST-12 is here because it is a THIRD codec the same
 # kernels decode: at twelve bits its low plane is the same 32 KiB and is equally resident, so if
 # the relation belongs to the decode rather than to OnPair it has to hold for FSST-12 too.
-PRESETS = [("onpair", 12, "#6baed6", "OnPair-12"),
-           ("onpair", 16, "#08519c", "OnPair-16"),
-           ("fsst12", 12, "#c994c7", "FSST-12")]
+# Colour comes from common's codec family, so this figure changes with the palette rather
+# than pinning its own hex. Marker shape carries the same identity for greyscale.
+# Ordered as the tech-ours band is, so the legend reads darkest to lightest like the marks do.
+PRESETS = [("onpair", 16, "OnPair-16", "o"),
+           ("onpair", 12, "OnPair-12", "s"),
+           ("fsst12", 12, "FSST-12", "D")]
 CHIP = "b300"
 REAL = {(ds, col) for _, ds, col in S.REAL}
 
@@ -86,7 +90,8 @@ def main():
     plt = C.apply_theme()
     fig, ax = plt.subplots(figsize=(3.3, 1.9))
 
-    for codec, bits, colour, label in PRESETS:
+    for codec, bits, label, marker in PRESETS:
+        colour = C.colour("tech-ours", label)
         pts = series(root, CHIP, bits, codec)
         if len(pts) < 3:
             sys.stderr.write("fig_lenpredict: %s %s has %d columns, skipped\n"
@@ -97,9 +102,10 @@ def main():
         slope, icpt = fit(xs, ys)
         lo, hi = min(xs), max(xs)
         ax.plot([lo, hi], [slope * lo + icpt, slope * hi + icpt],
-                color=colour, linewidth=1.0, zorder=1)
-        ax.scatter(xs, ys, s=17, color=colour, edgecolor="white", linewidth=0.4, zorder=2,
-                   label="%s  $r=%+.2f$" % (label, r))
+                color=colour, linewidth=C.LW, zorder=1)
+        ax.scatter(xs, ys, s=C.MS_SCATTER, color=colour, marker=marker, edgecolor="white",
+                   linewidth=0.4, zorder=2,
+                   label="%s\n$r=%+.2f$" % (label, r))
         sys.stderr.write("%s %-9s: n=%d r=%+.3f slope=%.1f GB/s per byte, len %.2f-%.2f\n"
                          % (CHIP, label, len(xs), r, slope, lo, hi))
 
@@ -108,7 +114,7 @@ def main():
     for chip in S.CHIPS_CORE:
         if chip == CHIP:
             continue
-        for codec, bits, _, label in PRESETS:
+        for codec, bits, label, _ in PRESETS:
             pts = series(root, chip, bits, codec)
             if len(pts) >= 3:
                 xs, ys = zip(*pts)
@@ -122,14 +128,15 @@ def main():
     # of empty panel below the data would halve the visible slope for nothing. Magnitudes are read
     # off fig_perf_gen, which is zero-based.
     ax.set_ylim(700, 1600)
-    fig.tight_layout(pad=0.2)
+    fig.tight_layout(pad=0.3)
     # BELOW the axes, matching fig_perf_real and fig_perf_gen so every result figure carries its
     # key the same way. Three entries fit one row at column width. The anchor clears the x label,
     # and bbox_inches="tight" in C.save grows the canvas to include it.
-    fig.legend(fontsize=6.6, ncol=3, loc="upper center",
-               bbox_to_anchor=(0.0, -0.02, 1.0, 0.08), mode="expand", frameon=False,
-               columnspacing=0.9, handlelength=1.0, handletextpad=0.35)
-    C.save(fig, "fig_lenpredict")
+    # Each entry is two lines, codec above its coefficient. labelspacing separates the entries
+    # vertically; the anchor sits well below the x label rather than just under the axes.
+    C.legend_below(fig, ncol=3, columnspacing=1.6, handlelength=1.0, handletextpad=0.4,
+                   labelspacing=0.3)
+    C.save(fig, "fig_lenpredict", width="column")
 
 
 if __name__ == "__main__":

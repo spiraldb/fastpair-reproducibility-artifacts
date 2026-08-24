@@ -52,7 +52,7 @@ PEAK_TBS = {"a100": 1.56, "l40s": 0.86, "h100": 3.35, "b300": 8.00}
 LABEL = {"a100": "A100", "l40s": "L40S", "h100": "H100", "b300": "B300", "rtxpro": "RTX PRO"}
 # Plot order is generational, not the CHIPS_CORE order, because the right panel reads as a
 # progression. A chip with no committed leg is skipped and reported.
-ORDER = ["a100", "l40s", "h100", "b300", "rtxpro"]
+ORDER = C.DEVICE_ORDER   # paper-wide device order; see common.DEVICE_ORDER
 REAL = {(ds, col) for _, ds, col in S.REAL}
 
 

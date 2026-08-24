@@ -58,13 +58,27 @@ YLO, YHI = 0, 2000
 
 # Configuration -> shade, in technique families, copied from fig_sota so a colour means the same
 # thing in both figures. OnPair replaces the FastPair label; the hues are unchanged.
+# Each technique GROUP takes its own band of viridis, so the band says which family a mark
+# belongs to and the step within it says which member. Zstd stays on the neutral greys: it is
+# the context the positional claim is made against, not a family being compared. Group identity
+# is also carried by FAMILY_MARKER below, which is what keeps the narrow bands readable -- a band
+# has little luminance to divide, so shape does the work colour cannot.
+# ORDER IS THE LEGEND ORDER, and it follows each band's own order so the legend reads as the
+# ramp does: OnPair-16, OnPair-12, FSST-12 for ours, and Bitcomp-default, Bitcomp-sparse, gANS
+# for nvCOMP. A legend that lists members in a different order from the colours it explains
+# makes the reader re-derive the mapping entry by entry.
 CFG = {
-    "OnPair-12": "#6baed6", "OnPair-16": "#08519c",
-    "FSST-12": "#c994c7",
-    "DE Deflate (5)": "#fd8d3c", "DE Deflate (0)": "#fdd0a2", "DE LZ4": "#d94801",
-    "DE Snappy": "#7f2704",
-    "Zstd (-10)": "#cccccc", "Zstd (1)": "#969696", "Zstd (3)": "#525252",
-    "gANS": "#41ab5d", "Bitcomp-default": "#a1d99b", "Bitcomp-sparse": "#006d2c",
+    "OnPair-16": C.colour("tech-ours", "OnPair-16"),
+    "OnPair-12": C.colour("tech-ours", "OnPair-12"),
+    "FSST-12": C.colour("tech-ours", "FSST-12"),
+    "DE Deflate (5)": C.colour("tech-engine", "DE Deflate (5)"),
+    "DE Deflate (0)": C.colour("tech-engine", "DE Deflate (0)"),
+    "DE LZ4": C.colour("tech-engine", "DE LZ4"),
+    "DE Snappy": C.colour("tech-engine", "DE Snappy"),
+    "Zstd (-10)": C.neutral(0), "Zstd (1)": C.neutral(1), "Zstd (3)": C.neutral(3),
+    "Bitcomp-default": C.colour("tech-nvcomp", "Bitcomp-default"),
+    "Bitcomp-sparse": C.colour("tech-nvcomp", "Bitcomp-sparse"),
+    "gANS": C.colour("tech-nvcomp", "gANS"),
 }
 FAMILY_MARKER = {"OnPair": "o", "DE": "s", "Zstd": "^", "nvCOMP-sw": "D"}
 FAMILY = {
@@ -114,9 +128,10 @@ def frontier_at(pts, ratio):
     return max(vals) if vals else None
 
 
-def mark(ax, r, t, color, marker="o", s=20):
+def mark(ax, r, t, color, marker="o", s=None):
     """Off-scale marks are drawn open at the floor rather than dropped, so a reader can see that
     a family exists below the axis instead of inferring it never ran."""
+    s = C.MS_SCATTER if s is None else s
     if t < YLO:
         OFFSCALE.append((None, t))
         ax.scatter([r], [YLO * 1.04], s=s * 0.8, facecolors="none", marker=marker,
@@ -159,9 +174,9 @@ def panel(ax, root, rows, title):
         ax.fill_between(xs, 1e-3, ys, step="pre", color=C.INK, alpha=0.055, lw=0, zorder=1)
     ax.set_xlim(xmin, xmax)
     for r, t, cfg in bases:
-        mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"), s=26)
+        mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"))
     for r, t, cfg, _ in ours:
-        mark(ax, r, t, CFG[cfg], marker=MARKER[cfg], s=22)
+        mark(ax, r, t, CFG[cfg], marker=MARKER[cfg])
     ax.set_xscale("log")
     ticks = [1, 1.5, 2, 3, 5, 7, 10, 20]
     ax.xaxis.set_major_locator(FixedLocator(ticks))
@@ -169,7 +184,7 @@ def panel(ax, root, rows, title):
     ax.xaxis.set_minor_locator(FixedLocator([]))
     ax.xaxis.set_minor_formatter(NullFormatter())
     ax.set_xlabel("compression ratio (log)")
-    ax.set_title(title, fontsize=8)
+    ax.set_title(title)
     return ours, bp
 
 
@@ -188,7 +203,7 @@ def main():
     # GSST reports one number: 191 GB/s on an A100, TPC-H l_comment. That is generated data, so it
     # goes on the synthetic panel, and it is another device, so it is drawn but never enters the
     # baseline frontier or the dominance test.
-    axS.scatter([2.74], [C.GSST_GBS], s=70, marker="*", color=C.GSST_RED, zorder=6)
+    axS.scatter([2.74], [C.GSST_GBS], s=C.MS_STAR ** 2, marker="*", color=C.GSST_RED, zorder=6)
 
     # ASSERTED PER COLUMN, not against the pooled staircase. The staircase is drawn for
     # orientation, but a pooled test compares us on one column against a baseline measured on
@@ -251,18 +266,27 @@ def main():
     def flip(items, ncol):
         return list(itertools.chain(*[items[i::ncol] for i in range(ncol)]))
 
-    codec_handles = [Line2D([], [], color=CFG[k], marker=MARKER.get(k, "o"), ls="", ms=5.5,
+    codec_handles = [Line2D([], [], color=CFG[k], marker=MARKER.get(k, "o"), ls="", ms=C.MS_LEGEND,
                             label=k) for k in CFG]
-    gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=9, label="GSST (A100)")
-    extra = [Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="baseline envelope"),
-             Line2D([], [], color=C.INK, marker="^", ls="", ms=5, markerfacecolor="none",
-                    label="off-scale (open)")]
-    leg = codec_handles[:6] + [gsst] + codec_handles[6:] + extra
-    fig.legend(handles=flip(leg, 8), frameon=False, fontsize=6.3, ncol=8, loc="lower center",
-               bbox_to_anchor=(0.0, -0.01, 1.0, 0.13), mode="expand",
-               columnspacing=0.6, handlelength=1.1, handletextpad=0.45, borderaxespad=0.0)
-    fig.tight_layout(rect=(0, 0.155, 1, 1))
-    C.save(fig, "fig_perf_real")
+    gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=C.MS_STAR * 1.2, label="GSST (A100)")
+    # No off-scale entry. YLO is 0, so mark()'s t < YLO branch needs a negative decode rate and
+    # never fires; the legend was advertising a convention that never appears on the page. The
+    # branch stays as a guard in case the floor is ever raised.
+    extra = [Line2D([], [], color=C.INK, lw=0.8, alpha=0.55, label="baseline envelope")]
+    # GSST closes the FIRST row, right after the Engine's four. That is what pushes Zstd (-10)
+    # onto the second row, so all three Zstd levels sit together and the whole software side --
+    # Zstd and nvCOMP -- occupies one line. Splicing it at index 6 instead broke the Engine's
+    # entries apart; at 7 it lands after them.
+    leg = codec_handles[:7] + [gsst] + codec_handles[7:] + extra
+    fig.tight_layout(pad=0.3)
+    # Twelve entries over eight columns at full width. mode="expand" spreads them across the
+    # whole canvas rather than centring a block, so the two rows align; anchored by their top
+    # edge C.LEGEND_GAP under the figure, as every other below-axes key is.
+    fig.legend(handles=flip(leg, 8), frameon=False, fontsize=C.FS["legend"], ncol=8,
+               loc="upper center", bbox_to_anchor=(0.0, -C.LEGEND_GAP, 1.0, 0.001),
+               mode="expand", columnspacing=0.6, handlelength=1.1, handletextpad=0.45,
+               borderaxespad=0.0)
+    C.save(fig, "fig_perf_real", width="text")
 
     zcells = S.cells(root, DEV, "boost", "zstd")
     nz = sum(len(S.zstd_points(zcells, ds, col)) for _, ds, col in S.REAL + S.GEN)

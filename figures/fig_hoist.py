@@ -94,14 +94,23 @@ def main():
     allv = np.concatenate([m[~np.isnan(m)] for m in grids.values()])
     if not allv.size:
         sys.exit("no dg/dh coordinates found; is this a full-grid pass?")
-    vmin, vmax = allv.min(), allv.max()
+    # ANCHORED, not data-derived. A scale that tracks min/max re-maps every colour whenever a
+    # cell changes, so two renders of this figure are not comparable and neither is a shade here
+    # against the same shade in a neighbouring panel from an earlier pass. 700 to 1550 brackets
+    # every measured cell on this column with a little margin and matches fig_lenpredict's axis.
+    VMIN, VMAX = 700.0, 1550.0
+    vmin, vmax = VMIN, VMAX
+    lo, hi = float(allv.min()), float(allv.max())
+    if lo < vmin or hi > vmax:
+        sys.stderr.write("fig_hoist: data spans %.0f-%.0f, outside the anchored scale %.0f-%.0f;"
+                         " cells beyond it are clipped\n" % (lo, hi, vmin, vmax))
 
     plt = C.apply_theme()
     fig, axes = plt.subplots(1, len(BS), figsize=(7.0, 1.45), sharey=True,
                              gridspec_kw={"wspace": 0.06})
     im = None
     for ax, B in zip(axes, BS):
-        im = ax.imshow(grids[B], origin="lower", aspect="auto", cmap="viridis",
+        im = ax.imshow(grids[B], origin="lower", aspect="auto", cmap=C.cmap("analysis"),
                        vmin=vmin, vmax=vmax,
                        extent=(-0.5, len(KS) - 0.5, -0.5, len(HS) - 0.5))
         # The rate is printed in the cell: a reader comparing two panels should not have to
@@ -110,25 +119,29 @@ def main():
             for i in range(len(HS)):
                 v = grids[B][i, j]
                 if not np.isnan(v):
-                    ax.text(j, i, f"{v:.0f}", ha="center", va="center", fontsize=5.0,
+                    ax.text(j, i, f"{v:.0f}", ha="center", va="center", fontsize=C.FS["annot"],
                             color="white" if v < (vmin + vmax) / 2 else "#222222")
-        ax.set_xticks(range(len(KS)))
-        ax.set_xticklabels([str(k) for k in KS])
+        # Label a subset of K, matching fig_grid: every cell already carries its rate, so a tick
+        # per column competes with the numbers for no gain. The axis is categorical, so the tick
+        # positions are the INDICES of these K values, not the values.
+        kshow = [k for k in (1, 2, 4, 6, 8) if k in KS]
+        ax.set_xticks([KS.index(k) for k in kshow])
+        ax.set_xticklabels([str(k) for k in kshow])
         ax.set_yticks(range(len(HS)))
         ax.set_yticklabels([str(h) for h in HS])
-        ax.set_title(f"B={B}", fontsize=7.5)
+        ax.set_title(f"B={B}")
         ax.grid(False)
-    axes[len(BS) // 2].set_xlabel("K (codes per lane)")
+    axes[len(BS) // 2].set_xlabel("K (tokens per thread)")
     axes[0].set_ylabel("H (held rounds)")
     # Every cell carries its rate, so the bar orients the reader between dark and light rather
     # than being read off. Five ticks keep the ramp legible without competing with the numbers.
     # EVENLY SPACED and inside the range. Spanning vmin..vmax in equal fractions gave five ticks
     # at uneven round numbers, which reads worse than four on a regular interval.
-    ticks = [t for t in range(750, 1501, 250) if vmin <= t <= vmax]
+    ticks = [t for t in (750, 1000, 1250, 1500) if vmin <= t <= vmax]
     cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.015, ticks=ticks)
-    cb.set_label("decode (GB/s)", fontsize=6.5)
-    cb.ax.tick_params(labelsize=6)
-    C.save(fig, "fig_hoist")
+    cb.set_label("decode (GB/s)", fontsize=C.FS["axis_label"])
+    cb.ax.tick_params(labelsize=C.FS["tick"])
+    C.save(fig, "fig_hoist", width="text")
 
     for B in BS:
         for K in (6,):

@@ -14,7 +14,7 @@ THE TWO PANELS ARE THE ARGUMENT.
   B=1 (left).  The launch bound asks for nothing, so ptxas allocates what the kernel wants -- 56
   registers per thread at every K -- and the hardware still resides 4 blocks per SM, unchanged
   across the whole sweep. Occupancy is FLAT. Whatever the rate curve does here is therefore the
-  algorithm alone: more codes per lane amortise the scan and the drain until the live low-plane
+  algorithm alone: more tokens per thread amortise the scan and the drain until the live low-plane
   bytes stop paying for themselves. That peak is real and it is K=6 at T=256.
 
   B=8 (right).  Asking for eight resident blocks caps registers at R/(T*B) = 32. At small K that
@@ -54,8 +54,15 @@ import suite as S  # noqa: E402
 KS = list(range(1, 9))
 TS = [64, 128, 256]
 PANELS = [(1, "B=1"), (4, "B=4"), (8, "B=8")]
-T_COLOR = {64: "#9ecae1", 128: "#4292c6", 256: "#08519c"}
-OCC_COLOR = "#b0413e"
+# From common's threads family: viridis sampled at 0.25, 0.5 and 0.75, i.e. five evenly
+# spaced points with both ends dropped. T is an order rather than a set of identities, so a
+# ramp is the right encoding, and dropping the ends keeps both extremes of the scale off the
+# page -- viridis is near-black at 0 and near-yellow at 1.
+T_COLOR = {64: C.colour("threads", "T=64"), 128: C.colour("threads", "T=128"),
+           256: C.colour("threads", "T=256")}
+# The occupancy overlay is a different quantity on a different axis, so it is deliberately
+# NOT from the threads ramp; it takes the darkest context grey.
+OCC_COLOR = C.neutral(3)
 DEV, BITS = "b300", 12
 COLUMN = ("loghub-windows", "line")   # fastest real column on the B300 at OnPair-12
 
@@ -112,48 +119,53 @@ def main():
             ys = [grid.get((K, T, B)) for K in KS]
             xs = [k for k, y in zip(KS, ys) if y]
             yy = [y for y in ys if y]
-            ax.plot(xs, yy, marker="o", ms=3.0, lw=1.2, color=T_COLOR[T], label=f"T={T}")
+            ax.plot(xs, yy, marker="o", ms=C.MS, lw=C.LW, color=T_COLOR[T], label=f"T={T}")
         # Residency for the two widest blocks, so the reader can see it is flat at B=1 for both
         # and falls at B=8 for both, rather than taking one T on trust.
         ax2 = ax.twinx()
         for T, dash in ((64, (0, (1, 1))), (128, (0, (1, 1.6))), (256, (0, (3, 2)))):
             occ = [(K, res[(K, T, B)]["blocks_per_sm"]) for K in KS if (K, T, B) in res]
             if occ:
-                ax2.plot([k for k, _ in occ], [b for _, b in occ], color=OCC_COLOR, lw=1.0,
+                ax2.plot([k for k, _ in occ], [b for _, b in occ], color=OCC_COLOR, lw=C.LW,
                          ls=dash, zorder=1)
         ax2.set_ylim(0, 20)
         ax2.set_yticks([4, 9, 18])
-        ax2.tick_params(axis="y", colors=OCC_COLOR, labelsize=6)
+        ax2.tick_params(axis="y", colors=OCC_COLOR, labelsize=C.FS["tick"])
         if B == PANELS[-1][0]:
-            ax2.set_ylabel("blocks/SM", color=OCC_COLOR, fontsize=6.5)
+            ax2.set_ylabel("blocks/SM", color=OCC_COLOR, fontsize=C.FS["axis_label"])
         else:
             ax2.set_yticklabels([])
-        ax.set_title(title, fontsize=7.5)
+        ax.set_title(title)
         ax.set_xticks([1, 2, 4, 6, 8])
         ax.grid(alpha=.25, lw=.4)
         ax.set_axisbelow(True)
     from matplotlib.ticker import FixedLocator
-    axes[len(PANELS) // 2].set_xlabel("K (codes per lane)")
+    axes[len(PANELS) // 2].set_xlabel("K (tokens per thread)")
     axes[0].set_ylabel("decode (GB/s)")
     axes[0].set_ylim(0, 2000)
     axes[0].yaxis.set_major_locator(FixedLocator([0, 500, 1000, 1500, 2000]))
 
     from matplotlib.lines import Line2D
-    handles = [Line2D([], [], color=T_COLOR[T], marker="o", ms=3, lw=1.2, label=f"T={T}")
+    handles = [Line2D([], [], color=T_COLOR[T], marker="o", ms=C.MS_LEGEND, lw=C.LW, label=f"T={T}")
                for T in TS]
-    occ_handles = [Line2D([], [], color=OCC_COLOR, lw=1.0, ls=d, label=f"T={T}")
+    occ_handles = [Line2D([], [], color=OCC_COLOR, lw=C.LW, ls=d, label=f"T={T}")
                    for T, d in ((64, (0, (1, 1))), (128, (0, (1, 1.6))), (256, (0, (3, 2))))]
     # Two legends, set apart, because the two groups share their T labels and the axis names the
     # quantity. Repeating "blocks/SM" on every swatch spent three labels saying one thing.
-    l1 = fig.legend(handles=handles, frameon=False, fontsize=6.5, ncol=3, loc="lower center",
-                    bbox_to_anchor=(0.27, -0.04), columnspacing=1.0, handlelength=1.6,
-                    title="decode", title_fontsize=6.5)
+    # Hung by their TOP edge one C.LEGEND_GAP under the figure, and tight_layout is given the
+    # full canvas: reserving a band at the bottom AND anchoring outside it stacked two gaps, so
+    # the key floated well clear of the x label it belongs to.
+    l1 = fig.legend(handles=handles, frameon=False, fontsize=C.FS["legend"], ncol=3,
+                    loc="upper center", bbox_to_anchor=(0.27, -C.LEGEND_GAP),
+                    columnspacing=1.0, handlelength=1.6, title="decode",
+                    title_fontsize=C.FS["legend"])
     fig.add_artist(l1)
-    fig.legend(handles=occ_handles, frameon=False, fontsize=6.5, ncol=3, loc="lower center",
-               bbox_to_anchor=(0.73, -0.04), columnspacing=1.0, handlelength=1.6,
-               title="blocks/SM", title_fontsize=6.5)
-    fig.tight_layout(rect=(0, 0.13, 1, 1))
-    C.save(fig, "fig_grid")
+    fig.legend(handles=occ_handles, frameon=False, fontsize=C.FS["legend"], ncol=3,
+               loc="upper center", bbox_to_anchor=(0.73, -C.LEGEND_GAP),
+               columnspacing=1.0, handlelength=1.6, title="blocks/SM",
+               title_fontsize=C.FS["legend"])
+    fig.tight_layout(pad=0.3)
+    C.save(fig, "fig_grid", width="text")
 
     for B, _ in PANELS:
         row = res.get((6, 256, B), {})

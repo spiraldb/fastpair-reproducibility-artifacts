@@ -22,6 +22,11 @@ CARD = {
     "clickbench_URL": 4018, "fineweb_text": 4042, "synthetic_url": 169,
     "tpch-sf10_l_comment": 3863, "tpch-sf10_l_shipinstruct": 5,
     "tpch-sf10_ps_comment": 3870, "wikipedia_text": 4048,
+    # 2026-08-24: pre-registered for the Loghub Windows capture fig:pipes wants, so the extractor
+    # consumes that dump without an edit. 3551 is gpu.distinct_codes for loghub-windows at twelve
+    # bits in suite-paper-20260821; both key spellings are accepted since the NCU filename stem
+    # depends on how the capture script slugs the dataset id.
+    "loghub-windows_line": 3551, "loghub_windows_line": 3551,
 }
 SOL = {  # (Section, Metric) -> csv column
     "l1tex": ("GPU Speed Of Light Throughput", "L1/TEX Cache Throughput"),
@@ -109,11 +114,23 @@ def _sum_col(rows, col):
 
 
 def rw_read_share(rows, fieldnames):
-    """Read share (%) per byte pipe in RW, summed over kernel invocations."""
+    """Read share (%) per byte pipe in RW, summed over kernel invocations.
+
+    Returns None for a pipe whose counters are ABSENT FROM THE DUMP, which is not the same thing
+    as a measured zero. dram__sectors_read/write.sum do not exist on sm_120 -- verified on the
+    2026-08-24 RTX PRO capture, where only the dram__bytes.* family is present -- and _sum_col
+    returns 0.0 for a column it cannot resolve. That made the RTX PRO report dram_rd=0.0, i.e. a
+    confident "100% of device-memory traffic is writes", from counters nobody had measured.
+    fig_costsurface draws this field, so a silent zero becomes a drawn bar. None serialises to an
+    empty cell and any consumer that floats() it fails loudly instead."""
     out = {}
     for k, (rd, wr) in RW.items():
-        r = _sum_col(rows, _resolve(fieldnames, rd))
-        w = _sum_col(rows, _resolve(fieldnames, wr))
+        rd_col, wr_col = _resolve(fieldnames, rd), _resolve(fieldnames, wr)
+        if rd_col is None and wr_col is None:
+            out[k] = None
+            continue
+        r = _sum_col(rows, rd_col)
+        w = _sum_col(rows, wr_col)
         out[k] = 100 * r / (r + w) if (r + w) else 0.0
     return out
 
@@ -171,7 +188,11 @@ def main():
                     s["l1tex"], s["l2"], s["dram"], s["sm"], s["l1hit"],
                     gld, gst, shld, shst, share["l2"], share["dram"]))
     for r in sorted(out, key=lambda r: (r[1], r[3])):
-        print("%s,%s,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % r)
+        # The two read-share fields may be None (counters absent from the dump, not a measured
+        # zero), so they are formatted separately rather than through one %.1f run.
+        head = "%s,%s,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % r[:13]
+        tail = ",".join("" if v is None else "%.1f" % v for v in r[13:])
+        print("%s,%s" % (head, tail))
 
 
 if __name__ == "__main__":

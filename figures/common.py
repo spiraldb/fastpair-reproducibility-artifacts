@@ -344,6 +344,51 @@ def ncu_sol(metric, fname="b200-ncu/ncu_costsurface_synthetic_url_b12_sol.txt"):
     raise KeyError("metric %r not found in %s" % (metric, fname))
 
 
+# ==========================================================================
+# TYPOGRAPHY AND MARKS.  One contract; every figure asks for a size by what the
+# thing IS, never by a literal.  Same motive as the palette below: changing the
+# type scale is one edit here rather than a sweep of the generators.
+#
+# THESE ARE PRINTED POINTS, and they are only printed points because `save` draws
+# each figure at the exact width LaTeX will show it at (see PRINT_PT). A figure
+# drawn 7.1in wide and included at 7.0in scales every glyph by 0.986; one drawn
+# 3.3in wide and included at 3.33in magnifies by 1.01. Those factors used to run
+# from 0.93 to 1.15 across the seven paper figures, so an 8pt axis label printed
+# anywhere between 7.5 and 9.2pt and no declared size meant anything. Normalising
+# the width is what makes this table a contract instead of a suggestion.
+FS = {
+    "axis_label": 8.0,    # x/y axis names, and a colourbar's label
+    "tick": 7.0,          # tick labels on every axis, including a colourbar's
+    "panel_title": 8.0,   # the B=1 / B=8 / Real-world style panel heading
+    "legend": 6.5,        # legend entries and legend titles
+    "annot": 5.5,         # values printed inside the plot (bar tops, heatmap cells)
+    # fig_pipes only: eight entries whose labels name a memory path outright
+    # ("dictionary gather (global read)"), at column width. Nothing shorter than
+    # this fits them, and the labels are what let its caption stay descriptive.
+    "legend_dense": 5.8,
+}
+
+# Data marks. `ms` is a diameter in points; scatter's `s` is an AREA in points
+# squared, hence MS ** 2. Stars read smaller than a disc of the same diameter.
+MS = 4.4
+MS_SCATTER = MS ** 2
+MS_STAR = MS * 1.6
+MS_LEGEND = MS * 1.2   # legend proxy, a little larger so a shape is identifiable
+LW = 1.1               # a data line
+
+# Printed width, in points, of the two float shapes this paper uses, measured from
+# the acmart[sigplan] class itself rather than assumed: \columnwidth is 240.945pt
+# and \textwidth is 505.89pt after \maketitle. `save` scales each figure so its
+# tight bounding box is exactly one of these, which makes \includegraphics
+# [width=\columnwidth] and [width=\textwidth] identity transforms.
+PRINT_PT = {"column": 240.945, "text": 505.89}
+# Gap between the axes and a legend placed below them, in figure fractions, on top
+# of whatever tight_layout already left under the x label -- which at these sizes is
+# about ten points and is itself the gap you want. Zero, therefore, and kept as a
+# named constant so the answer to "why is this key so far out" is one edit.
+LEGEND_GAP = 0.0
+
+
 def apply_theme():
     """One consistent look across all figures. Returns the pyplot module."""
     import matplotlib
@@ -351,14 +396,21 @@ def apply_theme():
     import matplotlib.pyplot as plt
     plt.rcParams.update({
         "font.family": "sans-serif",
-        "font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8,
-        "xtick.labelsize": 7, "ytick.labelsize": 7, "legend.fontsize": 7,
+        "font.size": FS["axis_label"], "axes.titlesize": FS["panel_title"],
+        "axes.labelsize": FS["axis_label"],
+        "xtick.labelsize": FS["tick"], "ytick.labelsize": FS["tick"],
+        "legend.fontsize": FS["legend"], "legend.title_fontsize": FS["legend"],
+        "lines.markersize": MS, "lines.linewidth": LW,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": "#888888", "axes.linewidth": 0.8, "axes.axisbelow": True,
         "axes.grid": True, "axes.grid.axis": "y",
         "grid.color": "#e6e6e6", "grid.linewidth": 0.7,
         "text.color": INK, "axes.labelcolor": INK, "xtick.color": INK, "ytick.color": INK,
         "figure.dpi": 200, "figure.facecolor": "white", "savefig.facecolor": "white",
+        # Hatch weight is a global rcParam, not a per-artist one: setting linewidth on a bar
+        # does nothing to its hatch. Default 1.0 draws a heavy screen that swamps the fill it
+        # sits on at these bar widths, so every figure gets a light rule instead.
+        "hatch.linewidth": 0.35,
     })
     return plt
 
@@ -367,8 +419,325 @@ def new_fig(w=3.3, h=2.2):
     return apply_theme().subplots(figsize=(w, h))
 
 
-def save(fig, name):
+PAD_IN = 0.02   # savefig pad_inches; part of the width the normaliser has to hit
+
+
+def fit_print_width(fig, width="column", tol=0.004, rounds=6):
+    """Scale `fig` so its saved tight bbox is exactly the printed width of `width`.
+
+    Fonts are absolute points, so growing the canvas does NOT grow the type -- the
+    axes take the extra room and every declared size in FS lands on the page as
+    that many points. That is the whole reason this exists. Aspect is preserved, so
+    a figure keeps the shape it was authored with.
+
+    Iterative because the tight bbox is not linear in the figure size: rotated tick
+    labels and an overhanging legend occupy a fixed number of points, so the margin
+    they add is a shrinking fraction as the canvas grows. Two or three rounds
+    converge to well under a point.
+    """
+    target = PRINT_PT[width] / 72.0
+    fig.canvas.draw()
+    for _ in range(rounds):
+        bb = fig.get_tightbbox(fig.canvas.get_renderer())
+        cur = bb.width + 2 * PAD_IN
+        if abs(cur - target) <= tol:
+            break
+        w, h = fig.get_size_inches()
+        k = target / cur
+        fig.set_size_inches(w * k, h * k)
+        fig.canvas.draw()
+    return fig
+
+
+def save(fig, name, width=None):
+    """Write out/<name>.{pdf,png}, drawn at the width LaTeX will print it at.
+
+    `width` names the float shape the paper wraps it in: "column" for figure,
+    "text" for figure*. Getting it wrong is not a crash, it is a figure whose type
+    is off by the ratio of the two, so it matches the \\includegraphics line.
+
+    Omitting it leaves the figure at whatever size the generator chose, which is
+    what the many generators that are NOT in the paper still do. Normalising them
+    would resize a seven-inch panel down to one column; the ones the paper prints
+    pass their width explicitly instead.
+    """
     OUTDIR.mkdir(exist_ok=True)
+    if width is not None:
+        fit_print_width(fig, width)
     for ext in ("pdf", "png"):
-        fig.savefig(OUTDIR / ("%s.%s" % (name, ext)), bbox_inches="tight", pad_inches=0.02)
+        fig.savefig(OUTDIR / ("%s.%s" % (name, ext)), bbox_inches="tight", pad_inches=PAD_IN)
     print("wrote", (OUTDIR / (name + ".pdf")).relative_to(ROOT))
+
+
+def legend_below(fig, gap=None, **kw):
+    """A legend hung under the axes, the same distance out in every figure.
+
+    Anchored by its TOP edge (loc="upper center") one LEGEND_GAP below the figure
+    box, so the space between the x label and the key does not depend on how many
+    rows the key happens to need. bbox_inches="tight" in `save` then grows the
+    canvas to include it.
+    """
+    kw.setdefault("frameon", False)
+    kw.setdefault("fontsize", FS["legend"])
+    y = -(LEGEND_GAP if gap is None else gap)
+    return fig.legend(loc="upper center", bbox_to_anchor=(0.5, y), **kw)
+
+
+# ==========================================================================
+# PALETTE BY ROLE.  One place; every figure asks for a colour by what the thing
+# IS, never by hex.  Changing a scale is one edit here instead of a sweep of the
+# generators, which is the whole point of this section existing.
+#
+# Two scales, chosen by what the figure is about:
+#   "technique"  our codecs, and the devices they run on  -> viridis
+#   "baseline"   the fixed-function Engine we measure against -> inferno
+#   "analysis"   instrument readings and mechanism        -> plasma
+# So a reader can tell at a glance whether a figure is showing WHAT SOMETHING IS or
+# HOW IT BEHAVES, and the two never share a hue vocabulary.
+#
+# VIRIDIS IS CAPPED AT 0.90. Above that it runs into a saturated yellow-green: #d8e219 sits at
+# luminance 0.691 with saturation 0.89 and only 1.42:1 contrast against the page, which is what
+# reads as harsh. Plasma does not have the same problem at the same position, because it reaches
+# its yellow only at the very top of its range, above anything sampled here. The cap is only
+# affordable because the Engine moved to its own scale and freed viridis's middle.
+#
+# Both are perceptually uniform, which is necessary but NOT sufficient for a
+# black-and-white printer: uniformity buys monotone luminance, so two members far
+# apart in the scale survive greyscale and two members close together do not.
+# greyscale_report() measures that instead of assuming it, and any family it flags
+# has to carry identity in marker shape or hatch as well as hue.
+# --------------------------------------------------------------------------
+SCALE = {"technique": "viridis", "baseline": "inferno", "analysis": "plasma"}
+
+# THE PAPER-WIDE DEVICE ORDER. Every figure that lays devices out side by side uses this, so a
+# reader who learns the order once can carry it between figures. Before this existed there were
+# four orders in the tree: suite.CHIPS_CORE, fig_pipes.ORDER, fig_crossarch.ORDER and the device
+# palette family, all different.
+#
+# The rule is: memory technology first, newest first within each group.
+#   - HBM before GDDR, because the boundary between them is what section 5.4 argues, so the
+#     grouping has to survive being read left to right.
+#   - Newest first inside a group puts the B300 -- the headline device -- at the left edge where
+#     a reader starts, and walks backward to the A100, which is the direction the "reaches back
+#     to Ampere" claim is made in.
+DEVICE_ORDER = ["b300", "h100", "a100", "rtxpro", "l40s"]
+DEVICE_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100",
+                "rtxpro": "RTX PRO", "l40s": "L40S"}
+
+
+def devices(present=None):
+    """The paper-wide device order, optionally filtered to those actually present."""
+    return [d for d in DEVICE_ORDER if present is None or d in present]
+
+# family -> (ordered members, scale, (lo, hi) span, mode). The span trims the ends of the
+# colormap: plasma runs near-black at 0.0 and near-yellow at 1.0, and both lose
+# contrast, one against ink and one against paper.
+#
+# mode picks how the members are placed inside the span:
+#   "luminance"  equal steps in BRIGHTNESS, which maximises what a greyscale printer has
+#                to resolve. Use for families whose members are categories.
+#   "interior"   n evenly spaced positions with both ends dropped, i.e. member i sits at
+#                (i+1)/(n+1) of the span. Predictable and symmetric; use for small ORDINAL
+#                families where the reader reads the ramp as an order, not as identities.
+#
+# WHICH MODE A FAMILY TAKES IS NOT A STYLE CHOICE. The interior form reads better as a ramp
+# and is right for an ORDER, but it cannot be forced onto a categorical family: measured on the
+# four-member pipe family it lands at a worst greyscale gap of 0.082 and RAISING the spread makes
+# it worse, not better (0.084 at 1.8, 0.078 at 2.0, 0.064 at 2.4), because clamping pins the
+# outer two members at the span's ends while the inner two stay in viridis's flattest luminance
+# region. Categories therefore take "luminance", which clears the same family at 0.149.
+#
+# An interior family may carry a fifth element, SPREAD, which pushes the members outward
+# from the centre of the span by that factor: 1.0 leaves the ends-dropped positions alone,
+# 1.5 moves them half a step further apart. Raise it when three colours sit too close to
+# tell apart at line width; positions are clamped to the span, so it cannot run off the
+# end of the scale and back into the extremes the span exists to avoid.
+FAMILY = {
+    # UNUSED as of 2026-08-24, and kept only for a figure that needs FSST-8 alongside the three
+    # this paper decodes. Anything drawing the three should use tech-ours, so a codec keeps one
+    # colour paper-wide; this family assigns them different ones because it has a fourth member.
+    "codec":  (["OnPair-12", "OnPair-16", "FSST-12", "FSST-8"], "technique", (0.15, 0.78), "luminance"),
+    "device": (["B300", "H100", "A100", "RTX PRO", "L40S"], "technique", (0.10, 0.85), "luminance"),
+    # SPLIT BY MEMORY TECHNOLOGY, for figures whose argument turns on it. A single continuous
+    # ramp cannot show a categorical boundary -- put the five devices on one scale and the
+    # HBM/GDDR split lands mid-ramp, where B300 and L40S are adjacent hues in different groups.
+    # Two scales give the split a hue change to live on, and each stays perceptually uniform.
+    # BANDED, both on the technique scale, rather than one group per scale. Splitting them
+    # across viridis and plasma did separate the groups, but it spent the analysis scale on a
+    # device family -- so plasma would have meant "instrument reading" everywhere except here.
+    # Two bands of one scale keep the categorical break and leave plasma meaning one thing.
+    # Neither band reaches 1.0: viridis ends at a near-white yellow that disappears against the
+    # page, which is what the span mechanism exists to prevent. Nor is the HBM band narrow --
+    # three members in 0.42 came out TIGHT at 0.075.
+    # Ordered as DEVICE_ORDER, so the darkest step of each band is that group's newest part and
+    # the ramp lightens as it goes back through the generations.
+    #
+    # These SHARE ranges with the codec bands on purpose. No figure draws codecs and devices
+    # together -- fig_perf_gen has devices and the Engine, fig_perf_real and fig_teaser have
+    # codecs and the Engine -- so the dark band can serve tech-ours and device-hbm, and the light
+    # band tech-nvcomp and device-gddr. What must NOT overlap is anything against tech-engine,
+    # because the Engine appears in all three of those figures.
+    "device-hbm":  (["B300", "H100", "A100"], "technique", (0.00, 0.46), "luminance"),
+    "device-gddr": (["RTX PRO", "L40S"], "technique", (0.63, 0.90), "luminance"),
+    # Threads per block is an ORDER, not a set of identities, so it takes the interior
+    # construction over the whole scale: three points at 0.25, 0.5 and 0.75 of viridis.
+    "threads": (["T=64", "T=128", "T=256"], "analysis", (0.0, 1.0), "interior", 1.5),
+    "pipe":   (["gather", "drain", "readback", "emit"], "analysis", (0.15, 0.80), "interior", 1.5),
+    "level":  (["L1", "L2", "device memory"], "analysis", (0.30, 0.75), "luminance"),
+    # ONE PROGRESSION over the whole memory path, ordered by distance from the SM: the
+    # dictionary gather is darkest and device memory lightest. The four L1 segments are drawn in
+    # colour and the last two are desaturated to the grey of matching brightness, so the set
+    # reads as a single luminance ramp with hue dropping away for the two context bars. Compute
+    # is deliberately NOT a member -- it is not on this path.
+    "mempath": (["gather", "drain", "readback", "emit", "L2", "device memory"],
+                "analysis", (0.10, 0.90), "luminance"),
+    # BANDED TECHNIQUE GROUPS. Each group takes its own region of viridis, so a reader sees
+    # which FAMILY a mark belongs to before reading which member, and the bands do not overlap.
+    # Zstd is not here: software byte-stream codecs take the neutral greys, since they are the
+    # context the positional claim is made against rather than a family being compared.
+    # Band widths are NOT equal, deliberately. "ours" gets the widest because it is the group
+    # whose members the paper actually compares against each other; the Engine's four codecs and
+    # the two Bitcomp variants only need to be told apart from other GROUPS, which the marker
+    # shape already does.
+    # THE ENGINE IS OFF VIRIDIS ENTIRELY. It sat in viridis's middle, and viridis's middle is
+    # green, so any band there collided with something: with FSST-12 and the nvCOMP group in
+    # fig_perf_real, and with the A100 and the RTX PRO in fig_perf_gen. Its own scale removes the
+    # constraint rather than negotiating around it. inferno's mid-range is red through orange,
+    # which no viridis band reaches, and it cannot clash with plasma either because no figure
+    # draws the Engine and an analysis quantity together.
+    # Ordered OnPair-16 first so the band darkest-to-lightest matches the order fig_teaser
+    # draws its bars in, which makes that figure read as one ramp left to right. The other
+    # two figures using this family are scatters, where the draw order does not show.
+    "tech-ours":   (["OnPair-16", "OnPair-12", "FSST-12"], "technique", (0.00, 0.46), "luminance"),
+    # Deflate (5) first, matching fig_perf_real's legend order and putting the darkest step on
+    # the codec that actually appears most -- it is drawn on 14 of 15 columns, against once for
+    # Deflate (0).
+    "tech-engine": (["DE Deflate (5)", "DE Deflate (0)", "DE LZ4", "DE Snappy"],
+                    "baseline", (0.40, 0.72), "luminance"),
+    "tech-nvcomp": (["Bitcomp-default", "Bitcomp-sparse", "gANS"],
+                    "technique", (0.63, 0.90), "luminance"),
+}
+
+# Hatches carry identity where colour cannot. Ordered so adjacent members differ in
+# density as well as direction; "" first so the common case stays clean.
+# One repetition, not three: at bar widths of a few millimetres "///" reads as a solid
+# screen and swamps the fill colour it is meant to supplement.
+HATCHES = ["", "/", ".", "x", "\\", "+", "o", "-"]
+
+# CONTEXT, not subject. Bars or lines that exist only to show what the subject is
+# measured against take a neutral ramp, so they never compete with a family colour for
+# the reader's attention and never collide with one. Light to dark.
+NEUTRAL = ["#d9d9d9", "#a6a6a6", "#6e6e6e", "#404040"]
+
+
+def neutral(i=0):
+    """i-th context grey, light to dark."""
+    return NEUTRAL[i % len(NEUTRAL)]
+
+
+def _members(family):
+    """(members, scale, span, mode, spread), padding spread to its 1.0 default."""
+    try:
+        spec = FAMILY[family]
+        return spec if len(spec) == 5 else (spec + (1.0,))
+    except KeyError:
+        raise KeyError("unknown palette family %r; known: %s"
+                       % (family, ", ".join(sorted(FAMILY)))) from None
+
+
+def _positions(scale, lo, hi, n):
+    """n positions in [lo,hi] whose LUMINANCES are equally spaced, not their positions.
+
+    Equal steps along a colormap do not give equal steps in brightness: both plasma and
+    viridis compress luminance at the dark end, so evenly spaced samples bunch together
+    exactly where a greyscale printer can least afford it. Walking a fine lookup table
+    and picking equal luminance instead maximises the smallest gap the printer has to
+    resolve, which is what greyscale_report() measures.
+    """
+    if n == 1:
+        return [lo]
+    import matplotlib
+    cm = matplotlib.colormaps[SCALE[scale]]
+    grid = [lo + (hi - lo) * k / 512.0 for k in range(513)]
+    lums = [_luminance(matplotlib.colors.to_hex(cm(g))) for g in grid]
+    lo_l, hi_l = lums[0], lums[-1]
+    out = []
+    for i in range(n):
+        want = lo_l + (hi_l - lo_l) * i / (n - 1)
+        out.append(min(zip(grid, lums), key=lambda gl: abs(gl[1] - want))[0])
+    return out
+
+
+def colour(family, member):
+    """Hex for one member of one family, sampled from that family's scale."""
+    members, scale, (lo, hi), mode, spread = _members(family)
+    if member not in members:
+        raise KeyError("%r is not in the %r family; known: %s"
+                       % (member, family, ", ".join(members)))
+    import matplotlib
+    n = len(members)
+    if mode == "interior":
+        frac = (members.index(member) + 1) / (n + 1)
+        frac = 0.5 + (frac - 0.5) * spread            # push outward from the centre
+        frac = min(max(frac, 0.0), 1.0)               # clamp: never past the span's own ends
+        pos = lo + (hi - lo) * frac
+    else:
+        pos = _positions(scale, lo, hi, n)[members.index(member)]
+    return matplotlib.colors.to_hex(matplotlib.colormaps[SCALE[scale]](pos))
+
+
+def hatch(family, member):
+    """Hatch pattern for one member, for greyscale and for over-full families."""
+    members = _members(family)[0]
+    return HATCHES[members.index(member) % len(HATCHES)]
+
+
+def desaturate(hexcol):
+    """The grey of the same relative luminance as hexcol.
+
+    Used for context members of a family whose progression should continue past the coloured
+    ones: keeping the luminance means the ramp reads as one ordered sequence, and dropping the
+    hue means those members stop competing for attention. It is also exactly what a greyscale
+    printer would have done to them, so what the reader sees on paper matches print.
+    """
+    import matplotlib
+    lum = _luminance(hexcol)
+    v = 12.92 * lum if lum <= 0.0031308 else 1.055 * lum ** (1 / 2.4) - 0.055
+    v = min(max(v, 0.0), 1.0)
+    return matplotlib.colors.to_hex((v, v, v))
+
+
+def cmap(kind="analysis"):
+    """Colormap NAME for figures that map a continuous quantity (fig_hoist, heatmaps)."""
+    return SCALE[kind]
+
+
+def _luminance(hexcol):
+    import matplotlib
+    r, g, b = matplotlib.colors.to_rgb(hexcol)
+    f = lambda c: c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+
+
+def greyscale_report(min_gap=0.10):
+    """Print each family's greyscale separation. Run as `python3 common.py`.
+
+    Reports the smallest luminance gap between any two members. A family under
+    min_gap cannot be told apart on a monochrome printer by colour alone and needs
+    shape or hatch doing the work; that is a fact about the family's SIZE more than
+    about the scale, since any scale has one luminance axis to divide.
+    """
+    for fam in sorted(FAMILY):
+        members, scale = FAMILY[fam][0], FAMILY[fam][1]
+        lums = [(m, _luminance(colour(fam, m))) for m in members]
+        gaps = [abs(a[1] - b[1]) for i, a in enumerate(lums) for b in lums[i + 1:]]
+        worst = min(gaps) if gaps else 1.0
+        flag = "OK " if worst >= min_gap else "TIGHT"
+        print("%-8s %-10s n=%d  worst pairwise luminance gap %.3f  %s"
+              % (fam, SCALE[scale], len(members), worst, flag))
+        for m, l in lums:
+            print("      %-16s %s  L=%.3f  hatch=%r" % (m, colour(fam, m), l, hatch(fam, m)))
+
+
+if __name__ == "__main__":
+    greyscale_report()

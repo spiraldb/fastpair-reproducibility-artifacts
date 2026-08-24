@@ -49,6 +49,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "out" / "fig_perf_gen.pdf"
@@ -61,15 +62,29 @@ OUT = Path(__file__).resolve().parent / "out" / "fig_perf_gen.pdf"
 # memory technology, lightness is position within it. It also matters for what this chip is FOR --
 # RTX PRO 6000 is Blackwell silicon behind GDDR7, so it sits beside the B300 in architecture and
 # opposite it in memory, and a reader must be able to see which of those the colour tracks.
-CHIP_COLOR = {"b300": "#08519c", "h100": "#4292c6", "a100": "#9ecae1", "l40s": "#41ab5d",
-              "rtxpro": "#238b45"}
+# From common's device family, which is ordered HBM-then-GDDR so scale position carries the
+# memory-technology grouping this figure encodes.
+# Layout order is the paper-wide one, filtered to the chips whose legs landed.
+def ordered_chips():
+    return C.devices(S.chips())
+
+
+CHIP_COLOR = {"a100": C.colour("device-hbm", "A100"), "h100": C.colour("device-hbm", "H100"),
+              "b300": C.colour("device-hbm", "B300"),
+              "l40s": C.colour("device-gddr", "L40S"),
+              "rtxpro": C.colour("device-gddr", "RTX PRO")}
 CHIP_MEM = {"b300": "HBM", "h100": "HBM", "a100": "HBM", "l40s": "GDDR6", "rtxpro": "GDDR7"}
 CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S",
               "rtxpro": "RTX PRO 6000"}
 # Nominal clock state -> marker. Ordered as the campaign requests them.
 STATE_MARK = [("boost", "*"), ("max", "o"), ("75%", "s"), ("55%", "^"), ("40%", "D")]
-DE_SHADE = {"DEFLATE-hi": "#fd8d3c", "DEFLATE-fast": "#fdd0a2", "LZ4": "#d94801",
-            "Snappy": "#7f2704"}
+# SAME BAND AS fig_perf_real AND fig_teaser. The Engine has to be one colour across the paper,
+# and it appears in all three of those figures, so it keeps the tech-engine band everywhere and
+# the device bands are placed to avoid it rather than the other way round.
+DE_SHADE = {"DEFLATE-hi": C.colour("tech-engine", "DE Deflate (5)"),
+            "DEFLATE-fast": C.colour("tech-engine", "DE Deflate (0)"),
+            "LZ4": C.colour("tech-engine", "DE LZ4"),
+            "Snappy": C.colour("tech-engine", "DE Snappy")}
 DE_LABEL = {"DEFLATE-hi": "Deflate (5)", "DEFLATE-fast": "Deflate (0)", "LZ4": "LZ4",
             "Snappy": "Snappy"}
 BITS = 12          # one preset; adding OnPair-16 would triple the marks per slot
@@ -123,17 +138,17 @@ def main():
     # leg, at the same revision, seed, corpus and clock protocol -- so it belongs on this axis, but
     # it is not in the same directory. Resolving the root per chip is what lets one figure draw a
     # multi-leg campaign; using a single root silently drew it as an absent series.
-    roots = {c: (S.chip_root(c, a.suite_id) or root) for c in S.CHIPS}
-    states = {c: nominal_states(roots[c], c) for c in S.CHIPS}
+    roots = {c: (S.chip_root(c, a.suite_id) or root) for c in ordered_chips()}
+    states = {c: nominal_states(roots[c], c) for c in ordered_chips()}
     data = {c: {t: S.cells(roots[c], c, t, "onpair") for t in S.clock_tags(roots[c], c)}
-            for c in S.CHIPS}
+            for c in ordered_chips()}
 
     # SIZED TO ITS RENDERED WIDTH. This is a two-column float, so it lands at about 7 inches. A
     # 10-inch figsize is scaled down by a third on the page and takes every font with it, which
     # is why the previous version could not be read at print size. Draw it the size it is shown.
     fig, ax = plt.subplots(figsize=(7.1, 2.65))
     slot = 1.0
-    per_chip = (slot * 0.72) / len(S.CHIPS)
+    per_chip = (slot * 0.72) / len(ordered_chips())
     absent, drawn, de_seen = [], 0, set()
 
     for i, (lab, ds, col, grp) in enumerate(rows):
@@ -143,9 +158,9 @@ def main():
         if v is not None:
             de_seen.add(codec)
             ax.hlines(v, x0 - slot * 0.44, x0 + slot * 0.44,
-                      color=DE_SHADE.get(codec, "#b0413e"), lw=1.7, alpha=.95, zorder=2)
+                      color=DE_SHADE.get(codec, C.colour("tech-engine", "DE LZ4")), lw=1.7, alpha=.95, zorder=2)
 
-        for j, chip in enumerate(S.CHIPS):
+        for j, chip in enumerate(ordered_chips()):
             xc = x0 - slot * 0.39 + per_chip * (j + 0.5)
             tags = states.get(chip) or {}
             pts = []
@@ -158,11 +173,16 @@ def main():
                 absent.append(f"{chip}/{ds}/{col}")
                 continue
             ys = [v for _, v in pts]
-            ax.vlines(xc, min(ys), max(ys), color=CHIP_COLOR[chip], lw=1.2, alpha=.85, zorder=3)
+            # Thin and dotted: the line exists to tie one chip's clock states together, not to
+            # be read as a value, so it should not carry more ink than the marks it connects.
+            ax.vlines(xc, min(ys), max(ys), color=CHIP_COLOR[chip], lw=0.6, alpha=.85,
+                      linestyles=(0, (1, 1.2)), zorder=3)
             for nominal, v in pts:
                 mk = dict(STATE_MARK).get(nominal, ".")
-                ax.plot([xc], [v], marker=mk, ms=4.2 if mk != "*" else 6.0,
-                        color=CHIP_COLOR[chip], mec="white", mew=.4, zorder=4, ls="")
+                # No marker edge. A white edge on a white ground eats into the mark and haloes
+                # wherever two clock states land close together, which is most of this figure.
+                ax.plot([xc], [v], marker=mk, ms=C.MS if mk != "*" else C.MS_STAR,
+                        color=CHIP_COLOR[chip], mec="none", zorder=4, ls="")
                 drawn += 1
 
     ax.set_xticks([i * slot for i in range(len(rows))])
@@ -176,7 +196,7 @@ def main():
              "TPC-H \\texttt{l\\_shipinstruct}": "l_shipinstruct",
              "TPC-H \\texttt{ps\\_comment}": "ps_comment"}
     ax.set_xticklabels([SHORT.get(lab, lab) for lab, _, _, _ in rows],
-                       rotation=40, ha="right", fontsize=7)
+                       rotation=40, ha="right")
     # The rule between real and generated columns: they are never pooled into one claim.
     ax.axvline(len(S.REAL) * slot - slot * 0.5, color="#444444", lw=.9, ls=":")
     from matplotlib.ticker import FixedLocator
@@ -188,24 +208,25 @@ def main():
 
     # Every chip keeps its entry whether or not the leg has landed; results drop straight in.
     chips = [Line2D([], [], color=CHIP_COLOR[c], lw=2, label=f"{CHIP_LABEL[c]} ({CHIP_MEM[c]})")
-             for c in S.CHIPS]
+             for c in ordered_chips()]
     marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
     de = [Line2D([], [], color=DE_SHADE[k], lw=1.7, label=f"DE {DE_LABEL[k]} (best)")
           for k in DE_SHADE if k in de_seen]
     # BELOW the axes, matching fig_perf_real so the two read as a pair. The x labels are rotated
     # column names and occupy the lower margin, so the anchor sits below them rather than at the
     # axes edge; bbox_inches="tight" then grows the canvas to include it.
-    fig.legend(handles=chips + marks + de, fontsize=6.6, ncol=7, loc="upper center",
-               bbox_to_anchor=(0.0, -0.26, 1.0, 0.08), mode="expand", frameon=False,
+    fig.tight_layout(pad=0.3)
+    fig.legend(handles=chips + marks + de, fontsize=C.FS["legend"], ncol=7, loc="upper center",
+               bbox_to_anchor=(0.0, -C.LEGEND_GAP, 1.0, 0.001), mode="expand", frameon=False,
                columnspacing=0.9, handlelength=1.3, handletextpad=0.45)
 
-    OUT.parent.mkdir(exist_ok=True)
-    fig.savefig(OUT, bbox_inches="tight")
-    print(f"wrote {OUT.relative_to(Path(__file__).resolve().parent.parent)}")
+    # Through C.save, like every other figure: it is what draws this at the exact width the
+    # figure* float prints it at, so the sizes in C.FS are the sizes on the page.
+    C.save(fig, "fig_perf_gen", width="text")
     print(f"points drawn: {drawn}")
     if absent:
         print(f"ABSENT series: {len(absent)} (slot and legend entry kept)")
-        for c in S.CHIPS:
+        for c in ordered_chips():
             n = sum(1 for x in absent if x.startswith(c + "/"))
             if n:
                 print(f"  {c}: {n} columns")

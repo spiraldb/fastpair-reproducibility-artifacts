@@ -14,6 +14,12 @@ which also holds the best-shipped-kernel rule (it excludes the non-byte-exact `*
 HBM peaks, the GiB-to-GB factor, and the hardware-DE map. `validate.py` reuses `common.py` too, so
 the figures and the number-checker share one reduction.
 
+Type sizes and mark sizes come from `common.FS` / `common.MS`, and they are **printed points**: a
+figure the paper prints passes its float shape to `common.save` (`width="column"` or `width="text"`),
+which scales the canvas so the saved PDF is exactly the width LaTeX shows it at. Fonts are absolute,
+so the axes absorb the change and a declared 8pt label lands on the page as 8pt. Generators the
+paper does not print omit `width` and keep whatever size they chose.
+
 `verify.sh` rebuilds 15 figures: the 11 that the paper `\includegraphics`, plus 4 extended-version
 figures that the main paper does not reference. `fig_hierarchy` is a code-drawn schematic with no
 results dependency; the other 14 are data-driven.

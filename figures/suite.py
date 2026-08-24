@@ -110,7 +110,7 @@ GEN = [
 # paper.
 PAPER_SUITE = "suite-paper-20260821"
 
-CHIPS_CORE = ["b300", "h100", "a100", "l40s"]   # fixed order; absent chips still get a legend slot
+CHIPS_CORE = ["b300", "h100", "a100", "l40s"]   # legacy order; lay figures out with common.DEVICE_ORDER
 
 # A chip that is being brought up appears ONLY once its leg has landed. The four above are the
 # paper's committed set and always get a slot, because a labelled gap is the honest rendering of a
@@ -445,7 +445,15 @@ def zstd_points(zcells, ds, col):
 
 
 def sw_points(sw, ds, col):
-    """gANS and both Bitcomp variants for one column, from the MATERIALIZE+SW leg."""
+    """gANS and both Bitcomp variants for one column, from the MATERIALIZE+SW leg.
+
+    NOT Pareto-filtered across the three. They are three distinct codecs -- an entropy coder
+    and two Bitcomp modes -- so each is its own baseline, unlike the Engine's four codecs, which
+    are four settings of one fixed-function unit and are pooled accordingly. Pooling these
+    dropped Bitcomp-default from the figure entirely on every column, since gANS beats it on both
+    axes, which left a legend entry with no mark behind it. Each codec contributes one measured
+    configuration per column, so there is nothing to filter within one.
+    """
     row = sw.get((ds, col)) or {}
     out = []
     for name, e in (row.get("codecs") or {}).items():
@@ -454,7 +462,7 @@ def sw_points(sw, ds, col):
         rate = _rate(e, row.get("raw_bytes"))
         if rate:
             out.append((e["ratio"], rate, name))
-    return _pareto(out)
+    return out
 
 
 def baseline_points(root, chip, ds, col, zcells=None, sw=None):
