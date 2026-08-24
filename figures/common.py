@@ -592,6 +592,13 @@ FAMILY = {
     # codecs and the Engine -- so the dark band can serve tech-ours and device-hbm, and the light
     # band tech-nvcomp and device-gddr. What must NOT overlap is anything against tech-engine,
     # because the Engine appears in all three of those figures.
+    #
+    # ONE PAIR NOW COMES CLOSE, and it is recorded rather than claimed away: opening tech-engine
+    # to 0.85 puts DE Snappy at luminance 0.575, and the L40S sits at 0.637. They share
+    # fig_perf_gen. In colour they are yellow-orange against yellow-green; in greyscale they are
+    # near-identical, and what separates them there is form, not tone -- the L40S is point marks
+    # inside a chip's slot, DE Snappy is a rule spanning the whole slot. Anything that ever draws
+    # the two as the same kind of artist has to revisit this.
     "device-hbm":  (["B300", "H100", "A100"], "technique", (0.00, 0.46), "luminance"),
     "device-gddr": (["RTX PRO", "L40S"], "technique", (0.63, 0.90), "luminance"),
     # Threads per block is an ORDER, not a set of identities, so it takes the interior
@@ -627,8 +634,17 @@ FAMILY = {
     # Deflate (5) first, matching fig_perf_real's legend order and putting the darkest step on
     # the codec that actually appears most -- it is drawn on 14 of 15 columns, against once for
     # Deflate (0).
+    # SPAN OPENED AT THE LIGHT END ONLY, 0.72 to 0.85. All four codecs are drawn per column in
+    # fig_perf_gen now rather than the best of them, and at 0.72 the top two were #e9612b and
+    # #f68013 -- two oranges 0.09 apart in luminance, which read as one thick line wherever LZ4
+    # and Snappy landed close in rate. Internal gaps are now 0.16. The cap is 0.85 and not higher
+    # because gANS, the top of viridis's light band, sits at luminance 0.637: hi=0.88 would put DE
+    # Snappy at 0.639, identical in greyscale to a mark that shares a panel with it in
+    # fig_perf_real. 0.85 leaves DE Snappy at 0.575 and 1.68:1 against the page, which clears the
+    # 1.53:1 the viridis cap was set at. The dark end does not move, so the Engine's darkest step
+    # is the same colour it has been in all three figures that draw it.
     "tech-engine": (["DE Deflate (5)", "DE Deflate (0)", "DE LZ4", "DE Snappy"],
-                    "baseline", (0.40, 0.72), "luminance"),
+                    "baseline", (0.40, 0.85), "luminance"),
     "tech-nvcomp": (["Bitcomp-default", "Bitcomp-sparse", "gANS"],
                     "technique", (0.63, 0.90), "luminance"),
 }
