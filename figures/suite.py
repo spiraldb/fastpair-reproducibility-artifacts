@@ -429,6 +429,35 @@ def de_points(root, chip, ds, col):
     return _pareto(raw)
 
 
+def de_by_codec(root, chip, ds, col):
+    """{raw codec name: best rate over that codec's chunk sweep, GB/s} for one column.
+
+    The per-CODEC counterpart to de_points, which pools all four and returns the frontier. A
+    figure drawing one line per codec needs them kept apart, and it wants each codec's own best
+    chunk size rather than a chunk held fixed across four codecs whose optima differ. Keyed on the
+    RAW harness name (DEFLATE-hi, DEFLATE-fast, LZ4, Snappy), not DE_NAME's display string, so a
+    caller can look up its own colour and label without a reverse map."""
+    out = {}
+    for r in de_rows(root, chip):
+        if r.get("dataset_id") != ds or r.get("column") != col:
+            continue
+        passes = [(r.get("chunk_bytes"), r.get("codecs") or {})]
+        passes += [(p.get("chunk_bytes"), p.get("codecs") or {})
+                   for p in (r.get("chunk_sweep") or [])]
+        seen = set()
+        for chunk, codecs in passes:
+            for name, e in codecs.items():
+                if (name, chunk) in seen:
+                    continue
+                seen.add((name, chunk))
+                if not e.get("valid") or e.get("validation_failed"):
+                    continue
+                rate = _rate(e, r.get("raw_bytes"))
+                if rate and rate > out.get(name, 0):
+                    out[name] = rate
+    return out
+
+
 def zstd_points(zcells, ds, col):
     """The three nvCOMP Zstd levels for one column, from the OnPair-12 cell that carries them.
 

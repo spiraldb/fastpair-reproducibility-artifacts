@@ -9,8 +9,8 @@ device and the clock, and shows one kernel family covering the whole matrix.
 
 LAYOUT. One slot per column. Inside a slot, one short VERTICAL LINE per GPU, packed side by side.
 Each line carries that GPU's decode rate at every clock state it was measured at, so the line's
-extent IS the clock sensitivity of that chip on that column. A horizontal BAR across the slot is
-the B300 Decompression Engine's best configuration on that column.
+extent IS the clock sensitivity of that chip on that column. Four horizontal BARS across the slot
+are the B300 Decompression Engine's four codecs, each at its own best chunk size.
 
 DRAWN AT ITS PRINTED SIZE. This is a two-column float landing at about seven inches, so figsize
 matches that. An earlier version was drawn ten inches wide and scaled down on the page, which
@@ -30,9 +30,12 @@ latency, and an L2 request-rate bound, because l1tex runs at the SM clock while 
 separate domains. It does NOT separate L1 request rate from compute, issue, register file or
 shared memory, and this figure does not claim it does.
 
-BEST AGAINST BEST. The DE bar is its best codec AND chunk size for that column; our marks are the
-best kernel. Both sides tuned, neither handicapped. Earlier drafts drew all twenty engine
-configurations, which put a cloud of operating points nobody would ship behind every slot.
+BEST AGAINST BEST, PER CODEC. Each DE bar is one codec at its best chunk size; our marks are the
+best kernel. Both sides tuned, neither handicapped. Collapsing the engine to a single best-of-four
+bar named one codec in the legend and hid the other three, so the reader could not see that most
+of the engine's spread on these columns is the codec choice rather than the chunk size. Four bars
+is not the twenty-configuration cloud an early draft drew: the chunk sweep is still reduced away,
+only the codec axis survives.
 
 MISSING CHIPS KEEP THEIR SLOT AND THEIR LEGEND ENTRY. A leg that has not landed leaves a labelled
 gap, so a reader sees three chips and a hole rather than assuming three was the design.
@@ -110,15 +113,8 @@ def best_rate(c):
     return ((g.get("best_decode_gib_s") or 0) * 1.073741824) or None
 
 
-def de_best(root, ds, col, chip="b300"):
-    """The engine's best for a column: best codec AND best chunk size, one bar.
-
-    Best against best. Both sides are tuned, so neither is handicapped; drawing all twenty engine
-    configurations instead put a cloud of operating points nobody would ship behind every slot."""
-    for r in S.de_rows(root, chip):
-        if r.get("dataset_id") == ds and r.get("column") == col and r.get("best_decode_gib_s"):
-            return r["best_decode_gib_s"] * 1.073741824, r.get("best_codec")
-    return None, None
+# de_best is gone: it returned one rate and the name of the codec that produced it, which is what
+# a single bar per slot needed. suite.de_by_codec returns all four, keyed by codec.
 
 
 def main():
@@ -155,12 +151,22 @@ def main():
 
     for i, (lab, ds, col, grp) in enumerate(rows):
         x0 = i * slot
-        # ONE BAR: the engine's best configuration on this column.
-        v, codec = de_best(root, ds, col)
-        if v is not None:
+        # FOUR BARS: every codec the engine offers, each at its own best chunk size. A single
+        # best-of-four bar named one codec in the legend and hid the other three, so a reader
+        # could not see how much of the engine's spread is the codec choice -- which on these
+        # columns is most of it. Drawn in DE_SHADE order so the z-stacking is deterministic
+        # where two codecs land on the same rate.
+        per_codec = S.de_by_codec(root, "b300", ds, col)
+        for codec in DE_SHADE:
+            v = per_codec.get(codec)
+            if v is None:
+                continue
             de_seen.add(codec)
             ax.hlines(v, x0 - slot * 0.44, x0 + slot * 0.44,
-                      color=DE_SHADE.get(codec, C.colour("tech-engine", "DE LZ4")), lw=1.7, alpha=.95, zorder=2)
+                      color=DE_SHADE[codec], lw=1.4, alpha=.95, zorder=2)
+        for codec in per_codec:
+            if codec not in DE_SHADE:
+                sys.stderr.write("fig_perf_gen: no shade for engine codec %r, not drawn\n" % codec)
 
         for j, chip in enumerate(ordered_chips()):
             xc = x0 - slot * 0.39 + per_chip * (j + 0.5)
@@ -212,7 +218,7 @@ def main():
     chips = [Line2D([], [], color=CHIP_COLOR[c], lw=2, label=f"{CHIP_LABEL[c]} ({CHIP_MEM[c]})")
              for c in ordered_chips()]
     marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
-    de = [Line2D([], [], color=DE_SHADE[k], lw=1.7, label=f"DE {DE_LABEL[k]} (best)")
+    de = [Line2D([], [], color=DE_SHADE[k], lw=1.4, label=f"DE {DE_LABEL[k]}")
           for k in DE_SHADE if k in de_seen]
     # BELOW the axes, matching fig_perf_real so the two read as a pair. The x labels are rotated
     # column names and occupy the lower margin, so the anchor sits below them rather than at the
