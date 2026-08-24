@@ -287,10 +287,8 @@ def main():
     # Fourteen entries over seven columns at full width. mode="expand" spreads them across the
     # whole canvas rather than centring a block, so the two rows align; anchored by their top
     # edge C.LEGEND_GAP under the figure, as every other below-axes key is.
-    fig.legend(handles=flip(leg, 7), frameon=False, fontsize=C.FS["legend"], ncol=7,
-               loc="upper center", bbox_to_anchor=(0.0, -C.LEGEND_GAP, 1.0, 0.001),
-               mode="expand", columnspacing=0.6, handlelength=1.1, handletextpad=0.45,
-               borderaxespad=0.0)
+    C.legend_below(fig, handles=flip(leg, 7), expand=True, ncol=7,
+                   columnspacing=0.6, handlelength=1.1, handletextpad=0.45)
     C.save(fig, "fig_perf_real", width="text")
 
     zcells = S.cells(root, DEV, "boost", "zstd")

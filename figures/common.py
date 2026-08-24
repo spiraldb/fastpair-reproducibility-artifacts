@@ -469,18 +469,33 @@ def save(fig, name, width=None):
     print("wrote", (OUTDIR / (name + ".pdf")).relative_to(ROOT))
 
 
-def legend_below(fig, gap=None, **kw):
+def legend_below(fig, x=0.5, gap=None, expand=False, **kw):
     """A legend hung under the axes, the same distance out in every figure.
 
     Anchored by its TOP edge (loc="upper center") one LEGEND_GAP below the figure
     box, so the space between the x label and the key does not depend on how many
     rows the key happens to need. bbox_inches="tight" in `save` then grows the
     canvas to include it.
+
+    borderaxespad is forced to zero. Its default is half a font size -- about three
+    points of air above the key that nothing in the figure asked for, and it is
+    applied even when bbox_to_anchor is given, which is easy to miss. Left at the
+    default it put the gap at 7 to 10pt in four figures against fig_perf_real's
+    4.6pt, which was the one figure that happened to set it.
+
+    `expand` spreads the entries across the full canvas width instead of centring
+    them as a block: right for a wide figure whose key needs every column, wrong
+    for a narrow one, where it would stretch three entries across the page.
+    `x` moves a centred key off centre, for a figure carrying two of them.
     """
     kw.setdefault("frameon", False)
     kw.setdefault("fontsize", FS["legend"])
+    kw.setdefault("borderaxespad", 0.0)
     y = -(LEGEND_GAP if gap is None else gap)
-    return fig.legend(loc="upper center", bbox_to_anchor=(0.5, y), **kw)
+    if expand:
+        return fig.legend(loc="upper center", bbox_to_anchor=(0.0, y, 1.0, 0.001),
+                          mode="expand", **kw)
+    return fig.legend(loc="upper center", bbox_to_anchor=(x, y), **kw)
 
 
 # ==========================================================================

@@ -218,9 +218,20 @@ def main():
     # column names and occupy the lower margin, so the anchor sits below them rather than at the
     # axes edge; bbox_inches="tight" then grows the canvas to include it.
     fig.tight_layout(pad=0.3)
-    fig.legend(handles=chips + marks + de, fontsize=C.FS["legend"], ncol=7, loc="upper center",
-               bbox_to_anchor=(0.0, -C.LEGEND_GAP, 1.0, 0.001), mode="expand", frameon=False,
-               columnspacing=0.9, handlelength=1.3, handletextpad=0.45)
+    # CHIPS, then the DE bars, then the clock states. The clock states sat between the two
+    # colour groups, which put the one non-colour distinction in the figure between the two that
+    # are colour; reading the key meant crossing it twice.
+    #
+    # PADDED TO WHOLE COLUMNS. A matplotlib legend fills column-major, so an odd-sized group in
+    # the middle starts the next one halfway down a column: L40S stacked over DE Deflate, and the
+    # clock states out of their own order. Each group is padded to an even count with blank
+    # entries, so 5 + 3 + 5 becomes 6 + 4 + 6 and every group owns whole columns -- chips in
+    # three, the Engine in two, the clock states in three.
+    def pad(group, rows=2):
+        return group + [Line2D([], [], ls="", marker="", label="")] * ((-len(group)) % rows)
+
+    C.legend_below(fig, handles=pad(chips) + pad(de) + pad(marks), expand=True, ncol=8,
+                   columnspacing=0.9, handlelength=1.3, handletextpad=0.45)
 
     # Through C.save, like every other figure: it is what draws this at the exact width the
     # figure* float prints it at, so the sizes in C.FS are the sizes on the page.

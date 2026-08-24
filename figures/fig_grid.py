@@ -155,15 +155,11 @@ def main():
     # Hung by their TOP edge one C.LEGEND_GAP under the figure, and tight_layout is given the
     # full canvas: reserving a band at the bottom AND anchoring outside it stacked two gaps, so
     # the key floated well clear of the x label it belongs to.
-    l1 = fig.legend(handles=handles, frameon=False, fontsize=C.FS["legend"], ncol=3,
-                    loc="upper center", bbox_to_anchor=(0.27, -C.LEGEND_GAP),
-                    columnspacing=1.0, handlelength=1.6, title="decode",
-                    title_fontsize=C.FS["legend"])
+    l1 = C.legend_below(fig, x=0.27, handles=handles, ncol=3, columnspacing=1.0,
+                        handlelength=1.6, title="decode")
     fig.add_artist(l1)
-    fig.legend(handles=occ_handles, frameon=False, fontsize=C.FS["legend"], ncol=3,
-               loc="upper center", bbox_to_anchor=(0.73, -C.LEGEND_GAP),
-               columnspacing=1.0, handlelength=1.6, title="blocks/SM",
-               title_fontsize=C.FS["legend"])
+    C.legend_below(fig, x=0.73, handles=occ_handles, ncol=3, columnspacing=1.0,
+                   handlelength=1.6, title="blocks/SM")
     fig.tight_layout(pad=0.3)
     C.save(fig, "fig_grid", width="text")
 
