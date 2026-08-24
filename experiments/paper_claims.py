@@ -1030,6 +1030,14 @@ def _is_campaign(suite_dir):
             text = open(rec).read()
         except OSError:
             return True
+        # A LEG THAT DECLARES ITSELF PARTIAL CANNOT SUPPLY THESE CLAIMS. Section 3-4's statistics are
+        # defined over the fixed fifteen columns -- require_complete_suite_campaign() enforces
+        # exactly that -- so a narrowed leg is not a candidate however complete its GRID stage is.
+        # The hoist0 leg is the case: one column, five hundred kernels, a full boost pass, and no
+        # ability to move a single claim. Reporting it as an unread campaign forces
+        # --allow-unconsumed, and that flag then covers a genuinely unread campaign as collateral.
+        if re.search(r"^partial_corpus:", text, re.M):
+            continue
         if re.search(r"^stage_GRID_\S*_rc:", text, re.M):
             return True
     return False

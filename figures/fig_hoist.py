@@ -50,9 +50,23 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--suite-id", default=None)
     a = ap.parse_args()
+    # THE WHOLE HEATMAP MUST COME FROM ONE LEG. It compares H=0 against H=1..4 in a single panel,
+    # so taking the H=0 row from one leg and the rest from another would put a cross-leg, cross-day
+    # comparison inside one figure, where run-to-run variation reads as a horizontal artifact. The
+    # H=0 arm arrived after the paper campaign, so prefer whichever leg actually timed it at this
+    # coordinate, and fall back to the declared campaign (where the H=0 row is simply blank).
     root = S.latest_root(a.suite_id)
+    if a.suite_id is None:
+        probe = f"onpair_dh_k6_t{T}_b4_h0"
+        for cand in S.candidate_roots(DEV):
+            cc = S.cells(cand, DEV, "boost", "onpair").get((COLUMN[0], COLUMN[1], BITS))
+            names = {k.get("kernel") for k in ((cc or {}).get("gpu") or {}).get("kernels") or []}
+            if probe in names:
+                root = cand
+                break
     if root is None:
         sys.exit("no results/suite-* directory found")
+    print(f"reading {root.name}")
 
     cells = S.cells(root, DEV, "boost", "onpair")
     c = cells.get((COLUMN[0], COLUMN[1], BITS))

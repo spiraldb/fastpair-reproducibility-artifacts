@@ -125,6 +125,22 @@ def _present(chip):
     return chip_root(chip) is not None
 
 
+def candidate_roots(chip):
+    """Every suite directory holding this chip, declared campaign first.
+
+    For a figure that needs a specific arm rather than just any data for the chip: it can walk these
+    and pick the leg that actually timed what it draws, instead of assuming one directory holds
+    everything. The campaign comes first so a figure never silently prefers a side leg."""
+    out = []
+    declared = RESULTS / PAPER_SUITE
+    if (declared / chip).is_dir():
+        out.append(declared)
+    for d in sorted(RESULTS.glob("suite-*"), key=lambda p: p.name):
+        if d.is_dir() and (d / chip).is_dir() and d != declared:
+            out.append(d)
+    return out
+
+
 def chip_root(chip, suite_id=None):
     """The suite directory that holds THIS chip, preferring the declared paper campaign.
 
