@@ -647,6 +647,10 @@ FAMILY = {
                     "baseline", (0.40, 0.85), "luminance"),
     "tech-nvcomp": (["Bitcomp-default", "Bitcomp-sparse", "gANS"],
                     "technique", (0.63, 0.90), "luminance"),
+    # The three groups a corpus column can belong to. A diagnostic split rather than a technique,
+    # so it takes the analysis scale. Used by fig_tokendist, where the groups do not tile the
+    # panel grid evenly and colour is what carries the grouping instead of position.
+    "corpus": (["real", "real-short", "generated"], "analysis", (0.15, 0.75), "luminance"),
 }
 
 # Hatches carry identity where colour cannot. Ordered so adjacent members differ in

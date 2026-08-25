@@ -123,6 +123,11 @@ def main():
         # Residency for the two widest blocks, so the reader can see it is flat at B=1 for both
         # and falls at B=8 for both, rather than taking one T on trust.
         ax2 = ax.twinx()
+        # A twinx axes is drawn ABOVE its host whatever zorder its artists carry, so the
+        # residency dashes landed on top of the rate markers. Swapping the axes' own zorder puts
+        # them underneath; the host's patch has to go transparent or it would then hide them.
+        ax2.set_zorder(ax.get_zorder() - 1)
+        ax.patch.set_visible(False)
         for T, dash in ((64, (0, (1, 1))), (128, (0, (1, 1.6))), (256, (0, (3, 2)))):
             occ = [(K, res[(K, T, B)]["blocks_per_sm"]) for K in KS if (K, T, B) in res]
             if occ:
