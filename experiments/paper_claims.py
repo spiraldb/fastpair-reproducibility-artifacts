@@ -518,14 +518,17 @@ def campaign_stats(cells):
         put("s4.h_configs_improved", sum(1 for g in h_gain if g > 0.5),
             "deep-queue configs where some H>1 beats H=1 by more than the 0.5% noise floor")
 
-    # preset flip: worst OP-16 penalty on a real column
+    # preset flip: worst OP-16 penalty on a real column.
+    # BEST basis, not auto. sec:evaluation reports every technique at its best configuration, so a
+    # penalty measured through the shipped selector would compare two arbitrary kernel choices
+    # rather than the two codecs. On auto this read 51%; on best it is 38.7% (a100, wikipedia).
     worst = 0.0
     for chip in CHIPS_CAMPAIGN:
         for (ch, ds, col, b), c in cells.items():
             if ch != chip or b != 12 or is_gen(ds):
                 continue
             c16 = cells.get((chip, ds, col, 16))
-            r12, r16 = rate_of(c), rate_of(c16) if c16 else None
+            r12, r16 = rate_of(c, "best"), rate_of(c16, "best") if c16 else None
             if r12 and r16 and r16 < r12:
                 worst = max(worst, (1 - r16 / r12) * 100)
     put("s4.preset_flip_worst_pct", round(worst, 1), "largest OP-16 penalty on a real column")

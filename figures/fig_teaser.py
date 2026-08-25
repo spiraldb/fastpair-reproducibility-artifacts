@@ -39,15 +39,18 @@ COLS = [
 SERIES = [("OnPair-16", C.colour("tech-ours", "OnPair-16")),
           ("OnPair-12", C.colour("tech-ours", "OnPair-12")),
           ("FSST-12", C.colour("tech-ours", "FSST-12")),
-          ("DE (best)", C.colour("tech-engine", "DE Deflate (5)")),
+          # A NON-END ramp entry. "DE Deflate (5)" is the darkest of the four engine colours and
+          # "DE Snappy" the lightest, where the palette notes a greyscale near-collision with the
+          # L40S; this bar is one series, not a ramp, so it takes an interior colour.
+          ("DE (best)", C.colour("tech-engine", "DE Deflate (0)")),
           ("Zstd (-10)", C.neutral(1)),
           ("Zstd (3)", C.neutral(3))]
 
 
-# BASIS: production-only (see the "EXPERIMENTAL DOES NOT MEAN IGNORE" block in suite.py).
-# The generated grid reaches ~7.5% higher on some columns and is excluded here only
-# because this figure reports what the shipped selector can choose. If a baseline on
-# this plot is quoted at ITS best configuration, revisit that choice.
+# BASIS: every byte-validated kernel (suite.best_rate_gb_s), per sec:evaluation. This figure used
+# the SHIPPED selector while the DE bar next to it is best-of-twenty -- four codec families crossed
+# with five chunk sizes, best_ratio moving with the choice. That is the condition the old comment
+# named for revisiting, so it is revisited.
 def zstd_at(cell, level):
     """Best nvCOMP-Zstd decode GB/s at one compression level for a cell, or None."""
     best = None
@@ -75,9 +78,9 @@ def main():
     w = 0.14
     vals = [[] for _ in SERIES]
     for d, c, _ in COLS:
-        vals[0].append(S.rate_gb_s(op.get((d, c, 16))) or np.nan)
-        vals[1].append(S.rate_gb_s(op.get((d, c, 12))) or np.nan)
-        vals[2].append(S.rate_gb_s(fs.get((d, c, 12))) or np.nan)
+        vals[0].append(S.best_rate_gb_s(op.get((d, c, 16))) or np.nan)
+        vals[1].append(S.best_rate_gb_s(op.get((d, c, 12))) or np.nan)
+        vals[2].append(S.best_rate_gb_s(fs.get((d, c, 12))) or np.nan)
         vals[3].append(de.get((d, c)) or np.nan)
         vals[4].append(zstd_at(zs.get((d, c, 12)), -10) or np.nan)
         vals[5].append(zstd_at(zs.get((d, c, 12)), 3) or np.nan)
@@ -90,8 +93,14 @@ def main():
                 ax.text(xi, v + 25, ("%.0f" % v) if v >= 10 else ("%.1f" % v),
                         ha="center", va="bottom", fontsize=C.FS["annot"], color=C.INK, rotation=90)
 
-    ax.set_ylim(0, 1500)
-    ax.set_yticks([0, 250, 500, 750, 1000, 1250, 1500])
+    # 1750, not 1500: on the best-configuration basis the tallest bar is 1620 (Windows,
+    # OnPair-16) and the old ceiling clipped it. Headroom also keeps the rotated value labels
+    # clear of the legend.
+    ax.set_ylim(0, 1750)
+    # 500s, not 250s: no other figure in the paper labels this axis every 250, and the eight
+    # labels crowded a 3.3-inch panel. The bars carry their own printed values, so the ticks only
+    # have to give the reader a scale.
+    ax.set_yticks([0, 500, 1000, 1500])
     ax.set_ylabel("decode (GB/s)")
     ax.set_xticks(x)
     ax.set_xticklabels([lbl for _, _, lbl in COLS])

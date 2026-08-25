@@ -62,7 +62,9 @@ def series(root, chip, bits, codec="onpair"):
     for (ds, col, b), c in S.cells(root, chip, "boost", codec).items():
         if b != bits or (ds, col) not in REAL:
             continue
-        rate, ln = S.rate_gb_s(c), S.mean_len(c)
+        # Best configuration per cell, matching sec:evaluation's declared basis and the other
+        # result figures; rate_gb_s would plot the shipped selector instead.
+        rate, ln = S.best_rate_gb_s(c), S.mean_len(c)
         if rate and ln:
             out.append((ln, rate))
     return sorted(out)
@@ -105,7 +107,10 @@ def main():
                 color=colour, linewidth=C.LW, zorder=1)
         ax.scatter(xs, ys, s=C.MS_SCATTER, color=colour, marker=marker, edgecolor="white",
                    linewidth=0.4, zorder=2,
-                   label="%s\n$r=%+.2f$" % (label, r))
+                   # THREE decimals. FSST-12 is r=0.99732 on the B300, which %+.2f printed as
+                   # "+1.00" -- a perfect fit no measurement of ten columns has earned, and the
+                   # first thing a reader would disbelieve. The stderr line already used .3f.
+                   label="%s\n$r=%+.3f$" % (label, r))
         sys.stderr.write("%s %-9s: n=%d r=%+.3f slope=%.1f GB/s per byte, len %.2f-%.2f\n"
                          % (CHIP, label, len(xs), r, slope, lo, hi))
 
@@ -127,7 +132,10 @@ def main():
     # between two of them, not a ratio between rates, and every value is above 750 GB/s; a decade
     # of empty panel below the data would halve the visible slope for nothing. Magnitudes are read
     # off fig_perf_gen, which is zero-based.
-    ax.set_ylim(700, 1600)
+    # 1700 top: on the best-configuration basis the highest mark is 1620 (Windows, OnPair-16) and
+    # the old 1600 ceiling clipped it. Floor stays at 700 -- the axis is deliberately not zero-based,
+    # since the claim is the slope against mean token length, not the ratio between columns.
+    ax.set_ylim(700, 1700)
     fig.tight_layout(pad=0.3)
     # BELOW the axes, matching fig_perf_real and fig_perf_gen so every result figure carries its
     # key the same way. Three entries fit one row at column width. The anchor clears the x label,

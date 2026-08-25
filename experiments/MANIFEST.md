@@ -95,8 +95,34 @@ paper bottleneck claims.
 | `ncu-stalls-v2.csv` | same recapture | warp-stall shares, % of warp cycles per issued instruction | §5.2 stall evidence + `tab:stallmix` shipped column (reference column: the base-kernel `*-ncu/` raw via the same script with suffix `-ncu`) |
 | `figures/out/fig_roofline.pdf` | derived (no new capture) | request-rate roofline: per-cell prediction from `*-ncu-v2` (`figures/fig_roofline_v2.py` model) vs `best_shipped`, one fitted per-arch clock constant | `fig:roofline`, the §5.2 prediction claim (B300/H100/A100 median rel err 1.7/3.8/8.0%; L40S non-predictive) |
 | `{l40s,h100,b300,a100}-ncu-v2/ncu_costsurface_*_{details,raw}.csv` | per-arch raw | `--set full`, 16 launches/cell, mean | source for both v2 CSVs (via `figures/extract_costsurface.py` / `figures/extract_stalls.py`) |
+| `ncu-costsurface-pipes.csv` | A100 + L40S + H100 + B300 + **RTX PRO**, 2026-08-24 (`~/agents/harness/runs/pipesncu-*-20260824-*`, rev `dd2325b3f`, via `runs/launch-pipes-ncu.sh`) | `--set full`, 16 launches/cell, selector-chosen kernels, **floating clocks** (see the two caveats below) | **`fig:pipes` + `sec:eval:bound`** (the 99% L1 / 12--43% device-memory figures on the three HBM parts, and the 80/79 and 70/76 pairs on the two GDDR parts). The paper discloses that this and `ncu-costsurface-v2.csv` are two waves on different harness revisions, and claims only the ORDERING across them, not the level. |
+| `{a100,l40s,h100,b300,rtxpro}-pipesncu/ncu_costsurface_*_{details,raw}.csv` + `*.log` + `clock-state.txt` | per-arch raw, 4 cells each (Loghub Windows + ClickBench URL × b12/b16), census-verified 4/4/4, every cell CAPTURE-VERIFIED | as above | source for `ncu-costsurface-pipes.csv` |
 | `ncu-costsurface.csv` | B300 + H100 + L40S + A100 (GCP profiling box) | `--set full`, **base reference kernel** (see provenance split above) | base-kernel (`onpair_u64`) profile only; the before/after stall contrast |
 | `{b300,h100,l40s,b200}-ncu/ncu_costsurface_*_details.csv` | per-arch raw, base kernel | `--set full`, 16 launches/cell, mean | source for `ncu-costsurface.csv` |
+
+**TWO CAVEATS ON EVERY `ncu_costsurface_*` CAPTURE IN THIS REPO, v2 INCLUDED.**
+
+1. *The clocks were never locked for the capture.* In `jobs/onpair-bench.sh` the `COSTSURFACE`
+   block is lines 267–391 and the `CLOCK_LOCK` block is 513–599, so the capture always runs
+   first. July's launcher did set `CLOCK_LOCK=1`, but the lock only reached the throughput sweep
+   that followed in the same leg. "2026-07-05 locked recapture" above, and `fig:pipes`' "locked
+   clocks" caption, therefore both overstate the provenance. The metrics are Speed-of-Light
+   %-of-peak and NCU replays kernels under its own serialization, so the numbers are likely
+   robust — but the claim as written is not supported and should be corrected, not repeated.
+2. *The profiled kernel is the production selector's per-cell choice, not a constant.* The job
+   reads `gpu.auto_kernel` from each cell's `meta.json`. In July every chip happened to choose the
+   same kernel per bit width, so `fig:pipes` compared like with like **by luck**. At `dd2325b3f`
+   they diverge: ClickBench URL picks `onpair_decompress_6tpt` on a100/h100/b300/rtxpro but
+   `onpair_shmem_2tpt` on the L40S; Loghub Windows picks `onpair_shmem_4tpt_b128` on a100/h100,
+   `onpair_shmem_4tpt_b128o12` on b300/rtxpro, and `onpair_shmem_2tpt` on the L40S. Before reading
+   any cross-wave delta, check the kernel:
+   `awk -F'","' 'NR>1{print $5}' *_details.csv | sort -u`. The L40S URL cells look like a
+   20-point wave disagreement (L1 66.3 → 86.5) and are a different kernel.
+   `figures/compare_costsurface_waves.py` prints the shared-cell deltas for this purpose.
+
+Also: `dram__sectors_read/write.sum` do not exist on sm_120, so the RTX PRO has no
+device-memory read/write split. `extract_costsurface.py` now emits an empty `dram_rd` there rather
+than the 0.0 its missing-column path used to produce, which had read as "100% writes".
 
 A100/GH200 NCU was `RmProfilingAdminOnly`-blocked on Lambda; the base-kernel A100 row in
 `ncu-costsurface.csv` was captured later on a GCP profiling box, its raw archived off-repo (no
@@ -212,6 +238,17 @@ changes NO headline number (reported decode always uses the shipped staged coale
 |---|---|---|---|
 | `onpair_summary_directstore_{clickbench,tpch-sf10}.json` | E3: byte-exact direct-store drain counterfactual (same gather+scan; per-byte scattered global stores vs the staged coalesced drain), both `verified:true` | best shipped = min(decode_ns_iters); `X = directstore/4tpt` | §5.2/§4.2 `tab:drain` — the staged drain is **1.8–3.3×** faster than the naive byte-exact alternative (write amplification, the write-side mirror of the gather's read amplification) |
 | `batch_multidict.jsonl` | E1: batched many-small-row-group decode (239 ~4 MB independently-dicted RGs), 4 launch strategies, all byte-exact | min-of-100, aggregate GB/s | §6.4 launch-bound — streams/multidict recover **~2×** over naive sequential (tpch 413→901/890, ClickBench 453→916/876). Pilot scope (hardcoded 512-thread kernel, synthetic sliced corpus, whole-sequence makespan) |
+
+### `results/b300-shdict-refresh-20260824/`
+
+| file | box / date | rev | protocol | consumed by |
+|---|---|---|---|---|
+| `shdict_summary_*.json` + `SHDICT_REFRESH_CENSUS.txt` + `clock-state.txt` | B300 SXM6, 2026-08-24 | `dd2325b3f` | staged variants against the best applicable byte-exact non-staging kernel per cell, min of 100 | **`sec:mb:shdict`**: the 25% and 52% penalties (1135 against 1513 GB/s at OnPair-12, 643 against 1338 at FSST-12, Loghub Windows) and the counter pairs in the same paragraph — global load sectors 174M to 7.6M, sectors per request 17.2 to 1.9, bank conflicts 61M to 92M, occupancy 46--67% to 24.5%, L1 97% to 86% |
+
+**Caveat carried into the paper.** The OnPair-14 staged arms report inapplicable
+against a 102,400 B harness cap rather than the B300's documented 227 KB per-block
+limit, so intermediate-cardinality staging was never tested at the device ceiling.
+`sec:mb:shdict`'s 512 KiB argument is unaffected — 512 KiB exceeds both.
 
 ## Staged-dictionary counterfactual — `results/{a100,l40s,h100,b300}-shdict/`
 

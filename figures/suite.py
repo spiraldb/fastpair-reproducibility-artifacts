@@ -276,6 +276,45 @@ def rate_gb_s(c):
     return None
 
 
+def best_rate_gb_s(c):
+    """Best decode rate over EVERY byte-validated kernel in the cell, in GB/s.
+
+    THE PAPER'S BASIS (sec:evaluation states it): every technique is reported at its best
+    configuration for the column. Use this, not rate_gb_s (the shipped selector) and not
+    gpu.best_decode_gib_s (production kernels only, so K but never T, B or S).
+
+    Why the widest set is the fair one, and it is not a close call. The Decompression Engine is
+    reported at best_decode_gib_s, which maximises over FOUR codec families crossed with FIVE
+    chunk sizes -- best of twenty, and its best_ratio moves with the choice too. nvCOMP Zstd gets
+    its level range. Handing every baseline its own sweep and then restricting ourselves to the
+    twenty hand-written production kernels, which cannot even express T, B or S, would report a
+    handicap rather than a result. The generated kernels are byte-validated on every leg exactly
+    as the production ones are, and they are the entire evidence base for Section 4.
+
+    Returns None when the cell timed no kernel, so callers can distinguish a gap from a zero.
+    """
+    g = (c or {}).get("gpu") or {}
+    db = g.get("decoded_bytes")
+    if not db:
+        return None
+    best = None
+    for k in (g.get("kernels") or []):
+        # VERIFIED AND APPLICABLE, both required. Every kernel entry carries these two flags and
+        # this loop used to ignore them. On the paper's suite legs that changes nothing -- across
+        # all 797 cells the unfiltered maximum never exceeds the filtered one, because the entries
+        # that fail either flag carry no timings. On results/b300-campaign-0717's chunk sweep it
+        # inflates by up to 3.5x, which is how it was found: 3844 GB/s on a column whose real best
+        # is 1087. A rate that is not byte-exact is not a rate.
+        if not (k.get("verified") and k.get("applicable")):
+            continue
+        it = k.get("decode_ns_iters") or []
+        if it:
+            v = db / min(it)
+            if best is None or v > best:
+                best = v
+    return best
+
+
 def tokens(c):
     return ((c or {}).get("gpu") or {}).get("distinct_codes")
 

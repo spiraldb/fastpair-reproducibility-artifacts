@@ -54,7 +54,11 @@ def main():
         print("no results/*-shdict data found", file=sys.stderr)
         return 1
 
-    print(f"{'chip':5s} {'column':12s} {'bits':>4s} {'shipped':>8s} | "
+    # HEADER SAYS 'gather', NOT 'shipped'. The baseline is the best applicable byte-exact
+    # NON-STAGING kernel for the cell, per the rule in the docstring -- not whatever kernel the
+    # decoder would pick by default. A reader who took this column for a shipped-default rate
+    # would derive a smaller staging penalty than the data supports.
+    print(f"{'chip':5s} {'column':12s} {'bits':>4s} {'gather':>8s} | "
           f"{'shdict8':>15s} {'pdict':>15s} {'vdict':>15s}")
     print("-" * 92)
     def cell(v, base):

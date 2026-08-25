@@ -102,15 +102,14 @@ def nominal_states(root, chip):
 
 
 def best_rate(c):
-    """Best kernel on this cell, GB/s -- the same basis the DE bar uses."""
-    if not c:
-        return None
-    g = c.get("gpu") or {}
-    best = g.get("best_kernel")
-    for k in (g.get("kernels") or []):
-        if k.get("kernel") == best and k.get("decode_ns_iters") and g.get("decoded_bytes"):
-            return g["decoded_bytes"] / min(k["decode_ns_iters"])
-    return ((g.get("best_decode_gib_s") or 0) * 1.073741824) or None
+    """Best kernel on this cell, GB/s -- the same basis the DE bar uses.
+
+    gpu.best_kernel/best_decode_gib_s range over the production kernels only, which express K but
+    not T, B or S, so they were the best rate the CURRENT SELECTOR can reach rather than the best
+    the codec reaches. The DE bar beside this one is best-of-twenty (four codecs x five chunk
+    sizes), so suite.best_rate_gb_s is what makes the two sides the same kind of number.
+    """
+    return S.best_rate_gb_s(c)
 
 
 # de_best is gone: it returned one rate and the name of the codec that produced it, which is what
