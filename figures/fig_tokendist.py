@@ -33,6 +33,29 @@ import common as C  # noqa: E402
 
 SRC = Path(__file__).resolve().parent.parent / "results" / "token-freqdist-corpus"
 
+
+def summary():
+    """{file stem: (mean value bytes, codes per value at OnPair-12)} from the probe's own stdout.
+
+    summary.txt is what encodings/onpair-sys/examples/onpair_skew.rs printed for the campaign
+    columns; parsing it keeps the panel labels and the curves on one measurement instead of
+    pairing a drawn distribution with a number derived somewhere else."""
+    out = {}
+    for line in (SRC / "summary.txt").read_text().splitlines():
+        f = line.split()
+        if len(f) < 5 or f[0] == "column":
+            continue
+        try:
+            out[f[0]] = (float(f[2]), float(f[4]))
+        except ValueError:
+            continue
+    return out
+
+
+def _fmt(x):
+    """Integer above 100, one decimal below: a tenth of a byte or of a code is noise at 3,716."""
+    return ("%d" % round(x)) if x >= 100 else ("%.1f" % x)
+
 # (file stem, display label, group). A leading * on the label means the paper sets that name in
 # \texttt, so the panel label is drawn monospace to match; the star is stripped before drawing. Order is the reading order of the grid. The groups do not
 # divide evenly into four columns, so they straddle rows; colour carries the grouping instead.
@@ -63,8 +86,9 @@ def counts(stem):
 
 
 def main():
+    meta = summary()
     plt = C.apply_theme()
-    fig, axes = plt.subplots(NROW, NCOL, figsize=(7.0, 3.45))
+    fig, axes = plt.subplots(NROW, NCOL, figsize=(7.0, 3.75))
     missing = []
     order = axes.T.ravel()   # column-major
     for ax, (stem, label, group) in zip(order, PANELS):
@@ -112,7 +136,14 @@ def main():
             ax.spines[side].set_linewidth(0.4)
             ax.spines[side].set_color("#bbbbbb")
         mono = label.startswith("*")
-        ax.set_xlabel(label.lstrip("*"), fontsize=C.FS["tick"], labelpad=2,
+        # Name, then the two numbers the dropped table carried: mean value length and codes per
+        # value. Both belong with the curve rather than in a separate table, since the curve is
+        # only interesting once you know how long a value is and how many codes it costs.
+        vb, cdv = meta.get(stem, (None, None))
+        text = label.lstrip("*")
+        if vb is not None:
+            text += "\n%s B, %s codes" % (_fmt(vb), _fmt(cdv))
+        ax.set_xlabel(text, fontsize=C.FS["tick"], labelpad=2, linespacing=1.35,
                       fontfamily="monospace" if mono else None)
     for ax in order[len(PANELS):]:
         ax.set_axis_off()
