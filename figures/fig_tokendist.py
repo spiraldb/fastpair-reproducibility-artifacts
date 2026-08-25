@@ -32,7 +32,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
 import suite as S  # noqa: E402
 
+FLOOR = 1e-7
+
 SRC = Path(__file__).resolve().parent.parent / "results" / "token-freqdist-corpus"
+
+# AXIS FLOOR, and the fill baseline shares it. Normalised counts, so this is a frequency relative
+# to the column's hottest code. At 1e-6 the rarest codes fell off the bottom -- 47 of Windows'
+# 3569, 12 each of CodeParrot and ghgit_author -- and because the dense panels are filled
+# silhouettes rather than bars, a curve that meets the floor reads as a tail that ENDS instead of
+# one that continues below the frame. On a figure whose whole claim is the shape of these curves,
+# that is the one artifact worth spending an axis decade on. ONE decade is the right price: the
+# smallest normalised frequency anywhere in the corpus is 2.45e-07 (Windows), so 1e-7 draws every
+# code in every column. 1e-8 also works and is worse -- two spare decades flatten every
+# silhouette toward the top of its panel and cost the shape contrast the figure exists for.
 
 # (file stem, display label, group). A leading * on the label means the paper sets that name in
 # \texttt, so the panel label is drawn monospace to match; the star is stripped before drawing.
@@ -132,13 +144,13 @@ def main():
             # the pixel grid and drew moire stripes, so FineWeb2's four thousand codes came out
             # looking like six. A polygon has no gaps to alias, rasterizes cleanly, and is the
             # right primitive for a silhouette nobody reads bar by bar.
-            ax.fill_between(range(len(v)), 1e-6, y, color=colour, linewidth=0, rasterized=True)
+            ax.fill_between(range(len(v)), FLOOR, y, color=colour, linewidth=0, rasterized=True)
         else:
             # Few enough codes to read individually, which is the point on these columns: five
             # equal bars against five falling ones. Vector, and the gaps are deliberate.
             ax.bar(range(len(v)), y, width=0.85, linewidth=0, color=colour)
         ax.set_yscale("log")
-        ax.set_ylim(1e-6, 2.0)
+        ax.set_ylim(FLOOR, 2.0)
         ax.set_xlim(-0.5, len(v) - 0.5)
         # No ticks, no numbers, no grid: twenty panels of shape, identified by name alone.
         # Minor ticks have to go explicitly -- a log axis re-adds them after set_yticks([]),
