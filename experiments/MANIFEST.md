@@ -250,6 +250,38 @@ against a 102,400 B harness cap rather than the B300's documented 227 KB per-blo
 limit, so intermediate-cardinality staging was never tested at the device ceiling.
 `sec:mb:shdict`'s 512 KiB argument is unaffected — 512 KiB exceeds both.
 
+### `results/b300-hoiststalls-20260825/` — the hoist's positive test
+
+| file | box / date | rev | protocol | consumed by |
+|---|---|---|---|---|
+| `ncu_costsurface_loghub-windows_line_b12_onpair_{dg_k1_t256_b1,dh_k1_t256_b1_h0}_{details,raw}.csv` + `*.log` | B300 SXM6, Nebius uk-south1 (preemptible), 2026-08-25 | `24ac18aaf` | `ncu --set full -c 16 -k <symbol>`, two kernels at ONE coordinate (T=256, B=1, K=1), Loghub Windows OnPair-12, floating clocks | **`sec:mb:hoist`** — the stall-reason evidence that the hoist covers load latency rather than merely not hurting |
+
+The pair differs only in `ONPAIR_HELD_HIGH`: `onpair_dg_k1_t256_b1` takes the template default of
+1, and `onpair_dh_k1_t256_b1_h0` is the same body with the hoist disabled. Reduced with
+`figures/extract_stalls.py`'s `shares()`, as percentages of warp cycles per issued instruction:
+
+| stall reason | H=1 | H=0 | delta |
+|---|---|---|---|
+| `long_scoreboard` | 33.24 | 39.44 | **−6.21** |
+| `mio_throttle` | 3.63 | 1.35 | +2.29 |
+| `short_scoreboard` | 20.25 | 18.71 | +1.54 |
+| `wait` | 16.32 | 15.37 | +0.95 |
+
+`long_scoreboard` is warps parked on a global load, so the hoist removes about a sixth of the
+latency stalls at the coordinate where it gains 6.4% of throughput
+(`suite-hoist0-20260823`: 832 against 782 GB/s). The rise in `mio_throttle` and
+`short_scoreboard` is the same mechanism seen from the other side: issuing the high-plane reads
+earlier converts long-latency waits into queue pressure.
+
+**Not a general claim.** One coordinate, one column, one device, chosen because it is where
+`fig:hoist` shows the gain. At the shipped configuration the hoist is neutral, which
+`sec:mb:hoist` already reports and this capture does not revisit.
+
+Filenames carry the kernel symbol because two cells sharing a dataset/column/bits would otherwise
+share a TAG and overwrite each other; `jobs/onpair-bench.sh` appends the pinned symbol. Note that
+`extract_stalls.py`'s directory walker mis-parses these names (`rsplit("_b", 1)` hits the `_b1` in
+the kernel symbol) — call `shares()` on the raw CSV directly, as above.
+
 ## Staged-dictionary counterfactual — `results/{a100,l40s,h100,b300}-shdict/`
 
 Answers the 2026-07-27 preprint review's central question: *would a GSST variant adapted to
