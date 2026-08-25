@@ -160,7 +160,7 @@ def main():
         vb, cdv = meta.get(stem, (None, None))
         text = label.lstrip("*")
         if vb is not None:
-            text += ": %s, %s" % (_fmt(vb), _fmt(cdv))
+            text += "|%sB|%sC" % (_fmt(vb), _fmt(cdv))
         ax.set_xlabel(text, fontsize=C.FS["tick"], labelpad=2,
                       fontfamily="monospace" if mono else None)
     for ax in order[len(PANELS):]:
