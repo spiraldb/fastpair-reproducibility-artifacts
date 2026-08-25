@@ -30,20 +30,59 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
+import suite as S  # noqa: E402
 
 SRC = Path(__file__).resolve().parent.parent / "results" / "token-freqdist-corpus"
 
+# (file stem, display label, group). A leading * on the label means the paper sets that name in
+# \texttt, so the panel label is drawn monospace to match; the star is stripped before drawing.
+# Order is the reading order of the grid.
+PANELS = [
+    ("FineWeb2", "FineWeb2", "real"), ("Wikipedia", "Wikipedia", "real"),
+    ("CodeParrot", "CodeParrot", "real"), ("Android", "*Android", "real"),
+    ("URL", "*URL", "real"), ("Title", "*Title", "real"),
+    ("HDFS", "*HDFS", "real"), ("Thunderbird", "*Thunderbird", "real"),
+    ("Spark", "*Spark", "real"), ("Windows", "*Windows", "real"),
+    ("hn_by", "*hn_by", "real-short"), ("amz_product_id", "*amz_product_id", "real-short"),
+    ("cb_PageCharset", "*PageCharset", "real-short"),
+    ("ghgit_author", "*ghgit_author", "real-short"),
+    ("amz_review_id", "*amz_review_id", "real-short"),
+    ("c_address", "*c_address", "generated"), ("l_comment", "*l_comment", "generated"),
+    ("o_clerk", "*o_clerk", "generated"), ("l_shipinstruct", "*l_shipinstruct", "generated"),
+    ("ps_comment", "*ps_comment", "generated"),
+]
+NCOL, NROW = 4, 5
+# COLUMN-MAJOR fill: panels go down a column before moving right. That is what makes a 4x5 grid
+# hold these three groups, since 10 + 5 + 5 lands as two whole columns, one, and one. Filling
+# row-major instead splits every group across a row boundary.
 
-def summary():
-    """{file stem: (mean value bytes, codes per value at OnPair-12)} from the probe's own stdout.
 
-    summary.txt is what encodings/onpair-sys/examples/onpair_skew.rs printed for the campaign
-    columns; parsing it keeps the panel labels and the curves on one measurement instead of
-    pairing a drawn distribution with a number derived somewhere else."""
+def stats():
+    """{file stem: (mean value bytes, codes per value at OnPair-12)}.
+
+    THE FIFTEEN CORPUS COLUMNS COME FROM suite.py, like every other figure in this directory,
+    so these labels carry the same numbers as tab:datasets and the rest of the paper rather than
+    a second derivation of them. Value bytes is sample_bytes/rows and codes per value is that
+    over suite.mean_len.
+
+    The five short real columns are not in the campaign suite -- they were never benchmarked,
+    only encoded -- so those five alone read from summary.txt, the encode probe's own stdout.
+    That split is the reason this returns a dict instead of asking suite for everything.
+    """
     out = {}
+    root = S.latest_root(None)
+    cells = S.cells(root, "b300", "boost", "onpair")
+    corpus = [(p[0], r) for p, r in
+              zip(PANELS[:10], S.REAL)] + [(p[0], r) for p, r in zip(PANELS[15:], S.GEN)]
+    for stem, (_, ds, col) in corpus:
+        c = cells.get((ds, col, 12))
+        if not c:
+            continue
+        vb = c["sample_bytes"] / c["rows"]
+        out[stem] = (vb, vb / S.mean_len(c))
     for line in (SRC / "summary.txt").read_text().splitlines():
         f = line.split()
-        if len(f) < 5 or f[0] == "column":
+        if len(f) < 5 or f[0] == "column" or f[0] in out:
             continue
         try:
             out[f[0]] = (float(f[2]), float(f[4]))
@@ -56,27 +95,6 @@ def _fmt(x):
     """Integer above 100, one decimal below: a tenth of a byte or of a code is noise at 3,716."""
     return ("%d" % round(x)) if x >= 100 else ("%.1f" % x)
 
-# (file stem, display label, group). A leading * on the label means the paper sets that name in
-# \texttt, so the panel label is drawn monospace to match; the star is stripped before drawing. Order is the reading order of the grid. The groups do not
-# divide evenly into four columns, so they straddle rows; colour carries the grouping instead.
-PANELS = [
-    ("FineWeb2", "FineWeb2", "real"), ("Wikipedia", "Wikipedia", "real"),
-    ("CodeParrot", "CodeParrot", "real"), ("Android", "*Android", "real"),
-    ("URL", "*URL", "real"), ("Title", "*Title", "real"),
-    ("HDFS", "*HDFS", "real"), ("Thunderbird", "*Thunderbird", "real"),
-    ("Spark", "*Spark", "real"), ("Windows", "*Windows", "real"),
-    ("hn_by", "*hn_by", "real-short"), ("amz_product_id", "*amz_product_id", "real-short"),
-    ("cb_PageCharset", "*PageCharset", "real-short"), ("ghgit_author", "*ghgit_author", "real-short"),
-    ("amz_review_id", "*amz_review_id", "real-short"),
-    ("c_address", "*c_address", "generated"), ("l_comment", "*l_comment", "generated"),
-    ("o_clerk", "*o_clerk", "generated"), ("l_shipinstruct", "*l_shipinstruct", "generated"),
-    ("ps_comment", "*ps_comment", "generated"),
-]
-NCOL, NROW = 4, 5
-# COLUMN-MAJOR fill: panels go down a column before moving right. That is what makes a 4x5 grid
-# hold these three groups, since 10 + 5 + 5 lands as two whole columns, one, and one. Filling
-# row-major instead splits every group across a row boundary.
-
 
 def counts(stem):
     f = SRC / ("%s.op12.txt" % stem)
@@ -86,9 +104,9 @@ def counts(stem):
 
 
 def main():
-    meta = summary()
+    meta = stats()
     plt = C.apply_theme()
-    fig, axes = plt.subplots(NROW, NCOL, figsize=(7.0, 3.75))
+    fig, axes = plt.subplots(NROW, NCOL, figsize=(7.0, 3.45))
     missing = []
     order = axes.T.ravel()   # column-major
     for ax, (stem, label, group) in zip(order, PANELS):
@@ -142,8 +160,8 @@ def main():
         vb, cdv = meta.get(stem, (None, None))
         text = label.lstrip("*")
         if vb is not None:
-            text += "\n%s B, %s codes" % (_fmt(vb), _fmt(cdv))
-        ax.set_xlabel(text, fontsize=C.FS["tick"], labelpad=2, linespacing=1.35,
+            text += ": %s, %s" % (_fmt(vb), _fmt(cdv))
+        ax.set_xlabel(text, fontsize=C.FS["tick"], labelpad=2,
                       fontfamily="monospace" if mono else None)
     for ax in order[len(PANELS):]:
         ax.set_axis_off()
