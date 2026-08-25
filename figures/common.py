@@ -465,7 +465,10 @@ def save(fig, name, width=None):
     if width is not None:
         fit_print_width(fig, width)
     for ext in ("pdf", "png"):
-        fig.savefig(OUTDIR / ("%s.%s" % (name, ext)), bbox_inches="tight", pad_inches=PAD_IN)
+        # dpi matters only for rasterized artists (fig_tokendist's bars); everything else in
+        # every figure stays vector regardless.
+        fig.savefig(OUTDIR / ("%s.%s" % (name, ext)), bbox_inches="tight", pad_inches=PAD_IN,
+                    dpi=600)
     print("wrote", (OUTDIR / (name + ".pdf")).relative_to(ROOT))
 
 

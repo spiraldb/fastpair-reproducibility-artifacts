@@ -50,6 +50,9 @@ PANELS = [
     ("ps_comment", "*ps_comment", "generated"),
 ]
 NCOL, NROW = 4, 5
+# COLUMN-MAJOR fill: panels go down a column before moving right. That is what makes a 4x5 grid
+# hold these three groups, since 10 + 5 + 5 lands as two whole columns, one, and one. Filling
+# row-major instead splits every group across a row boundary.
 
 
 def counts(stem):
@@ -61,9 +64,10 @@ def counts(stem):
 
 def main():
     plt = C.apply_theme()
-    fig, axes = plt.subplots(NROW, NCOL, figsize=(7.0, 4.6))
+    fig, axes = plt.subplots(NROW, NCOL, figsize=(7.0, 3.45))
     missing = []
-    for ax, (stem, label, group) in zip(axes.ravel(), PANELS):
+    order = axes.T.ravel()   # column-major
+    for ax, (stem, label, group) in zip(order, PANELS):
         v = counts(stem)
         if not v:
             missing.append(stem)
@@ -78,7 +82,19 @@ def main():
         # the maximum puts a uniform column flat along the top and lets a Zipfian one fall away,
         # which is the comparison, and a fixed range keeps that reading the same in every panel.
         top = v[0]
-        ax.bar(range(len(v)), [c / top for c in v], width=0.85, linewidth=0, color=colour)
+        y = [c / top for c in v]
+        if len(v) > 64:
+            # A FILLED POLYGON, not bars. Twenty panels of a few thousand vector rectangles was
+            # seventy thousand paths and a page slow to render, so these are rasterized -- but
+            # rasterizing BARS aliased badly: at 0.85 width their sub-pixel gaps beat against
+            # the pixel grid and drew moire stripes, so FineWeb2's four thousand codes came out
+            # looking like six. A polygon has no gaps to alias, rasterizes cleanly, and is the
+            # right primitive for a silhouette nobody reads bar by bar.
+            ax.fill_between(range(len(v)), 1e-6, y, color=colour, linewidth=0, rasterized=True)
+        else:
+            # Few enough codes to read individually, which is the point on these columns: five
+            # equal bars against five falling ones. Vector, and the gaps are deliberate.
+            ax.bar(range(len(v)), y, width=0.85, linewidth=0, color=colour)
         ax.set_yscale("log")
         ax.set_ylim(1e-6, 2.0)
         ax.set_xlim(-0.5, len(v) - 0.5)
@@ -98,7 +114,7 @@ def main():
         mono = label.startswith("*")
         ax.set_xlabel(label.lstrip("*"), fontsize=C.FS["tick"], labelpad=2,
                       fontfamily="monospace" if mono else None)
-    for ax in axes.ravel()[len(PANELS):]:
+    for ax in order[len(PANELS):]:
         ax.set_axis_off()
     if missing:
         sys.stderr.write("fig_tokendist: no dump for %s\n" % ", ".join(missing))
