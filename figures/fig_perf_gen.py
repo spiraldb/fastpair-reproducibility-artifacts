@@ -143,7 +143,7 @@ def main():
     # every other figure declares, and it kept the default four-sided box. That is why it was
     # the one figure whose type looked oversized on the page.
     plt = C.apply_theme()
-    fig, ax = plt.subplots(figsize=(7.1, 2.65))
+    fig, ax = plt.subplots(figsize=(7.1, 2.35))
     slot = 1.0
     per_chip = (slot * 0.72) / len(ordered_chips())
     absent, drawn, de_seen = [], 0, set()

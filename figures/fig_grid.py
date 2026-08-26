@@ -113,7 +113,7 @@ def main():
         sys.exit("no dg coordinates found; is this a full-grid pass?")
 
     plt = C.apply_theme()
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.35), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.10), sharey=True)
     for ax, (B, title) in zip(axes, PANELS):
         for T in TS:
             ys = [grid.get((K, T, B)) for K in KS]
