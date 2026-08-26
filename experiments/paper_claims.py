@@ -892,7 +892,7 @@ TEX_GROUPS = [
          "how many survive if the per-block runtime reservation is dropped"),
         ("occ.exact_no_shared_granule", "claimOccNoSharedGran", "{:d}",
          "and if shared memory is not rounded to its granule"),
-        ("s3.block_kib_with_reserve", "claimBlockKiB", "{:.0f}",
+        ("s3.block_kib_with_reserve", "claimBlockKiB", "{:.2f}",
          "KiB one block occupies including that reservation"),
         ("s3.four_blocks_kib", "claimFourBlocksKiB", "{:.0f}",
          "KiB four resident blocks need -- the number that decides whether a chip fits them"),
