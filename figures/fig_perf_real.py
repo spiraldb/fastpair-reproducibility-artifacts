@@ -194,7 +194,7 @@ def main():
         sys.exit("no results/suite-* directory found")
 
     plt = C.apply_theme()
-    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.35), sharey=True)
+    fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.05), sharey=True)
     oR, bR = panel(axR, root, S.REAL, "Real-world columns")
     oS, bS = panel(axS, root, S.GEN, "Generated columns")
     # GSST reports one number: 191 GB/s on an A100, TPC-H l_comment. That is generated data, so it

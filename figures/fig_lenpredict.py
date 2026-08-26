@@ -90,7 +90,7 @@ def fit(xs, ys):
 def main():
     root = S.latest_root(S.PAPER_SUITE)
     plt = C.apply_theme()
-    fig, ax = plt.subplots(figsize=(3.3, 1.9))
+    fig, ax = plt.subplots(figsize=(3.3, 1.7))
 
     for codec, bits, label, marker in PRESETS:
         colour = C.colour("tech-ours", label)

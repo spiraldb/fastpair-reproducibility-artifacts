@@ -97,7 +97,7 @@ def main():
 
     import numpy as np
     plt = C.apply_theme()
-    fig, ax = plt.subplots(figsize=(3.4, 2.2))
+    fig, ax = plt.subplots(figsize=(3.4, 1.95))
     x = np.arange(len(present))
     # Four bars per device now, so place them symmetrically about each tick and leave a fifth
     # bar's worth of air between groups: with w = 0.8/4 the group spans 0.8 of the unit spacing.

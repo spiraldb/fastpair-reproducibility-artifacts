@@ -68,7 +68,7 @@ def main():
     if root is None:
         sys.exit("no results/suite-* directory found")
     plt = C.apply_theme()
-    fig, ax = plt.subplots(figsize=(3.3, 2.05))
+    fig, ax = plt.subplots(figsize=(3.3, 1.82))
     for bits, marker in ((12, "o"), (16, "^")):
         pts = points(root, "b300", bits)
         xs = [p[0] for p in pts]

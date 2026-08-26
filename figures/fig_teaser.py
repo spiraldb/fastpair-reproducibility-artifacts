@@ -73,7 +73,7 @@ def main():
     de = {(r.get("dataset_id"), r.get("column")): r.get("best_decode_gib_s", 0) * C.GIB_TO_GB
           for r in S.de_rows(root, "b300")}
     plt = C.apply_theme()
-    fig, ax = plt.subplots(figsize=(3.3, 2.15))
+    fig, ax = plt.subplots(figsize=(3.3, 1.9))
     x = np.arange(len(COLS))
     w = 0.14
     vals = [[] for _ in SERIES]
