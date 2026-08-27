@@ -109,6 +109,29 @@ GEN = [
 # than a reason the sort is right. Name legs whatever describes them; change this line to move the
 # paper.
 PAPER_SUITE = "suite-paper-20260821"
+# THE COMPARATOR LEG. Three baselines in PAPER_SUITE were measured over a narrower space than we
+# gave ourselves: FSST-12 got 19 kernels against OnPair's 583, the Engine's chunk oracle sat at the
+# largest of five sizes on 15 of 15 columns, and the Engine alone was fed a flat concatenation with
+# no row structure. suite-comparators-20260827 remeasures those three on the same corpus and seed;
+# it has no GRID arm, so OnPair still comes from PAPER_SUITE and the two legs are read together.
+#
+# THAT PAIRING IS LICENSED BY A CONTROL, NOT BY ASSERTION. Both legs ran FSST-12 at the identical 19
+# production kernels on the identical fifteen columns, differing only in revision: -0.65% to +0.29%,
+# median -0.15%, n=15, inside the 0.82% p99 split-half noise floor. See that leg's README. Re-run
+# the control after any kernel change before trusting the pairing.
+COMPARATOR_SUITE = "suite-comparators-20260827"
+# THE THREE ZSTD LEVELS THE PAPER REPORTS: fast mode, the default, and the highest below the
+# --ultra tier. The comparator leg measured five (-10, 1, 3, 9, 19); 1 and 3 are near-duplicates on
+# this corpus -- 50.37x against 49.77x at the top, 183 against 179 GB/s -- so three points spanning
+# 1.12x to 62.87x costs the same ink as three spanning 1.12x to 50.37x with a repeat in the middle.
+# What was collected and what is plotted are separate decisions; this is the plotted set.
+PAPER_ZSTD_LEVELS = (-10, 3, 19)
+
+
+def comparator_root():
+    """The comparator leg's directory, or None when it is not present."""
+    d = RESULTS / COMPARATOR_SUITE
+    return d if d.is_dir() else None
 
 CHIPS_CORE = ["b300", "h100", "a100", "l40s"]   # legacy order; lay figures out with common.DEVICE_ORDER
 
@@ -253,11 +276,23 @@ def _cells(root, chip, prefix, tag):
 
 
 def cells(root, chip, tag="boost", codec="onpair"):
-    """Every cell for a chip at one clock state, keyed by (dataset_id, column, bits)."""
+    """Every cell for a chip at one clock state, keyed by (dataset_id, column, bits).
+
+    FSST-12 and Zstd come from COMPARATOR_SUITE where it exists: in PAPER_SUITE, FSST-12 was
+    measured with `--gpu-kernels production` (19 kernels against OnPair's 583) and Zstd was measured
+    at three levels that stop short of the ratios it reaches. Zstd is still REPORTED at three
+    levels, PAPER_ZSTD_LEVELS, just not the same three. OnPair is never redirected: the comparator
+    leg has no GRID arm.
+    """
     prefix = {"onpair": "sweep_summary", "fsst12": "fsst12_summary",
               "zstd": "zstd_summary"}[codec]
+    src = root
+    if codec in ("fsst12", "zstd"):
+        cr = comparator_root()
+        if cr is not None and (cr / chip).is_dir() and any((cr / chip).glob(f"{prefix}_*_{tag}.json")):
+            src = cr
     out = {}
-    for c in _cells(root, chip, prefix, tag):
+    for c in _cells(src, chip, prefix, tag):
         out[(c.get("dataset_id"), c.get("column"), c.get("bits"))] = c
     return out
 
@@ -355,9 +390,23 @@ def ratio(c):
 
     This matters beyond the table: fig_perf_real's dominance test puts these points against
     Zstd's raw_bytes/compressed_bytes and the DE's best_ratio, both of which ARE stored ratios.
-    Using the unpack here compared us against baselines on a denominator we alone paid."""
+    Using the unpack here compared us against baselines on a denominator we alone paid.
+
+        CONTAINER-MATCHED WHERE THE CODEC AND ITS CONTAINER DIFFER. FSST-12 stores codes in its own
+    fixed 12-bit packing, while OnPair's go through the same integer compressor as the rest of the
+    Vortex array, which bit-packs to about log2(cardinality). Dividing by each technique's own
+    stored size therefore compares FSST-12's CONTAINER against OnPair's CODEC: on a column with
+    five distinct values it charged FSST-12 twelve bits per code and OnPair three. The cells carry
+    mem_ratio_container_matched for exactly this, measured through OnPair's instrument, and no
+    figure read it -- the decision was taken on 2026-08-12, applied to the ten-column generator,
+    and lost when the fifteen-column one replaced it with this codec-agnostic helper. Effect on the
+    real columns is 0-10%; on TPC-H l_shipinstruct it is 3.37x to 11.37x.
+    """
     if not c:
         return None
+    cm = c.get("mem_ratio_container_matched")
+    if cm:
+        return cm
     sb = c.get("sample_bytes")
     return (sb / at_rest_bytes(c)) if (at_rest_bytes(c) and sb) else None
 
@@ -450,7 +499,16 @@ def child_bytes(root, chip="b300"):
 
 
 def de_rows(root, chip="b300"):
-    """Decompression-Engine cells, one per column, each with its chunk sweep and codec families."""
+    """Decompression-Engine cells, one per column, each with its chunk sweep and codec families.
+
+    From COMPARATOR_SUITE where it exists: seven chunk sizes instead of five, on a u32-length-framed
+    input rather than a flat concatenation with no row structure. Both changes move the Engine UP
+    against us, and the second is the one that matters -- it was the only technique whose ratio was
+    measured on a byte stream rows cannot be recovered from.
+    """
+    cr = comparator_root()
+    if cr is not None and (cr / chip / "onpair_nvcomp_hw.json").exists():
+        root = cr
     f = Path(root) / chip / "onpair_nvcomp_hw.json"
     try:
         return json.load(open(f))
@@ -599,6 +657,10 @@ def zstd_points(zcells, ds, col):
     c = zcells.get((ds, col, 12))
     out = []
     for e in (((c or {}).get("gpu") or {}).get("nvcomp_zstd") or []):
+        # Only the reported levels. A leg may measure more; plotting whatever a leg happens to hold
+        # would let the figure's baseline set change with the data rather than with a decision.
+        if e.get("zstd_level") not in PAPER_ZSTD_LEVELS:
+            continue
         if e.get("supported") and e.get("decode_gib_s") and e.get("compression_ratio"):
             out.append((e["compression_ratio"], e["decode_gib_s"] * GIB_TO_GB,
                         "Zstd (%s)" % e.get("zstd_level")))
@@ -612,18 +674,29 @@ def sw_points(sw, ds, col):
     and two Bitcomp modes -- so each is its own baseline, unlike the Engine's four codecs, which
     are four settings of one fixed-function unit and are pooled accordingly. Pooling these
     dropped Bitcomp-default from the figure entirely on every column, since gANS beats it on both
-    axes, which left a legend entry with no mark behind it. Each codec contributes one measured
-    configuration per column, so there is nothing to filter within one.
+    axes, which left a legend entry with no mark behind it.
+
+    EVERY CHUNK SIZE, not just the 256 KiB cell. This read only the top-level `codecs` block and
+    its docstring asserted "each codec contributes one measured configuration per column, so there
+    is nothing to filter within one" -- which was simply false: the producer records a five-size
+    `chunk_sweep`, and de_points has always iterated the Engine's. So the fixed-function unit was
+    plotted at its best of twenty configurations while the three software codecs were pinned to one
+    of five, in a figure whose stated basis is "every technique at its best configuration on each
+    column". It cost the baselines 4.4 to 13.9% and it cost them in our favour. Each codec is still
+    reduced to its own best rather than pooled across the three, for the reason above.
     """
     row = sw.get((ds, col)) or {}
-    out = []
-    for name, e in (row.get("codecs") or {}).items():
-        if not e.get("supported") or not e.get("valid") or not e.get("ratio"):
-            continue
-        rate = _rate(e, _payload(row))
-        if rate:
-            out.append((e["ratio"], rate, name))
-    return out
+    passes = [row.get("codecs") or {}] + [p.get("codecs") or {}
+                                          for p in (row.get("chunk_sweep") or [])]
+    best = {}
+    for codecs in passes:
+        for name, e in codecs.items():
+            if not e.get("supported") or not e.get("valid") or not e.get("ratio"):
+                continue
+            rate = _rate(e, _payload(row))
+            if rate and rate > best.get(name, (0, 0))[1]:
+                best[name] = (e["ratio"], rate)
+    return [(r, rate, name) for name, (r, rate) in best.items()]
 
 
 def baseline_points(root, chip, ds, col, zcells=None, sw=None):

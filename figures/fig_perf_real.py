@@ -77,7 +77,7 @@ CFG = {
     "DE Snappy": C.colour("tech-engine", "DE Snappy"),
     # The DARK three of the neutral ramp, not the light three. Every Zstd mark falls inside the
     # envelope wash, so the lightest grey (#d9d9d9) was a mark you had to already know was there.
-    "Zstd (-10)": C.neutral(1), "Zstd (1)": C.neutral(2), "Zstd (3)": C.neutral(3),
+    "Zstd (-10)": C.neutral(1), "Zstd (3)": C.neutral(2), "Zstd (19)": C.neutral(3),
     "Bitcomp-default": C.colour("tech-nvcomp", "Bitcomp-default"),
     "Bitcomp-sparse": C.colour("tech-nvcomp", "Bitcomp-sparse"),
     "gANS": C.colour("tech-nvcomp", "gANS"),
@@ -86,7 +86,7 @@ FAMILY_MARKER = {"OnPair": "o", "DE": "s", "Zstd": "^", "nvCOMP-sw": "D"}
 FAMILY = {
     "OnPair-12": "OnPair", "OnPair-16": "OnPair", "FSST-12": "OnPair",
     "DE Deflate (5)": "DE", "DE Deflate (0)": "DE", "DE LZ4": "DE", "DE Snappy": "DE",
-    "Zstd (-10)": "Zstd", "Zstd (1)": "Zstd", "Zstd (3)": "Zstd",
+    "Zstd (-10)": "Zstd", "Zstd (3)": "Zstd", "Zstd (19)": "Zstd",
     "gANS": "nvCOMP-sw", "Bitcomp-default": "nvCOMP-sw", "Bitcomp-sparse": "nvCOMP-sw",
 }
 MARKER = {k: FAMILY_MARKER[v] for k, v in FAMILY.items()}

@@ -682,7 +682,20 @@ def field_stats():
                         seen.add((name, chunk))
             de_raw = len(seen)
     z_raw = len(S.zstd_points(zc, S.REAL[0][1], S.REAL[0][2]))
-    sw_raw = len((sw.get((S.REAL[0][1], S.REAL[0][2])) or {}).get("codecs") or {})
+    # THE SOFTWARE CODECS ALSO GET A CHUNK SWEEP, and it has to be counted the same way the DE's
+    # is directly above, or the total understates what was measured. This counted the top-level
+    # `codecs` block alone -- three configurations against the fifteen actually recorded -- for the
+    # same reason suite.sw_points only plotted one of five chunk sizes. The count is a disclosure
+    # about search-size asymmetry, so undercounting the baselines' half misstates the disclosure.
+    _sw_row = sw.get((S.REAL[0][1], S.REAL[0][2])) or {}
+    _sw_seen = set()
+    for chunk, codecs in ([(_sw_row.get("chunk_bytes"), _sw_row.get("codecs") or {})]
+                          + [(p.get("chunk_bytes"), p.get("codecs") or {})
+                             for p in (_sw_row.get("chunk_sweep") or [])]):
+        for name, e in codecs.items():
+            if e.get("supported") and e.get("valid"):
+                _sw_seen.add((name, chunk))
+    sw_raw = len(_sw_seen)
     put("s5.field_configs_per_col", de_raw + z_raw + sw_raw,
         "baseline configurations measured per column: DE codecs x chunk sizes, Zstd levels, "
         "nvCOMP software codecs")
