@@ -31,7 +31,10 @@ ROWS = []
 # and the DE/software/CPU joins) and silently contribute nothing if their results file is missing
 # or unreadable -- so a count below this means the reproduction is INCOMPLETE, not passing. main()
 # fails loud on a shortfall rather than printing a false "all green".
-EXPECTED_CHECKS = 130
+# 134 after the cost-surface block was repointed from the retracted base-kernel capture to the
+# shipped-kernel one (ncu-costsurface-v2.csv) and its universal margin bands were split into the
+# HBM claim, an absolute compute ceiling, and the GDDR regime boundary.
+EXPECTED_CHECKS = 134
 
 
 def check(name, got, lo, hi, unit="", note=""):
@@ -183,22 +186,55 @@ def main():
         check("CPU fat/entries: max", max(fov), 1.40, 1.70, "x")
 
     # 5. Cost surface: a CACHE pipe binds; DRAM and SM compute never do (the paper's one insight).
-    rows = list(csv.DictReader(open(C.RESULTS / "ncu-costsurface.csv")))
+    # v2, NOT the original capture. ncu-costsurface.csv profiled the BASE REFERENCE kernel, not the
+    # shipped one (figures/fig_costsurface.py:22-23 says so), and the difference is not marginal:
+    # it reads A100 L1 at 55.0% and H100 L2 at 88.2% above an L1 of 64.0%, which is exactly the
+    # per-chip "Hopper binds on device-wide L2, Blackwell on L1" split that
+    # docs/notes/2026-07-06-ncu-v2-rederivation.md RETRACTED. On the shipped kernel it is L1 on
+    # every HBM chip: A100 93.5, H100 95.8 (L2 78.7), B300 95.8 (L2 31.9). This checker was
+    # asserting the refuted position and passing, so `make verify` handed an artifact reviewer a
+    # green tick on the opposite of the paper's central claim.
+    rows = list(csv.DictReader(open(C.RESULTS / "ncu-costsurface-v2.csv")))
     flt = lambda r, k: float(r[k])
-    for arch in ["a100", "l40s", "h100", "b300"]:
+    HBM = ["a100", "h100", "b300"]
+    for arch in HBM + ["l40s"]:
         ar = [r for r in rows if r["arch"] == arch]
         cache = max(max(flt(r, "l1tex"), flt(r, "l2")) for r in ar)
         dram, sm = max(flt(r, "dram") for r in ar), max(flt(r, "sm") for r in ar)
         check(f"cost surface {arch}: cache pipe peak", cache, 70, 100, "%peak")
-        # the binding pipe outruns DRAM and SM by a wide margin on every arch
-        check(f"cost surface {arch}: cache >> DRAM", cache - dram, 45, 100, "pts")
-        check(f"cost surface {arch}: cache >> SM", cache - sm, 40, 100, "pts")
+        # A WIDE CACHE-OVER-DRAM MARGIN IS AN HBM CLAIM, NOT A UNIVERSAL ONE. This ran over all
+        # four parts and demanded >= 45 points everywhere. On the shipped-kernel capture the L40S
+        # gives 6.0 -- its DRAM sits at 82.3% right behind an 88.3% cache pipe -- so the check was
+        # only passing because the retracted base-kernel capture understated the L40S. That the
+        # GDDR part does NOT have bandwidth to spare is the paper's own regime boundary, so it is
+        # asserted below as itself rather than swept into a universal.
+        if arch in HBM:
+            check(f"cost surface {arch}: cache >> DRAM", cache - dram, 45, 100, "pts")
+        # Compute never binds. Stated as an ABSOLUTE ceiling on SM throughput rather than as a
+        # margin below the cache pipe: the margin band silently encoded how saturated the cache
+        # was, so it failed on exactly the parts where the cache pipe was measured LOWER.
+        check(f"cost surface {arch}: SM compute never binds", sm, 0, 68, "%peak")
+    # THE REGIME BOUNDARY, asserted rather than assumed. On the GDDR part the byte path is the
+    # tighter limit, which is why the paper scopes its bound claim to HBM devices.
+    l40s = [r for r in rows if r["arch"] == "l40s"]
+    _l40s_cache = max(max(flt(r, "l1tex"), flt(r, "l2")) for r in l40s)
+    check("cost surface l40s: DRAM close behind the cache pipe",
+          _l40s_cache - max(flt(r, "dram") for r in l40s), 0, 20, "pts",
+          "GDDR part: byte supply is the tighter limit, so the HBM bound claim excludes it")
     b300 = [r for r in rows if r["arch"] == "b300"]
     h100 = [r for r in rows if r["arch"] == "h100"]
-    check("cost surface: B300 L1/TEX peak", max(flt(r, "l1tex") for r in b300), 86, 95, "%peak",
-          "Blackwell binds on per-SM L1/TEX")
-    check("cost surface: H100 L2 peak", max(flt(r, "l2") for r in h100), 84, 92, "%peak",
-          "Hopper binds on device-wide L2")
+    a100 = [r for r in rows if r["arch"] == "a100"]
+    # THE CLAIM IS "L1 BINDS ON EVERY HBM CHIP", so that is what is asserted -- per chip, and as an
+    # ordering against L2 rather than as an absolute band alone. An absolute band would pass on a
+    # capture where L2 had overtaken L1, which is the failure that let the retracted chip split
+    # survive here.
+    for name, ar in (("A100", a100), ("H100", h100), ("B300", b300)):
+        l1 = max(flt(r, "l1tex") for r in ar)
+        l2 = max(flt(r, "l2") for r in ar)
+        check(f"cost surface: {name} L1/TEX peak", l1, 90, 100, "%peak",
+              "L1 binds on every HBM chip (shipped kernel)")
+        check(f"cost surface: {name} L1 above L2", l1 - l2, 10, 100, "pts",
+              "the binding unit is per-SM L1, not device-wide L2")
 
     # 6. IAA aggregate vs FastPair on Sapphire (results/iaa/). Paper: ~29 GB/s block, beaten by FastPair.
     iaa_path = C.RESULTS / "iaa" / "iaa_aggregate_sapphire.txt"

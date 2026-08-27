@@ -375,6 +375,80 @@ def at_rest_bytes(c):
     return (c.get("on_disk_bytes") or 0) or (c.get("in_memory_bytes") or 0)
 
 
+def offset_cost_rows(root, chip="b300", leg_chunk_bytes=None):
+    """Rows of onpair_offset_cost.jsonl: the sidecar sweep, one record per chunk per granularity.
+
+    Written by the ONPAIR_OFFSET_COST path during MATERIALIZE. Fields that matter here:
+    dataset, column, bits, chunk, tok_per_batch, n_batches, total_tokens, decoded_bytes,
+    compressed_bytes (the chunk's stored OnPair array) and offset_compressed_bytes (the sidecar
+    through compress_offsets, the same delta-or-plain path the OnPair children take).
+
+    SMOKE ROWS ARE DROPPED. Before 2026-08-26 the sink was exported ahead of phase 0, so
+    onpair-bench.sh's 50 MB build smoke on tpch-sf10/l_comment appended fifteen records describing
+    a cell no figure reads. They are separable by chunk size -- the smoke runs at 10 MB against the
+    leg's 1000 -- and `leg_chunk_bytes` drops them; pass None to keep everything.
+    """
+    f = Path(root) / chip / "onpair_offset_cost.jsonl"
+    if not f.exists():
+        return []
+    out = []
+    for line in f.read_text().splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        out.append(r)
+    if leg_chunk_bytes is not None:
+        # The offset-cost record carries no chunk_bytes of its own; the smoke's signature is a
+        # dataset id from the OLD ten-column corpus, which this suite does not contain.
+        ids = {ds for _l, ds, _c in REAL + GEN}
+        out = [r for r in out if r.get("dataset") in ids]
+    return out
+
+
+def sidecar_bytes(root, chip="b300", tok_per_batch=192):
+    """{(dataset, column, bits): (sidecar_bytes, stored_bytes)} summed over chunks.
+
+    Summed, not last-wins: a column is many chunks and each writes its own record. Keyed on the
+    granularity because the footprint is not linear in it -- measured on this corpus, the sidecar
+    runs about 0.44% of stored at 192, 0.53% at 128 and 1.85% at 32.
+    """
+    acc = {}
+    for r in offset_cost_rows(root, chip, leg_chunk_bytes=True):
+        if r.get("tok_per_batch") != tok_per_batch:
+            continue
+        k = (r["dataset"], r["column"], r["bits"])
+        side, tot = acc.get(k, (0, 0))
+        acc[k] = (side + r["offset_compressed_bytes"], tot + r["compressed_bytes"])
+    return acc
+
+
+def child_bytes(root, chip="b300"):
+    """{(dataset, column, bits): {child: bytes}} summed over chunks, plus 'total'.
+
+    From onpair_child_bytes.jsonl. This is what answers "what does the string part cost without
+    the offsets" without guessing: `codes_offsets` is the row-to-code offset child, a separate
+    Vortex array with its own integer encoding, and on short-row columns it is a large enough
+    share of the total that a string-codec comparison including it is measuring offset compression.
+    """
+    acc = {}
+    f = Path(root) / chip / "onpair_child_bytes.jsonl"
+    if not f.exists():
+        return acc
+    ids = {ds for _l, ds, _c in REAL + GEN}
+    for line in f.read_text().splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if r.get("dataset") not in ids:
+            continue          # build-smoke row; see offset_cost_rows
+        d = acc.setdefault((r["dataset"], r["column"], r["bits"]),
+                           {k: 0 for k in ("codes", "codes_offsets", "dict_offsets",
+                                           "lengths", "dict", "total")})
+        for k in d:
+            d[k] += r[k]
+    return acc
+
+
 def de_rows(root, chip="b300"):
     """Decompression-Engine cells, one per column, each with its chunk sweep and codec families."""
     f = Path(root) / chip / "onpair_nvcomp_hw.json"
@@ -423,10 +497,29 @@ DE_NAME = {"DEFLATE-hi": "DE Deflate (5)", "DEFLATE-fast": "DE Deflate (0)",
 
 
 def _rate(entry, raw_bytes):
+    """Decode rate in GB/s, over the STRING PAYLOAD rather than the file.
+
+    The Decompression Engine used to be handed a flat concatenation of values with no separators,
+    so its file and its payload were the same bytes and `raw_bytes` was an unambiguous numerator.
+    It is now fed a u32-length-framed record stream -- the row structure every other technique
+    already stored and it alone did not -- so the file is payload plus four bytes per row. Dividing
+    by the file counts framing as decoded output: on a twelve-byte column that is a third of the
+    reported rate, invented.
+
+    `basis_bytes` is the numerator the producer itself used, per codec, and is preferred where
+    present; `payload_bytes` is the same quantity at the top of the record. `raw_bytes` remains the
+    file size and is the fallback for producers that predate the distinction -- for which the two
+    coincide, because nothing was framed."""
     it = entry.get("decode_ns_iters") or []
-    if it and raw_bytes:
-        return raw_bytes / min(it)
+    basis = entry.get("basis_bytes") or raw_bytes
+    if it and basis:
+        return basis / min(it)
     return (entry.get("decode_gib_s") or 0) * GIB_TO_GB or None
+
+
+def _payload(row):
+    """The string bytes in a producer record, whatever the file around them cost. See `_rate`."""
+    return row.get("payload_bytes") or row.get("raw_bytes")
 
 
 def _pareto(pts):
@@ -462,7 +555,7 @@ def de_points(root, chip, ds, col):
                 seen.add((name, chunk))
                 if not e.get("valid") or e.get("validation_failed") or not e.get("ratio"):
                     continue
-                rate = _rate(e, r.get("raw_bytes"))
+                rate = _rate(e, _payload(r))
                 if rate:
                     raw.append((e["ratio"], rate, DE_NAME.get(name, "DE %s" % name)))
     return _pareto(raw)
@@ -491,7 +584,7 @@ def de_by_codec(root, chip, ds, col):
                 seen.add((name, chunk))
                 if not e.get("valid") or e.get("validation_failed"):
                     continue
-                rate = _rate(e, r.get("raw_bytes"))
+                rate = _rate(e, _payload(r))
                 if rate and rate > out.get(name, 0):
                     out[name] = rate
     return out
@@ -527,7 +620,7 @@ def sw_points(sw, ds, col):
     for name, e in (row.get("codecs") or {}).items():
         if not e.get("supported") or not e.get("valid") or not e.get("ratio"):
             continue
-        rate = _rate(e, row.get("raw_bytes"))
+        rate = _rate(e, _payload(row))
         if rate:
             out.append((e["ratio"], rate, name))
     return out

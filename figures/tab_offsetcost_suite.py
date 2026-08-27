@@ -12,25 +12,25 @@ WHAT THIS CAN AND CANNOT DERIVE, and why the table has holes.
 The sidecar is one u64 output offset per batch of 128 codes. Two of the table's three
 quantities are therefore arithmetic on committed suite data, and one is not:
 
-  Batches       ceil(total_tokens / 128). Confirmed against results/b300-campaign-0717/
-                offset_cost.jsonl, where total_tokens/n_batches = 127.99 on every row.
-  Raw           8 * batches. A constant 3.125% of the code stream, so it gets no column.
-  Stored        the sidecar as actually written. Produced by the CPU-only ONPAIR_OFFSET_COST
-                path (no cuda feature; results/offset-reshape-cost-laptop/ ran on a laptop),
-                which emits offset_compressed_bytes. Not reproducible by arithmetic: in the
-                0717 campaign it landed at 0.13-0.23x of raw, varying by column. Prints `--`.
+  Batches       ceil(total_tokens / BATCH_CODES).
+  Raw           8 * batches. A constant 2.08% of the code stream at K=6, so it gets no column.
+  Stored        the sidecar as actually written, read from the leg's onpair_offset_cost.jsonl:
+                offset_compressed_bytes through compress_offsets, the same delta-or-plain
+                keep-the-smaller path the OnPair children take. Not reproducible by arithmetic.
   Regeneration  the throughput lost rebuilding offsets on the device instead of reading them.
-                This one is a decode-path measurement and does need a GPU. Prints `--`.
+                A decode-path measurement; still `--` until a leg times it.
 
-THE 2026-08-21 SUITE HAS NO OFFSETS ARM. Its stages are MATERIALIZE GRID DE ZSTD FSST LADDER,
-none of which writes a sidecar or times regeneration. The sidecar half needs only a CPU pass at
-the campaign rev; see docs/notes/2026-08-22-offsetcost-table-prep.md in the paper repo.
+GRANULARITY IS THE TABLE'S SUBJECT, so it is not a constant to be assumed. One entry covers a
+batch of BATCH_CODES codes, which is the write-time commitment to K: a warp batch is 32*K and the
+shipped K=6 is 192. The footprint is NOT linear in it -- measured on this corpus, the sidecar is
+about 0.44% of stored at 192, 0.53% at 128 and 1.85% at 32. This file used 128, the older default,
+which understates the shipped configuration's advantage and would silently mix bases if a leg
+sweeps several.
 
-DENOMINATOR. `Stored` has to be a percentage of something, and the two candidates are not the
-same quantity. gpu.compressed_bytes is codes widened to u16, exactly 2 B/code, and is what
-tab:datasets' Ratio and Section 5 use. in_memory_bytes is the packed representation, and is
-what the 0717 sidecar percentages were against (it matches that campaign's compressed_bytes to
-0.1-1.2% on the overlapping columns). Settle this before filling the column.
+DENOMINATOR: the stored OnPair array, per chunk, summed over chunks -- `compressed_bytes` in the
+offset-cost record, which is the same quantity as the cell's in_memory_bytes. NOT
+gpu.compressed_bytes, the in-memory unpack at exactly 2 B per code, which is a decode-time array
+rather than anything stored. The two differ by up to a third at OnPair-12.
 
 MISSING CELLS PRINT `--`, following tab_datasets_suite.py. A row that vanishes is how a
 reader comes to believe the corpus is smaller than it is.
@@ -43,7 +43,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import suite as S  # noqa: E402
 
-BATCH_CODES = 128          # one warp's batch; Section 3 states it, 0717 data confirms 127.99
+# One sidecar entry per batch of 32*K codes; the shipped K is 6. See the docstring: this is a
+# measured dimension, not a constant, and 128 was the older default.
+BATCH_CODES = 192
 
 
 def batches(c):
@@ -67,16 +69,23 @@ def fmt(v, spec, suffix=""):
     return "--" if v is None else format(v, spec) + suffix
 
 
-def row(label, c12, c16):
+def stored_pct(side, key):
+    """The stored sidecar as a percentage of the stored column, both measured."""
+    v = side.get(key)
+    if not v or not v[1]:
+        return None
+    return 100.0 * v[0] / v[1]
+
+
+def row(label, ds, col, c12, c16, side):
     """Batches | Stored | Regeneration, per preset.
 
-    No Raw column: it is 8/(128*2) = 3.125% for every column and both presets, because the
-    suite stores codes as u16 (measured 3.108-3.125% over all 30 cells). A constant belongs
-    in one sentence of prose, not in thirty table cells."""
+    No Raw column: 8 bytes per entry over BATCH_CODES u16 codes is one constant for every column
+    and both presets. A constant belongs in one sentence of prose, not in thirty table cells."""
     cells = [
-        fmt_int(batches(c12)), "--", "--",
+        fmt_int(batches(c12)), fmt(stored_pct(side, (ds, col, 12)), ".2f", "\\%"), "--",
         "",
-        fmt_int(batches(c16)), "--", "--",
+        fmt_int(batches(c16)), fmt(stored_pct(side, (ds, col, 16)), ".2f", "\\%"), "--",
     ]
     return f"{label} & " + " & ".join(cells) + " \\\\"
 
@@ -91,6 +100,7 @@ def main():
     if root is None:
         sys.exit("no results/suite-* directory found")
     cs = S.cells(root, a.chip, "boost", "onpair")
+    side = S.sidecar_bytes(root, a.chip, tok_per_batch=BATCH_CODES)
 
     out, missing = [], []
     for group, rows in (("real", S.REAL), ("gen", S.GEN)):
@@ -99,14 +109,15 @@ def main():
             for name, cell in (("OnPair-12", c12), ("OnPair-16", c16)):
                 if cell is None:
                     missing.append(f"{ds}/{col} {name}")
-            out.append(row(label, c12, c16))
+            out.append(row(label, ds, col, c12, c16, side))
         if group == "real":
             out.append("\\midrule")
 
     print(f"% GENERATED by figures/tab_offsetcost_suite.py from results/{root.name}/{a.chip}")
-    print(f"% Batches = ceil(gpu.total_tokens/{BATCH_CODES}). Raw sidecar is a constant 3.125% of")
-    print("% the code stream (u16 codes), so it is stated in prose rather than given a column.")
-    print("% Stored and Regeneration are `--`: no offsets arm in this suite. See the docstring.")
+    print(f"% Batches = ceil(gpu.total_tokens/{BATCH_CODES}), one entry per 32*K codes at K=6.")
+    print(f"% Raw sidecar is a constant 8/({BATCH_CODES}*2) = "
+          f"{100.0 * 8 / (BATCH_CODES * 2):.2f}% of the u16 code stream, so it is stated in prose.")
+    print("% Stored is measured (offset_compressed_bytes / stored column). Regeneration needs a run.")
     print("\n".join(out))
 
     if missing:
@@ -115,8 +126,10 @@ def main():
             print(f"%   {m}", file=sys.stderr)
     else:
         print("\n% all 15 columns x 2 presets present for the derived columns", file=sys.stderr)
-    print("% Stored and Regeneration need a run; they are not in any committed suite leg.",
-          file=sys.stderr)
+    if not side:
+        print("% NO SIDECAR DATA: this leg has no onpair_offset_cost.jsonl at "
+              f"{BATCH_CODES} codes per entry; Stored prints --", file=sys.stderr)
+    print("% Regeneration still needs a run; no committed leg times it.", file=sys.stderr)
 
 
 if __name__ == "__main__":

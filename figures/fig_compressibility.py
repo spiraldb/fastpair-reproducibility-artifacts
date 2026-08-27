@@ -32,6 +32,8 @@ DATA + REGENERATION of the sidecar fractions:
 """
 import json
 import math
+import sys
+
 import common as C
 
 # Median stored-offset-sidecar fraction, for columns not in offset_cost.jsonl.
@@ -40,33 +42,63 @@ DEFAULT_SIDECAR_FRAC = 0.005
 _OFFSET_DID_ALIAS = {"lship": "tpch-sf10"}
 
 
+# GRANULARITY IS PART OF THE KEY. One sidecar entry covers a batch of tok_per_batch codes, so the
+# footprint is a write-time commitment to K -- a warp batch is 32*K codes and the shipped K=6 is
+# 192. It is NOT linear in that number: measured on Wikipedia at OnPair-12, the sidecar is 0.457%
+# of stored at 192, 0.620% at 128 and 2.198% at 32, a factor of five across the sweep. A reducer
+# that ignored the field would let whichever granularity happened to be written last stand for the
+# column, and a file holding a sweep would silently mix them -- charging one codec 192 and another
+# 32 inside a single figure. Key on it, and select.
+AUTHORITATIVE_TOK_PER_BATCH = 192
+# Legs written before the sweep existed recorded one granularity and did not name it. That default
+# was 128.
+LEGACY_TOK_PER_BATCH = 128
+
+
 def _load_sidecar_frac():
-    """(dataset_id, column, bits) -> compressed-sidecar / compressed-column."""
-    frac = {}
+    """(dataset_id, column, bits, tok_per_batch) -> compressed-sidecar / compressed-column.
+
+    Summed over chunks, not overwritten by the last one: a column is many chunks and each writes
+    its own record."""
+    acc = {}
     path = C.RESULTS / "b300-campaign-0717" / "offset_cost.jsonl"
     if not path.exists():
-        return frac
+        return {}
     for line in path.read_text().splitlines():
         if not line.strip():
             continue
         r = json.loads(line)
         col_bytes = r.get("compressed_bytes") or 0
-        if col_bytes:
-            # offset_cost.jsonl keys the dataset as "dataset" (not "dataset_id").
-            frac[(r["dataset"], r["column"], r["bits"])] = (
-                r["offset_compressed_bytes"] / col_bytes
-            )
-    return frac
+        if not col_bytes:
+            continue
+        # offset_cost.jsonl keys the dataset as "dataset" (not "dataset_id").
+        k = (r["dataset"], r["column"], r["bits"],
+             r.get("tok_per_batch", LEGACY_TOK_PER_BATCH))
+        side, tot = acc.get(k, (0, 0))
+        acc[k] = (side + r["offset_compressed_bytes"], tot + col_bytes)
+    return {k: s / t for k, (s, t) in acc.items() if t}
 
 
 _SIDECAR = _load_sidecar_frac()
+_SIDECAR_WARNED = set()
 
 
 def sidecar_frac(did, gc, bits):
-    f = _SIDECAR.get((did, gc, bits))
-    if f is None:
-        f = _SIDECAR.get((_OFFSET_DID_ALIAS.get(did, did), gc, bits))
-    return DEFAULT_SIDECAR_FRAC if f is None else f
+    for d in (did, _OFFSET_DID_ALIAS.get(did, did)):
+        f = _SIDECAR.get((d, gc, bits, AUTHORITATIVE_TOK_PER_BATCH))
+        if f is not None:
+            return f
+    # Measured, but not at the granularity this figure reports. Substituting another one would put
+    # a number on the plot that no configuration produces, so fall back to the median and say which
+    # column it happened to -- silently rescaling is how the bases drifted apart in the first place.
+    others = sorted({k[3] for k in _SIDECAR if k[0] in (did, _OFFSET_DID_ALIAS.get(did, did))
+                     and k[1] == gc and k[2] == bits})
+    if others and (did, gc, bits) not in _SIDECAR_WARNED:
+        _SIDECAR_WARNED.add((did, gc, bits))
+        print("fig_compressibility: %s/%s bits=%d has a sidecar at %s codes per entry, not the "
+              "reported %d; using the median fraction instead"
+              % (did, gc, bits, others, AUTHORITATIVE_TOK_PER_BATCH), file=sys.stderr)
+    return DEFAULT_SIDECAR_FRAC
 
 COLMAP = {  # cpu column -> (gpu dataset_id, gpu column, panel)
     "clickbench_url": ("clickbench", "URL", "R"), "fineweb": ("fineweb", "text", "R"),

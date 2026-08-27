@@ -13,27 +13,37 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-# The figures the paper \includegraphics, rebuilt from results/. fig_hierarchy is a code-drawn
-# schematic (no results dependency) but it has a script, so it rebuilds too. Output name in
-# parens where it differs (fig_crossstack writes fig_crossstack_strip.pdf).
-LIVE_FIGS=(
-  # the 12 figures in the main paper. fig_sota also ASSERTS its own claim: it exits nonzero
-  # if any FastPair mark fails to clear the same-device baseline frontier, so a data change
-  # that broke the dominance claim fails this run rather than shipping quietly.
-  fig_teaser fig_sota fig_crossarch fig_sota_cpu fig_stagecost fig_costsurface
-  fig_gatherwidth fig_ablation fig_compressibility fig_hierarchy fig_offtrade
-  # appendix A. Added 2026-08-20: it was already shipping in the paper while being neither
-  # rebuilt here nor covered by validate.py, so nothing protected its numbers from drift.
-  fig_freqbars
-  # extended-version figures (CPU deep-dive), regenerated for completeness; not referenced
-  # in the main paper
-  fig_crossstack fig_bitsweep fig_cputma
-)
-# RETIRED 2026-08-04, superseded by fig_crossarch: fig_b300_datasets (per-column B300 bars
-# against the DE) and fig_scaling (three GPUs, one column). Both were earlier attempts at the
-# per-column cross-architecture view that fig_crossarch now carries for all four GPUs and all
-# ten columns, and neither is referenced by the paper. The scripts stay in figures/ as history;
-# they are no longer rebuilt, so they are no longer held to current data.
+# THE FIGURE LIST IS DERIVED FROM THE PAPER, NOT MAINTAINED BESIDE IT. This was a hand-written
+# list, and it drifted until it named the RETIRED figure family: of the nine figures the paper
+# prints, this loop rebuilt two. The consequence was not cosmetic -- figures/fig_perf_real.py
+# carries the per-column dominance assertion behind Section 5's central claim ("no baseline
+# configuration reaches those rates at an equal or better compression ratio") and it was never
+# executed, while fig_sota, whose assertion this file's comment advertised, is not in the paper at
+# all. Coverage was exactly inverted. So: ask the paper.
+PAPER_DIR="${PAPER_DIR:-$HOME/repos/onpair-gpu-paper}"
+# bash 3.2 (the macOS default) has no `mapfile`, and a subshell pipeline cannot populate an array
+# in the parent. Build it with a plain loop over a temp file instead.
+paper_figs(){
+  grep -ho 'includegraphics\[[^]]*\]{[^}]*}' "$PAPER_DIR"/sections/*.tex "$PAPER_DIR"/main.tex 2>/dev/null \
+    | sed -e 's/.*{//' -e 's/}$//' -e 's#.*/##' -e 's/\.pdf$//' | sort -u
+}
+LIVE_FIGS=()
+MISSING_GEN=()
+while read -r f; do
+  [ -n "$f" ] || continue
+  if [ -f "figures/$f.py" ]; then LIVE_FIGS+=("$f"); else MISSING_GEN+=("$f"); fi
+done <<EOF
+$(paper_figs)
+EOF
+if [ "${#LIVE_FIGS[@]}" -eq 0 ]; then
+  echo "FATAL: derived no figures from $PAPER_DIR -- set PAPER_DIR to the paper repo"; exit 2
+fi
+# A figure the paper prints with no generator here is reported, not silently skipped: a code-drawn
+# schematic is legitimate, a missing generator for a data figure is a hole.
+for f in "${MISSING_GEN[@]:-}"; do
+  [ -n "$f" ] && echo "  note: $f is printed by the paper and has no generator here"
+done
+echo "== figure set derived from the paper: ${LIVE_FIGS[*]} =="
 
 command -v uv >/dev/null 2>&1 || { echo "FATAL: need 'uv' (https://docs.astral.sh/uv/)"; exit 2; }
 
@@ -42,10 +52,20 @@ command -v uv >/dev/null 2>&1 || { echo "FATAL: need 'uv' (https://docs.astral.s
 # what the paper prints. It drifted before this existed (2026-08-15: five cells, one of them
 # a four-machine mean printed under a "B300 run" caption), which is exactly the failure a
 # generator-less table invites.
-echo "== checking tab:datasets against results/ =="
-if ! uv run figures/tab_datasets.py --check; then
-  echo "FATAL: tab:datasets disagrees with results/ (see above)"
-  exit 1
+# NOT tab_datasets.py --check. That gate passed green while the paper carried an FSST-12 ratio on
+# the wrong basis, because it validates a HARDCODED SNAPSHOT of the retired TEN-column table
+# against the retired ten-column corpus -- and its snapshot even holds the CORRECT value for the
+# cell the paper gets wrong (l_shipinstruct FSST-12: 11.4 in the snapshot, 3.4 in the paper). It
+# had no contact with the current table at all, and its green tick is what made the gap invisible.
+# The live fifteen-column table comes from tab_datasets_suite.py, so that is what gets checked.
+echo "== regenerating tab:datasets rows from ${CLAIM_LEG:-results/suite-paper-20260821} =="
+if ! uv run figures/tab_datasets_suite.py > /tmp/tab_datasets.regen 2>/tmp/tab_datasets.err; then
+  echo "FATAL: could not regenerate the tab:datasets rows"; cat /tmp/tab_datasets.err; exit 1
+fi
+# Compare against the rows the paper actually prints. Extracted by row label rather than by
+# position, so reordering the table is not a failure and a changed number is.
+if ! uv run experiments/check_tab_datasets.py /tmp/tab_datasets.regen; then
+  echo "FATAL: tab:datasets in the paper disagrees with what the data produces"; exit 1
 fi
 
 # Sections 2-4 assert dozens of numbers that were derived in ad-hoc sessions and typed into
