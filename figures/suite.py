@@ -396,6 +396,42 @@ def frac_le8(c):
     return ((c or {}).get("gpu") or {}).get("frac_le8")
 
 
+_ONPAIR_SIDECAR = None
+
+
+def onpair_sidecar(ds, col, bits, tok_per_batch=192):
+    """OnPair's stored output-position sidecar for one cell, in bytes.
+
+    From the comparator leg's onpair_offset_cost.jsonl, at the shipped granularity. OnPair cells in
+    PAPER_SUITE predate the sidecar_bytes field, so unlike FSST-12 the number is not on the cell.
+
+    NOT CHIP-SPECIFIC, and that is not a shortcut. The sidecar is a property of the encoded column --
+    same revision, same training seed, same corpus, same compress_offsets path -- so it is identical
+    whichever GPU later decodes it. The measurement exists on the b300 only and applies to all.
+
+    Deduped on full chunk identity: the ZSTD stage re-encodes through the same path, so the raw file
+    holds each chunk twice and summing it doubles the column.
+    """
+    global _ONPAIR_SIDECAR
+    if _ONPAIR_SIDECAR is None:
+        _ONPAIR_SIDECAR = {}
+        cr = comparator_root()
+        f = (cr / "b300" / "onpair_offset_cost.jsonl") if cr else None
+        if f and f.exists():
+            seen = {}
+            for line in f.read_text().splitlines():
+                if not line.strip():
+                    continue
+                r = json.loads(line)
+                if r.get("tok_per_batch") != tok_per_batch:
+                    continue
+                seen[(r["dataset"], r["column"], r["bits"], r["chunk"])] = r
+            for r in seen.values():
+                k = (r["dataset"], r["column"], r["bits"])
+                _ONPAIR_SIDECAR[k] = _ONPAIR_SIDECAR.get(k, 0) + r["offset_compressed_bytes"]
+    return _ONPAIR_SIDECAR.get((ds, col, bits), 0)
+
+
 def ratio(c):
     """At-rest compression ratio: sample_bytes / on_disk_bytes.
 
@@ -425,14 +461,30 @@ def ratio(c):
     figure read it -- the decision was taken on 2026-08-12, applied to the ten-column generator,
     and lost when the fifteen-column one replaced it with this codec-agnostic helper. Effect on the
     real columns is 0-10%; on TPC-H l_shipinstruct it is 3.37x to 11.37x.
+
+    THE SIDECAR IS IN THE DENOMINATOR, on both dictionary codecs. It is storage a reader must have
+    to position a batch's output without a serial scan over everything before it, so by the rule in
+    docs/notes/2026-08-27-stored-size-accounting.md it counts. The byte-oriented baselines have no
+    equivalent because their decode is serial, and charging ourselves for it is the honest way to
+    state that trade -- Section 3 prices the alternative, regenerating it on the device, at 14 to
+    19% slower. It is 0.26 to 0.72% of OnPair's stored column and 0.00 to 1.05% of FSST-12's, and
+    changes no ordering.
     """
     if not c:
         return None
+    sb = c.get("sample_bytes")
+    if not sb:
+        return None
     cm = c.get("mem_ratio_container_matched")
     if cm:
-        return cm
-    sb = c.get("sample_bytes")
-    return (sb / at_rest_bytes(c)) if (at_rest_bytes(c) and sb) else None
+        # FSST-12: recover the container-matched denominator, then add its own measured sidecar.
+        den = sb / cm + (c.get("sidecar_bytes") or 0)
+        return sb / den if den else None
+    den = at_rest_bytes(c)
+    if not den:
+        return None
+    den += onpair_sidecar(c.get("dataset_id"), c.get("column"), c.get("bits"))
+    return sb / den
 
 
 def at_rest_bytes(c):
