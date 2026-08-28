@@ -652,7 +652,7 @@ def field_stats():
     op = S.cells(root, chip, "boost", "onpair")
     fs = S.cells(root, chip, "boost", "fsst12")
     zc = S.cells(root, chip, "boost", "zstd")
-    sw = S.sw_rows(brt, chip)
+    sw = S.sw_rows(S.sw_root_for(chip), chip)
     if not (op and sw):
         print("WARNING: field legs incomplete; section 5 field claims not derived", file=sys.stderr)
         return
@@ -761,7 +761,7 @@ def field_stats():
         cop = S.cells(root, c, "boost", "onpair")
         cfs = S.cells(root, c, "boost", "fsst12")
         czc = S.cells(root, c, "boost", "zstd")
-        csw = S.sw_rows(brt, c)
+        csw = S.sw_rows(S.sw_root_for(c), c)
         if not (cop and csw):
             continue
         m = d = 0

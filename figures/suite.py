@@ -232,6 +232,30 @@ def baselines_root(baselines_id=None):
     return cands[-1] if cands else None
 
 
+def sw_root_for(chip):
+    """Where a chip's gANS/Bitcomp cells come from, PER CHIP.
+
+    suite-baselines-20260822 measured them on a FLAT concatenation with no separators -- the last
+    techniques whose ratio came from a byte stream rows cannot be recovered from, once the engine
+    was framed on 2026-08-27. The comparator leg re-measured them on the same u32-length-framed
+    stream every other technique gets. But that leg ran on the **b300 only**, so h100 and l40s still
+    have to come from the flat leg.
+
+    Resolved per chip rather than per run, and deliberately not silently: a caller that wants one
+    basis across chips must check `sw_is_framed`. The paper reports the b300, which is framed.
+    """
+    cr = comparator_root()
+    if cr is not None and (cr / chip / "onpair_nvcomp_sw.json").exists():
+        return cr
+    return baselines_root()
+
+
+def sw_is_framed(chip):
+    """True when this chip's software baselines pay for row structure like everything else."""
+    cr = comparator_root()
+    return cr is not None and (cr / chip / "onpair_nvcomp_sw.json").exists()
+
+
 def sw_rows(root, chip="b300"):
     """nvCOMP software-codec cells (gANS, Bitcomp-*), keyed by (dataset_id, column).
 

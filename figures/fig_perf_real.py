@@ -140,7 +140,7 @@ def collect(root, rows):
     op = S.cells(root, DEV, "boost", "onpair")
     fs = S.cells(root, DEV, "boost", "fsst12")
     zs = S.cells(root, DEV, "boost", "zstd")
-    sw = S.sw_rows(S.baselines_root(), DEV)
+    sw = S.sw_rows(S.sw_root_for(DEV), DEV)
     ours, bases = [], []
     for _, ds, col in rows:
         bases += S.zstd_points(zs, ds, col)
@@ -229,7 +229,7 @@ def main():
     for rows in (S.REAL, S.GEN):
         ours, _ = collect(root, rows)
         zc = S.cells(root, DEV, "boost", "zstd")
-        sw = S.sw_rows(S.baselines_root(), DEV)
+        sw = S.sw_rows(S.sw_root_for(DEV), DEV)
         by_col = {}
         for _, ds, col in rows:
             by_col[col] = S.baseline_points(root, DEV, ds, col, zc, sw)
