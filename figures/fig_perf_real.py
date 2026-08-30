@@ -123,16 +123,16 @@ def frontier_at(pts, ratio):
     return max(vals) if vals else None
 
 
-def mark(ax, r, t, color, marker="o", s=None):
+def mark(ax, r, t, color, marker="o", s=None, alpha=1.0):
     """Off-scale marks are drawn open at the floor rather than dropped, so a reader can see that
     a family exists below the axis instead of inferring it never ran."""
     s = C.MS_SCATTER if s is None else s
     if t < YLO:
         OFFSCALE.append((None, t))
         ax.scatter([r], [YLO * 1.04], s=s * 0.8, facecolors="none", marker=marker,
-                   edgecolors=color, linewidths=0.7, zorder=5)
+                   edgecolors=color, linewidths=0.7, zorder=5, alpha=alpha)
         return
-    ax.scatter([r], [t], s=s, color=color, marker=marker, zorder=5, linewidths=0)
+    ax.scatter([r], [t], s=s, color=color, marker=marker, zorder=5, linewidths=0, alpha=alpha)
 
 
 def collect(root, rows):
@@ -141,9 +141,19 @@ def collect(root, rows):
     fs = S.cells(root, DEV, "boost", "fsst12")
     zs = S.cells(root, DEV, "boost", "zstd")
     sw = S.sw_rows(S.sw_root_for(DEV), DEV)
-    ours, bases = [], []
+    ours, bases, faded = [], [], []
     for _, ds, col in rows:
-        bases += S.zstd_points(zs, ds, col)
+        # ZSTD IS DRAWN TWICE, and Section 5 says why: its frame size trades ratio against rate
+        # rather than admitting a best setting, so there is no oracle to report. The vendor default
+        # (64 KiB, nvCOMP's documented starting chunk) is drawn as-is; every other non-dominated
+        # (frame, level) is drawn faded. Falls back to the old single-frame cells when the frame
+        # sweep is absent, so this file still runs against an older results tree.
+        zd = S.zstd_default_points(ds, col)
+        if zd:
+            bases += zd
+            faded += [p for p in S.zstd_best_points(ds, col) if p not in zd]
+        else:
+            bases += S.zstd_points(zs, ds, col)
         bases += S.sw_points(sw, ds, col)
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
                                  ("FSST-12", fs, 12)):
@@ -152,12 +162,12 @@ def collect(root, rows):
             if r and t:
                 ours.append((r, t, cfg, col))
         bases += S.de_points(root, DEV, ds, col)
-    return ours, bases
+    return ours, bases, faded
 
 
 def panel(ax, root, rows, title):
     from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
-    ours, bases = collect(root, rows)
+    ours, bases, faded = collect(root, rows)
     bp = [(r, t) for r, t, _ in bases]
     allr = [r for r, _, _, _ in ours] + [r for r, _ in bp] or [1.0]
     xmin, xmax = min(allr) * 0.88, max(allr) * 1.14
@@ -170,6 +180,9 @@ def panel(ax, root, rows, title):
         # sit inside this region, so a grey ground swallowed them. See common.WASH.
         ax.fill_between(xs, 1e-3, ys, step="pre", color=C.WASH, lw=0, zorder=1)
     ax.set_xlim(xmin, xmax)
+    # Faded first, so the vendor default and our marks draw over them rather than under.
+    for r, t, cfg in faded:
+        mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"), alpha=0.28)
     for r, t, cfg in bases:
         mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"))
     for r, t, cfg, _ in ours:
@@ -227,7 +240,7 @@ def main():
     KNOWN = {("c_address", "OnPair-16")}
     violations, n, excepted = [], 0, []
     for rows in (S.REAL, S.GEN):
-        ours, _ = collect(root, rows)
+        ours, _, _ = collect(root, rows)
         zc = S.cells(root, DEV, "boost", "zstd")
         sw = S.sw_rows(S.sw_root_for(DEV), DEV)
         by_col = {}

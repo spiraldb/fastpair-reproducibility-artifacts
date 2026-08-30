@@ -76,6 +76,12 @@ CHIP_COLOR = {"a100": C.colour("device-hbm", "A100"), "h100": C.colour("device-h
 CHIP_MEM = {"b300": "HBM", "h100": "HBM", "a100": "HBM", "l40s": "GDDR6", "rtxpro": "GDDR7"}
 CHIP_LABEL = {"b300": "B300", "h100": "H100", "a100": "A100", "l40s": "L40S",
               "rtxpro": "RTX PRO 6000"}
+# GLYPH SCALE, LOCAL TO THIS FIGURE. C.MS is shared with fig_perf_real and fig_grid, and this is
+# the densest of the three: five clock states x five chips in every column slot, so the marks
+# crowd where fig_perf_real's do not. Scaled here rather than in common.py so the other two keep
+# the size they were tuned at.
+GLYPH = 0.65
+
 # Nominal clock state -> marker. Ordered as the campaign requests them.
 STATE_MARK = [("boost", "*"), ("max", "o"), ("75%", "s"), ("55%", "^"), ("40%", "D")]
 # SAME BAND AS fig_perf_real AND fig_teaser. The Engine has to be one colour across the paper,
@@ -188,7 +194,8 @@ def main():
                 mk = dict(STATE_MARK).get(nominal, ".")
                 # No marker edge. A white edge on a white ground eats into the mark and haloes
                 # wherever two clock states land close together, which is most of this figure.
-                ax.plot([xc], [v], marker=mk, ms=C.MS if mk != "*" else C.MS_STAR,
+                ax.plot([xc], [v], marker=mk,
+                        ms=GLYPH * (C.MS if mk != "*" else C.MS_STAR),
                         color=CHIP_COLOR[chip], mec="none", zorder=4, ls="")
                 drawn += 1
 
@@ -216,7 +223,8 @@ def main():
     # Every chip keeps its entry whether or not the leg has landed; results drop straight in.
     chips = [Line2D([], [], color=CHIP_COLOR[c], lw=2, label=f"{CHIP_LABEL[c]} ({CHIP_MEM[c]})")
              for c in ordered_chips()]
-    marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n) for n, m in STATE_MARK]
+    marks = [Line2D([], [], color="#444444", marker=m, ls="", label=n,
+                    markersize=GLYPH * C.MS_LEGEND) for n, m in STATE_MARK]
     de = [Line2D([], [], color=DE_SHADE[k], lw=1.4, label=f"DE {DE_LABEL[k]}")
           for k in DE_SHADE if k in de_seen]
     # BELOW the axes, matching fig_perf_real so the two read as a pair. The x labels are rotated

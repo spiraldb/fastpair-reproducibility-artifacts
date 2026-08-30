@@ -120,12 +120,22 @@ PAPER_SUITE = "suite-paper-20260821"
 # median -0.15%, n=15, inside the 0.82% p99 split-half noise floor. See that leg's README. Re-run
 # the control after any kernel change before trusting the pairing.
 COMPARATOR_SUITE = "suite-comparators-20260827"
+# The payload-only leg. Section 5 measures every technique decoding the string payload alone, so
+# the byte-oriented baselines must be read from their FLAT run: the comparator leg framed them
+# with a u32 length per row, which nvCOMP Zstd never carried. See results/suite-flat-20260830.
+FLAT_SUITE = "suite-flat-20260830"
 # THE THREE ZSTD LEVELS THE PAPER REPORTS: fast mode, the default, and the highest below the
 # --ultra tier. The comparator leg measured five (-10, 1, 3, 9, 19); 1 and 3 are near-duplicates on
 # this corpus -- 50.37x against 49.77x at the top, 183 against 179 GB/s -- so three points spanning
 # 1.12x to 62.87x costs the same ink as three spanning 1.12x to 50.37x with a repeat in the middle.
 # What was collected and what is plotted are separate decisions; this is the plotted set.
 PAPER_ZSTD_LEVELS = (-10, 3, 19)
+
+
+def flat_root():
+    """The payload-only leg, or None. Off by absence, like every other leg here."""
+    d = RESULTS / FLAT_SUITE
+    return d if d.is_dir() else None
 
 
 def comparator_root():
@@ -242,8 +252,16 @@ def sw_root_for(chip):
     have to come from the flat leg.
 
     Resolved per chip rather than per run, and deliberately not silently: a caller that wants one
-    basis across chips must check `sw_is_framed`. The paper reports the b300, which is framed.
+    basis across chips must check `sw_is_framed`. The paper reports the b300.
+
+    SUPERSEDED ON THE B300 BY THE FLAT LEG. Section 5 measures every technique decoding the payload
+    alone, so the framing the comparator leg added is now the wrong basis, not the right one: it
+    made gANS and Bitcomp decompress four bytes a row that nvCOMP Zstd never carried. The flat leg
+    re-measured them without it, which is what this returns when present.
     """
+    fr = flat_root()
+    if fr is not None and (fr / chip / "onpair_nvcomp_sw.json").exists():
+        return fr
     cr = comparator_root()
     if cr is not None and (cr / chip / "onpair_nvcomp_sw.json").exists():
         return cr
@@ -251,7 +269,15 @@ def sw_root_for(chip):
 
 
 def sw_is_framed(chip):
-    """True when this chip's software baselines pay for row structure like everything else."""
+    """True when this chip's software baselines carry a u32 length per row inside their output.
+
+    Section 5's basis is payload-only, so False is now the CORRECT state on the b300 rather than a
+    gap: the flat leg supersedes the framed comparator leg. Kept because a caller comparing chips
+    still needs to know that h100 and l40s come from a different run than the b300.
+    """
+    fr = flat_root()
+    if fr is not None and (fr / chip / "onpair_nvcomp_sw.json").exists():
+        return False
     cr = comparator_root()
     return cr is not None and (cr / chip / "onpair_nvcomp_sw.json").exists()
 
@@ -432,6 +458,72 @@ def onpair_sidecar(ds, col, bits, tok_per_batch=192):
     return _ONPAIR_SIDECAR.get((ds, col, bits), 0)
 
 
+_FSST12_COMPONENTS = None
+
+
+def fsst12_components(ds, col):
+    """FSST-12's stored footprint by component, or None.
+
+    WHY THIS IS A SEPARATE FILE AND NOT ON THE CELL. Section 5 excludes the row-offsets array from
+    the reported ratio, and the committed FSST-12 cells collapse their components into one total,
+    so there is nothing to subtract from them. `Fsst12StoredSize::row_offsets` starts as a raw
+    (rows+1)*8 placeholder that the cell path overwrites with the compress_offsets result, so it
+    cannot be recovered by arithmetic either. These were measured host-side by
+    vortex-bench's fsst12-stored bin at the leg revision.
+
+    MEASURED ON A DIFFERENT PLATFORM THAN THE LEG, and the totals say how much that costs: ten of
+    the fifteen columns reproduce the committed container-matched total EXACTLY, four land within
+    0.18%, and loghub-spark is -1.13%. FSST-12's trainer is deterministic per platform and differs
+    across them -- its C++ symbol search does not fix hash iteration order -- so a macOS run cannot
+    byte-match a Linux leg. The row-offsets array is the most transferable component of the three,
+    since the row counts match exactly on every column.
+    """
+    global _FSST12_COMPONENTS
+    if _FSST12_COMPONENTS is None:
+        _FSST12_COMPONENTS = {}
+        fr = flat_root()
+        f = (fr / "b300" / "fsst12_stored_components.jsonl") if fr else None
+        if f and f.exists():
+            for line in f.read_text().splitlines():
+                if line.strip():
+                    r = json.loads(line)
+                    _FSST12_COMPONENTS[(r["dataset_id"], r["column"])] = r
+    return _FSST12_COMPONENTS.get((ds, col))
+
+
+_ONPAIR_STORED = None
+
+
+def onpair_stored_bytes(ds, col, bits):
+    """OnPair's stored size under Section 5's rule: what a reader must have to BULK DECOMPRESS.
+
+    Section 5: "As decompressing the row offsets array is not necessary for bulk decompression, we
+    do not include it in the compression ratio ... for FSST-family codecs we report uncompressed
+    bytes against the sum of cascade-compressed bytes, decoding chunk offsets (sidecar), and
+    dictionary data."
+
+    So: codes + dictionary + dictionary offsets + sidecar. OUT: `codes_offsets` (row to code) and
+    `uncompressed_lengths` (per-row decoded length). Both are derivable and neither is read by the
+    decode kernel, whose four inputs are the widened codes, the sidecar, the padded dictionary and
+    the length table -- see onpair_shmem_4tpt's signature.
+
+    THE EXCLUDED PAIR IS NOT SMALL, which is why this is a rule and not a rounding decision:
+    together they are 5.2% of the stored column on loghub-android and 30% on l_shipinstruct.
+
+    Returns None when the components are unavailable, so a caller falls back rather than silently
+    reporting a different basis.
+    """
+    global _ONPAIR_STORED
+    if _ONPAIR_STORED is None:
+        root = comparator_root() or latest_root()
+        _ONPAIR_STORED = child_bytes(root) if root else {}
+    d = _ONPAIR_STORED.get((ds, col, bits))
+    if not d:
+        return None
+    payload = d["codes"] + d["dict"] + d["dict_offsets"]
+    return payload + onpair_sidecar(ds, col, bits)
+
+
 def ratio(c):
     """At-rest compression ratio: sample_bytes / on_disk_bytes.
 
@@ -477,9 +569,22 @@ def ratio(c):
         return None
     cm = c.get("mem_ratio_container_matched")
     if cm:
+        # FSST-12 on Section 5's basis: the container-matched total is authoritative, and the
+        # row-offsets array measured beside it comes out of it. Without this, OnPair would be on
+        # the offsets-excluded basis while its nearest prior-art comparator was not -- on
+        # l_shipinstruct that alone reads as a 2.2x advantage that is entirely bookkeeping.
+        comp = fsst12_components(c.get("dataset_id"), c.get("column"))
+        if comp and comp.get("row_offsets"):
+            den = sb / cm - comp["row_offsets"] + (c.get("sidecar_bytes") or 0)
+            return sb / den if den > 0 else None
         # FSST-12: recover the container-matched denominator, then add its own measured sidecar.
         den = sb / cm + (c.get("sidecar_bytes") or 0)
         return sb / den if den else None
+    # OnPair: the offsets-excluded basis. at_rest_bytes is the WHOLE .vortex file, which also
+    # carries codes_offsets and uncompressed_lengths; Section 5 excludes both.
+    stored = onpair_stored_bytes(c.get("dataset_id"), c.get("column"), c.get("bits"))
+    if stored:
+        return sb / stored
     den = at_rest_bytes(c)
     if not den:
         return None
@@ -556,6 +661,7 @@ def child_bytes(root, chip="b300"):
     share of the total that a string-codec comparison including it is measuring offset compression.
     """
     acc = {}
+    seen = set()
     f = Path(root) / chip / "onpair_child_bytes.jsonl"
     if not f.exists():
         return acc
@@ -569,6 +675,16 @@ def child_bytes(root, chip="b300"):
         d = acc.setdefault((r["dataset"], r["column"], r["bits"]),
                            {k: 0 for k in ("codes", "codes_offsets", "dict_offsets",
                                            "lengths", "dict", "total")})
+        # DEDUPE ON FULL CELL IDENTITY, exactly as onpair_sidecar does. The ZSTD stage re-encodes
+        # through the same path, so onpair_child_bytes.jsonl holds 70 records for 35 identities:
+        # every bits=12 record appears twice, byte-identical, and tpch-sf10's five chunks appear
+        # five times each. Summing raw doubles every bits=12 column. Percentage-of-total figures
+        # survive that; bytes per row do not.
+        ident = (r["dataset"], r["column"], r["bits"], r["chunk_idx"],
+                 r.get("chunk_bytes"), r.get("threshold"), r.get("training_seed"))
+        if ident in seen:
+            continue
+        seen.add(ident)
         for k in d:
             d[k] += r[k]
     return acc
@@ -582,9 +698,16 @@ def de_rows(root, chip="b300"):
     against us, and the second is the one that matters -- it was the only technique whose ratio was
     measured on a byte stream rows cannot be recovered from.
     """
-    cr = comparator_root()
-    if cr is not None and (cr / chip / "onpair_nvcomp_hw.json").exists():
-        root = cr
+    # FLAT FIRST. The comparator leg's DE decompresses a u32 length per row that Zstd does not, so
+    # its rates carry work no other baseline pays and its ratios count row structure Section 5
+    # excludes. The flat leg is the same seven chunk sizes on the payload alone.
+    fr = flat_root()
+    if fr is not None and (fr / chip / "onpair_nvcomp_hw.json").exists():
+        root = fr
+    else:
+        cr = comparator_root()
+        if cr is not None and (cr / chip / "onpair_nvcomp_hw.json").exists():
+            root = cr
     f = Path(root) / chip / "onpair_nvcomp_hw.json"
     try:
         return json.load(open(f))
@@ -722,6 +845,97 @@ def de_by_codec(root, chip, ds, col):
                 if rate and rate > out.get(name, 0):
                     out[name] = rate
     return out
+
+
+ZSTD_FRAME_BYTES_DEFAULT = 65536
+_ZSTD_FRAMES = None
+
+
+def zstd_frame_rows():
+    """{(dataset, column): cell} from the frame sweep, or {} when the leg is absent.
+
+    The sweep measured 3 levels x 7 byte-anchored frame targets per column. l_shipinstruct was
+    measured first, at five levels, and lives in its own file.
+    """
+    global _ZSTD_FRAMES
+    if _ZSTD_FRAMES is not None:
+        return _ZSTD_FRAMES
+    _ZSTD_FRAMES = {}
+    fr = flat_root()
+    if fr is None:
+        return _ZSTD_FRAMES
+    for name in ("zstd_frames.json", "zstd_frames_shipinstruct.json"):
+        f = fr / "b300" / name
+        if not f.exists():
+            continue
+        for r in json.load(open(f)):
+            _ZSTD_FRAMES[(r["dataset_id"], r["column"])] = r
+    return _ZSTD_FRAMES
+
+
+def _zstd_cells(ds, col):
+    r = zstd_frame_rows().get((ds, col))
+    if not r:
+        return [], 1.0
+    rows = r.get("rows") or 1
+    bpr = r["sample_bytes"] / rows
+    cells = [e for e in ((r.get("gpu") or {}).get("nvcomp_zstd") or [])
+             if e.get("supported") and e.get("compression_ratio") and e.get("decode_gib_s")
+             and e.get("zstd_level") in PAPER_ZSTD_LEVELS]
+    return cells, bpr
+
+
+def zstd_default_points(ds, col):
+    """Zstd at the VENDOR DEFAULT frame: one point per reported level.
+
+    nvCOMP documents 64 KiB as a good starting chunk size and it is what Section 5 reports as the
+    default. Crucially it is a BYTE size: the bench's old 2048-VALUES constant meant 24 KiB on
+    l_shipinstruct and 8.5 MB on wikipedia, so it compared different things on different columns.
+    At 64 KiB every column here holds ~15,000 frames, well clear of the point where too few frames
+    underuse the device.
+    """
+    cells, bpr = _zstd_cells(ds, col)
+    out = []
+    for lv in PAPER_ZSTD_LEVELS:
+        s = [c for c in cells if c["zstd_level"] == lv]
+        if not s:
+            continue
+        e = min(s, key=lambda c: abs(c["values_per_frame"] * bpr - ZSTD_FRAME_BYTES_DEFAULT))
+        out.append((e["compression_ratio"], e["decode_gib_s"] * GIB_TO_GB, "Zstd (%s)" % lv))
+    return out
+
+
+def zstd_default_rate(ds, col, level):
+    """Decode rate at the VENDOR DEFAULT frame for one level, or None.
+
+    fig_teaser used to read the old zstd_summary cells, which sat at the bench's pinned 2048
+    VALUES per frame -- 24 KiB on l_shipinstruct and 8.5 MB on wikipedia. A caption calling that
+    a default window size would not be true of any column. This is the 64 KiB point.
+    """
+    cells, bpr = _zstd_cells(ds, col)
+    s = [c for c in cells if c["zstd_level"] == level]
+    if not s:
+        return None
+    e = min(s, key=lambda c: abs(c["values_per_frame"] * bpr - ZSTD_FRAME_BYTES_DEFAULT))
+    return e["decode_gib_s"] * GIB_TO_GB
+
+
+def zstd_best_points(ds, col):
+    """Every non-dominated (frame, level) Zstd configuration -- the faded series in Section 5.
+
+    Shown because no single frame is best: across 42 (column, level) pairs, NOT ONE has a frame
+    that dominates the others on both ratio and rate, and the median frontier is 6 of 7 frames.
+    Frame size trades the two axes, so "Zstd's best configuration" is a choice of operating point
+    rather than an optimum, and the honest figure shows the default and the frontier it sits on.
+
+    CAVEAT FOR ANYONE READING RATES OFF THE HIGH-RATIO END: frame count is sample_bytes divided by
+    frame bytes, so a 2 MiB frame is 478 frames at the 1 GB sample -- too few to fill a B300. Those
+    ratios are real; those rates would rise on a larger sample.
+    """
+    cells, _ = _zstd_cells(ds, col)
+    pts = [(e["compression_ratio"], e["decode_gib_s"] * GIB_TO_GB, "Zstd (%s)" % e["zstd_level"])
+           for e in cells]
+    return _pareto(pts)
 
 
 def zstd_points(zcells, ds, col):

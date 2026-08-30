@@ -82,8 +82,11 @@ def main():
         vals[1].append(S.best_rate_gb_s(op.get((d, c, 12))) or np.nan)
         vals[2].append(S.best_rate_gb_s(fs.get((d, c, 12))) or np.nan)
         vals[3].append(de.get((d, c)) or np.nan)
-        vals[4].append(zstd_at(zs.get((d, c, 12)), -10) or np.nan)
-        vals[5].append(zstd_at(zs.get((d, c, 12)), 3) or np.nan)
+        # VENDOR DEFAULT FRAME, so the caption's "default window size" is true. The old
+        # zstd_summary cells sit at the bench's pinned 2048 VALUES, which is a different byte
+        # size on every column. Falls back to those cells when the frame sweep is absent.
+        vals[4].append(S.zstd_default_rate(d, c, -10) or zstd_at(zs.get((d, c, 12)), -10) or np.nan)
+        vals[5].append(S.zstd_default_rate(d, c, 3) or zstd_at(zs.get((d, c, 12)), 3) or np.nan)
 
     for j, (lab, color) in enumerate(SERIES):
         xs = x + (j - (len(SERIES) - 1) / 2.0) * w

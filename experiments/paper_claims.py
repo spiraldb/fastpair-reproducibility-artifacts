@@ -728,6 +728,129 @@ def field_stats():
             marks += 1
             if any(b[0] >= r and b[1] > t for b in base):
                 dominated += 1
+    # ---- Section 5.1 and 5.2 headline sentences, so the prose carries no literals. -----------
+    # Every one of these was a hardcoded number in the text and every one of them moved when the
+    # compression-ratio basis changed on 2026-08-30. The column NAME is derived too: "the fastest
+    # column is Loghub Windows" is a claim about the data, not a fact about the corpus.
+    def _our_rate(ds, col, bits, store=None):
+        """ORACLE rate, not the shipped selector's. Section 5 reports every technique "at its best
+        configuration on each column", so the span the prose quotes is best_rate_gb_s. The selector
+        rate is 4 to 9% lower and is the subject of its own claim; using it here would silently
+        restate the headline on a basis Section 5 does not describe."""
+        c = (store if store is not None else op).get((ds, col, bits))
+        return S.best_rate_gb_s(c) if c else None
+
+    def _span(bits):
+        rr = [t for _, ds, col in S.REAL for t in [_our_rate(ds, col, bits)] if t]
+        return (round(min(rr)), round(max(rr))) if rr else (0, 0)
+
+    lo12, hi12 = _span(12)
+    lo16, hi16 = _span(16)
+    put("s5.b300_real_min_twelve", lo12, "B300, OnPair-12: slowest of the ten real columns")
+    put("s5.b300_real_max_twelve", hi12, "and the quickest")
+    put("s5.b300_real_min_sixteen", lo16, "B300, OnPair-16: slowest of the ten real columns")
+    put("s5.b300_real_max_sixteen", hi16, "and the quickest")
+
+    # The fastest (column, preset) pair on the B300, and what sits beside it on that column.
+    best = (0.0, None, None)
+    for _, ds, col in S.REAL:
+        for bits in (12, 16):
+            t = _our_rate(ds, col, bits)
+            if t and t > best[0]:
+                best = (t, (ds, col), bits)
+    if best[1]:
+        bds, bcol = best[1]
+        # LaTeX-ready, because the prose says "Loghub \texttt{Windows}" and a bare id would
+        # render as tpch-sf15/l_comment mid-sentence. LABEL is the corpus's own short name.
+        label = next((lab for lab, d, c in S.REAL if (d, c) == (bds, bcol)), bcol)
+        pretty = {"windows": "Loghub \\texttt{Windows}", "spark": "Loghub \\texttt{Spark}",
+                  "hdfs": "Loghub \\texttt{HDFS}", "android": "Loghub \\texttt{Android}",
+                  "thunderbird": "Loghub \\texttt{Thunderbird}",
+                  "url": "ClickBench \\texttt{URL}", "title": "ClickBench \\texttt{Title}",
+                  "lcomment": "TPC-H \\texttt{l\\_comment}",
+                  "pscomment": "TPC-H \\texttt{ps\\_comment}",
+                  "shipinstruct": "TPC-H \\texttt{l\\_shipinstruct}",
+                  "oclerk": "TPC-H \\texttt{o\\_clerk}"}.get(label, label)
+        put("s5.fastest_column", pretty,
+            "the fastest real column on the B300, as the prose names it")
+        put("s5.fastest_column_rate", round(best[0]), "its rate")
+        put("s5.fastest_column_preset", "OnPair-%d" % best[2], "and the preset that reaches it")
+        de = S.de_points(root, chip, bds, bcol)
+        if de:
+            put("s5.fastest_column_de_rate", round(max(p[1] for p in de)),
+                "the engine's best codec and chunk size on that same column")
+        h100_op = S.cells(root, "h100", "boost", "onpair")
+        h = _our_rate(bds, bcol, best[2], store=h100_op)
+        if h:
+            put("s5.fastest_column_h100_rate", round(h),
+                "and an H100 on it, which is above the newer part's engine")
+
+    # ---- Section 5.2: how each chip stands against the B300's engine, per real column. --------
+    # These moved when the engine went onto the payload-only basis and gained two chunk sizes: it
+    # got faster, so it clears one more L40S column than the prose said.
+    put("s5.real_columns", len(S.REAL), "real columns in the corpus")
+    de_best = {}
+    for _, ds, col in S.REAL:
+        d = S.de_points(root, chip, ds, col)
+        if d:
+            de_best[(ds, col)] = max(p[1] for p in d)
+    for other in ("h100", "a100", "rtxpro", "l40s"):
+        oroot = S.chip_root(other) or root
+        ostore = S.cells(oroot, other, "boost", "onpair")
+        beat = seen = short_log = 0
+        for _, ds, col in S.REAL:
+            d = de_best.get((ds, col))
+            t = _our_rate(ds, col, 12, store=ostore)
+            if not (d and t):
+                continue
+            seen += 1
+            if t > d:
+                beat += 1
+            elif "loghub" in ds:
+                short_log += 1
+        if seen:
+            # QUANTIFIER, NOT A COUNT. The prose says "all ten real columns"; that sentence stays
+            # readable if the count falls, which is exactly why it gets an alarm rather than a
+            # substituted number. See the header emit_tex writes.
+            WORDS = {5: "five", 10: "ten", 15: "fifteen"}
+            put("s5.beats_de_%s_phrase" % other,
+                ("all %s" % WORDS.get(seen, seen)) if beat == seen else
+                ("\\claimAlarm{%s clears the B300 engine on only %d of %d real columns}"
+                 % (other, beat, seen)),
+                "wording for %s's coverage, or an alarm if it stops being all of them" % other)
+            put("s5.beats_de_%s" % other, beat,
+                "real columns where %s decodes above the B300 engine" % other)
+            if beat < seen:
+                put("s5.short_loghub_%s_phrase" % other,
+                    "all five" if short_log == 5
+                    else "%s of the five" % {1: "one", 2: "two", 3: "three",
+                                             4: "four"}.get(short_log, short_log),
+                    "wording for the Loghub shortfall; a count here is a fact, not a quantifier")
+                put("s5.short_loghub_%s" % other, short_log,
+                    "of the five Loghub columns, how many %s falls short on" % other)
+
+    # ONE PHRASE FOR THE SENTENCE THAT NAMES THREE CHIPS. Per-chip phrases each guard their own
+    # chip, but the prose asserts all three at once, so a regression on the A100 alone would leave
+    # the H100's macro happily rendering "all ten". This is the macro that sentence should cite.
+    trio = ("h100", "a100", "rtxpro")
+    covered = {c: derived.get("s5.beats_de_%s" % c) for c in trio}
+    total = derived.get("s5.real_columns")
+    if total and all(v is not None for v in covered.values()):
+        broken = [c for c, v in covered.items() if v != total]
+        put("s5.beats_de_trio_phrase",
+            ("all %s" % {10: "ten", 5: "five", 15: "fifteen"}.get(total, total)) if not broken
+            else ("\\claimAlarm{%s no longer clear the B300 engine on every real column (%s)}"
+                  % (", ".join(broken),
+                     "; ".join("%s %d of %d" % (c, covered[c], total) for c in broken))),
+            "wording for the H100/A100/RTX PRO sentence; alarms if ANY of the three slips")
+    # The L40S count sits in the same sentence, where the surrounding numbers are spelled out.
+    l40 = derived.get("s5.beats_de_l40s")
+    if l40 is not None:
+        put("s5.beats_de_l40s_phrase",
+            {0: "none", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+             7: "seven", 8: "eight", 9: "nine", 10: "ten"}.get(l40, l40),
+            "the L40S's count, spelled to match the sentence around it")
+
     put("s5.field_marks", marks, "our per-column marks on the ten real columns, three codecs each")
     put("s5.field_dominated", dominated,
         "how many a baseline beats at an equal or better at-rest ratio on the same column")
@@ -933,6 +1056,48 @@ TEX_GROUPS = [
     ], [
         ("s5.field_configs_per_col", "claimFieldConfigs", "{:d}",
          "baseline configurations measured per column: DE codecs x chunks, Zstd levels, nvCOMP sw"),
+        ("s5.b300_real_min_twelve", "claimBthreeRealMinTwelve", "{:d}",
+         "B300, OnPair-12: slowest of the ten real columns"),
+        ("s5.b300_real_max_twelve", "claimBthreeRealMaxTwelve", "{:d}",
+         "and the quickest"),
+        ("s5.b300_real_min_sixteen", "claimBthreeRealMinSixteen", "{:d}",
+         "B300, OnPair-16: slowest of the ten real columns"),
+        ("s5.b300_real_max_sixteen", "claimBthreeRealMaxSixteen", "{:d}",
+         "and the quickest"),
+        ("s5.fastest_column", "claimFastestColumn", "{}",
+         "the fastest real column on the B300, LaTeX-ready as the prose names it"),
+        ("s5.fastest_column_preset", "claimFastestColumnPreset", "{}",
+         "and the preset that reaches it"),
+        ("s5.fastest_column_rate", "claimFastestColumnRate", "{:d}",
+         "its rate"),
+        ("s5.fastest_column_de_rate", "claimFastestColumnDeRate", "{:d}",
+         "the engine's best codec and chunk size on that same column"),
+        ("s5.fastest_column_h100_rate", "claimFastestColumnHopperRate", "{:d}",
+         "and an H100 on it, above the newer part's engine"),
+        ("s5.beats_de_trio_phrase", "claimBeatsDeTrioPhrase", "{}",
+         "wording for the H100/A100/RTX PRO sentence; alarms if any of the three slips"),
+        ("s5.beats_de_l40s_phrase", "claimBeatsDeLfortySPhrase", "{}",
+         "the L40S's count, spelled to match the sentence around it"),
+        ("s5.beats_de_h100_phrase", "claimBeatsDeHopperPhrase", "{}",
+         "wording for the H100's coverage; expands to an alarm if it stops being all of them"),
+        ("s5.beats_de_a100_phrase", "claimBeatsDeAmperePhrase", "{}",
+         "the same for the A100"),
+        ("s5.beats_de_rtxpro_phrase", "claimBeatsDeRtxProPhrase", "{}",
+         "and the RTX PRO 6000"),
+        ("s5.short_loghub_l40s_phrase", "claimShortLoghubLfortySPhrase", "{}",
+         "wording for the L40S's Loghub shortfall"),
+        ("s5.real_columns", "claimRealColumns", "{:d}",
+         "real columns in the corpus"),
+        ("s5.beats_de_h100", "claimBeatsDeHopper", "{:d}",
+         "real columns where an H100 decodes above the B300 engine"),
+        ("s5.beats_de_a100", "claimBeatsDeAmpere", "{:d}",
+         "and an A100"),
+        ("s5.beats_de_rtxpro", "claimBeatsDeRtxPro", "{:d}",
+         "and the RTX PRO 6000"),
+        ("s5.beats_de_l40s", "claimBeatsDeLfortyS", "{:d}",
+         "and the L40S, the one part that does not clear it everywhere"),
+        ("s5.short_loghub_l40s", "claimShortLoghubLfortyS", "{:d}",
+         "of the five Loghub columns, how many the L40S falls short on"),
         ("s5.field_marks", "claimFieldMarks", "{:d}",
          "our marks on the ten real columns: three codecs each"),
         ("s5.field_dominated", "claimFieldDominated", "{:d}",
@@ -984,6 +1149,16 @@ def emit_tex(path):
     lines = ["% GENERATED by experiments/paper_claims.py -- do not edit.",
              "% Every value is re-derived from committed results/. The paper cites these macros",
              "% instead of transcribing numbers, so prose cannot drift from the data.",
+             "%",
+             "% QUANTIFIER CLAIMS FAIL THE BUILD RATHER THAN RENDERING A WRONG SENTENCE.",
+             "% A sentence like \"all ten real columns\" stays grammatical when the count drops to",
+             "% eight, so a number swap alone would leave the paper quietly asserting something",
+             "% false. The *Phrase macros below expand to the wording the prose needs while the",
+             "% claim holds, and to \\claimAlarm otherwise, which stops the compile and names what",
+             "% broke. Re-derive with experiments/paper_claims.py after any data change.",
+             "\\providecommand{\\claimAlarm}[1]{%",
+             "  \\GenericError{}{FastPair claim no longer holds: #1}{}%",
+             "    {A quantifier in the prose is now false. Re-derive the macros and fix the sentence.}}",
              f"%   probe:    {os.path.relpath(PROBE, ROOT)}",
              f"%   campaign: {os.path.relpath(CAMPAIGN, ROOT)}"]
     for title, blurb, items in TEX_GROUPS:
