@@ -166,10 +166,10 @@ def collect(root, rows):
 
 
 # THE X CAP, shared by both panels. Zstd at level 19 reaches ratio 138 on the real columns, which
-# set the panel's extent to eight times the highest baseline ratio and squeezed every OnPair mark
-# into the left third. Capping both panels at the same 50 also puts them on one x scale, which
-# they never were before.
-XCAP = 50.0
+# set the panel's extent to seven times the highest baseline ratio and squeezed every OnPair mark
+# into the left third. Both panels stop at XCAP and take the same left edge, so a compression
+# ratio sits at the same place on each.
+XCAP = 30.0
 
 def clip_to_cap(pts, xs, ys):
     """Trim a staircase at XCAP, with a step AT the cap when the data runs past it.
@@ -280,7 +280,7 @@ def panel(ax, root, rows, title, xlim):
     # FILTERED TO THE LIMITS, and carried past 20. The list was fixed at a 20x ceiling from when
     # the Zstd tails were clipped off the panel; with them drawn, the right third of the real
     # panel had no label under it.
-    ticks = [t for t in (1, 1.5, 2, 3, 5, 7, 10, 20, 50) if xmin <= t <= xmax]
+    ticks = [t for t in (1, 1.5, 2, 3, 5, 7, 10, 20, 30, 50) if xmin <= t <= xmax]
     ax.xaxis.set_major_locator(FixedLocator(ticks))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.xaxis.set_minor_locator(FixedLocator([]))
