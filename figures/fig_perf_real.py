@@ -148,12 +148,11 @@ def collect(root, rows):
         # (64 KiB, nvCOMP's documented starting chunk) is drawn as-is; every other non-dominated
         # (frame, level) is drawn faded. Falls back to the old single-frame cells when the frame
         # sweep is absent, so this file still runs against an older results tree.
-        zd = S.zstd_default_points(ds, col)
-        if zd:
-            bases += zd
-            faded += [p for p in S.zstd_best_points(ds, col) if p not in zd]
-        else:
-            bases += S.zstd_points(zs, ds, col)
+        # ZSTD IS NOT A SCATTER SERIES ANY MORE. It is drawn as three hatched regions, one per
+        # level, so plotting the vendor default as well put one arbitrary frame size on the panel
+        # as though it were the measurement -- the region is the measurement, and 64 KiB is one
+        # point inside it that Section 5 names in prose. Its cells still reach the envelope and
+        # the per-column dominance test through zstd_level_points and S.baseline_points.
         bases += S.sw_points(sw, ds, col)
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
                                  ("FSST-12", fs, 12)):
@@ -170,6 +169,11 @@ def collect(root, rows):
 # into the left third. Both panels stop at XCAP and take the same left edge, so a compression
 # ratio sits at the same place on each.
 XCAP = 30.0
+
+# One hatch DIRECTION per level, so a crossing reads as two levels rather than as a denser one
+# level. Dense enough to mark the region at column width without moire; hatch.linewidth is set
+# with the theme below, since the rcParam is global and the default stroke is too heavy here.
+ZSTD_HATCH = {-10: "/" * 12, 3: "\\" * 12, 19: "." * 8}
 
 def clip_to_cap(pts, xs, ys):
     """Trim a staircase at XCAP, with a step AT the cap when the data runs past it.
@@ -188,30 +192,33 @@ def clip_to_cap(pts, xs, ys):
 
 
 def zstd_frontiers(ax, rows, xlo):
-    """Draw each Zstd level's own Pareto frontier across the frame sweep.
+    """Hatch what each Zstd level reaches, in DISJOINT bands, with each level's frontier drawn.
 
-    THREE FRONTIERS, NOT ONE, because the levels do not nest. Level -10 owns the high-rate corner
-    and 19 the high-ratio one, so a single Zstd curve would assert a reach no single setting has,
-    and the compression level is the one Zstd knob a user actually sets.
+    THREE LEVELS, NOT ONE POOLED CURVE, because they do not nest by construction. Level -10 owns
+    the high-rate corner and 19 the high-ratio one, so a single Zstd region would assert a reach
+    no single setting has, and the level is the one Zstd knob a user actually sets.
 
-    EACH IS THE WHOLE SWEEP, not the pruned set the faded marks used to draw: every frame measured
-    at that level goes in, and the staircase over them is the best rate the level reaches at each
-    ratio or better. A frontier drawn over an already-pruned set would be the frontier of a
-    previous decision rather than of the measurement.
+    EACH FRONTIER IS THE WHOLE SWEEP: every frame measured at that level, staircased into the best
+    rate the level reaches at each ratio or better. Not the pruned set the faded marks once drew,
+    which would be the frontier of an earlier decision rather than of the measurement.
 
-    LINES, NOT FILLED ZONES. Filling them was the obvious form and it does not work here: past the
-    highest DE ratio the only baseline left is Zstd, so the baseline envelope's top edge IS the
-    pooled Zstd frontier there. A filled zone therefore covered the envelope with a shape
-    identical to it, and the envelope appeared to stop at a ratio it does not stop at. As lines
-    the levels sit inside the envelope and the envelope stays whole.
+    HATCHED, NOT FILLED. A solid fill covered the baseline envelope with a shape identical to it
+    wherever Zstd was the only baseline left, so the envelope appeared to stop at a ratio it does
+    not stop at. Hatch marks the area and the envelope reads straight through.
 
-    POOLED ACROSS THE PANEL'S COLUMNS, exactly like the envelope they sit in, and for the same
-    reason: this is orientation. A codec's ratio is a property of the data, so the dominance claim
-    is asserted per column in main() and never read off these curves.
+    DISJOINT BANDS. Three hatched regions layered over each other cross into noise exactly where
+    the levels overlap, which on the real columns is nearly everywhere. So at each ratio the
+    levels are ordered by what they reach and each one hatches only the slice between its own
+    frontier and the next one down. No point on the panel carries two patterns, and the band a
+    reader lands in names the most restrictive level that gets there.
+
+    POOLED ACROSS THE PANEL'S COLUMNS, like the envelope around it and for the same reason: it is
+    orientation. A codec's ratio is a property of the data, so the dominance claim is asserted per
+    column in main() and never read off these bands.
 
     Returns each level's reach for the caller to report, since some of it falls beyond XCAP.
     """
-    out = []
+    curves, out = {}, []
     for lv in S.PAPER_ZSTD_LEVELS:
         pts = []
         for _, ds, col in rows:
@@ -219,10 +226,28 @@ def zstd_frontiers(ax, rows, xlo):
         if not pts:
             continue
         cx, cy = clip_to_cap(pts, *frontier(pts, xlo=xlo))
-        if not cx:
-            continue
+        if cx:
+            curves[lv] = (pts, cx, cy)
+            out.append((lv, len(pts), max(x for x, _ in pts), max(y for _, y in pts)))
+    if not curves:
+        return out
+
+    # One x grid for all three, so the bands can be cut against each other interval by interval.
+    grid = sorted({x for _, cx, _ in curves.values() for x in cx})
+    val = {lv: [frontier_at(pts, x) or 0.0 for x in grid] for lv, (pts, _, _) in curves.items()}
+    lo = {lv: [0.0] * len(grid) for lv in curves}
+    for i in range(len(grid)):
+        order = sorted(curves, key=lambda lv: -val[lv][i])
+        for k, lv in enumerate(order):
+            # Floor at the next level down, or at the axis for the lowest. Ordering is recomputed
+            # per interval rather than assumed, because the levels only happen to nest on the real
+            # columns -- on the generated ones -10 and 19 cross.
+            lo[lv][i] = val[order[k + 1]][i] if k + 1 < len(order) else 1e-3
+    for lv in curves:
+        ax.fill_between(grid, lo[lv], val[lv], step="post", facecolor="none",
+                        edgecolor=CFG["Zstd (%s)" % lv], hatch=ZSTD_HATCH[lv], lw=0, zorder=2)
+    for lv, (_, cx, cy) in curves.items():
         ax.step(cx, cy, where="pre", color=CFG["Zstd (%s)" % lv], lw=0.9, zorder=2.5)
-        out.append((lv, len(pts), max(x for x, _ in pts), max(y for _, y in pts)))
     return out
 
 
@@ -299,6 +324,8 @@ def main():
         sys.exit("no results/suite-* directory found")
 
     plt = C.apply_theme()
+    # Global rcParam, so it is set here rather than in common: only this figure hatches.
+    plt.rcParams["hatch.linewidth"] = 0.35
     fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.05), sharey=True)
     xlim = (min(panel_xmin(root, S.REAL), panel_xmin(root, S.GEN)), XCAP)
     oR, bR = panel(axR, root, S.REAL, "Real-world columns", xlim)
@@ -369,8 +396,14 @@ def main():
     def flip(items, ncol):
         return list(itertools.chain(*[items[i::ncol] for i in range(ncol)]))
 
-    codec_handles = [Line2D([], [], color=CFG[k], marker=MARKER.get(k, "o"), ls="", ms=C.MS_LEGEND,
-                            label=k) for k in CFG]
+    from matplotlib.patches import Patch
+    # Zstd's key entries are hatch swatches now, because Zstd is an area on this panel and a
+    # marker in the key would advertise a point series the figure no longer draws.
+    codec_handles = [
+        Patch(facecolor="none", edgecolor=CFG[k], hatch=ZSTD_HATCH[int(k[6:-1])], label=k)
+        if k.startswith("Zstd") else
+        Line2D([], [], color=CFG[k], marker=MARKER.get(k, "o"), ls="", ms=C.MS_LEGEND, label=k)
+        for k in CFG]
     gsst = Line2D([], [], marker="*", color=C.GSST_RED, ls="", ms=C.MS_STAR * 1.2, label="GSST (A100)")
     # No off-scale entry. YLO is 0, so mark()'s t < YLO branch needs a negative decode rate and
     # never fires; the legend was advertising a convention that never appears on the page. The
