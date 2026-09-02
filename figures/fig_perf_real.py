@@ -157,7 +157,11 @@ def collect(root, rows):
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16),
                                  ("FSST-12", fs, 12)):
             c = store.get((ds, col, bits))
-            r, t = S.ratio(c), oracle_rate(c)
+            # CHARGED AT THE PLOTTED KERNEL'S OWN GRANULARITY. oracle_rate is the best kernel over
+            # the whole sweep, which varies K, and the sidecar is sized per batch of 32*K codes.
+            # Charging the shipped 192 regardless paired a rate with a stored representation that
+            # kernel does not read -- on the B300, 12 of the 30 OnPair marks win at some other K.
+            r, t = S.ratio(c, S.kernel_tok_per_batch(c, "best")), oracle_rate(c)
             if r and t:
                 ours.append((r, t, cfg, col))
         bases += S.de_points(root, DEV, ds, col)

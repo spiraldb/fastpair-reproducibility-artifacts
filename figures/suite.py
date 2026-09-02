@@ -131,6 +131,10 @@ FLAT_SUITE = "suite-flat-20260830"
 # What was collected and what is plotted are separate decisions; this is the plotted set.
 PAPER_ZSTD_LEVELS = (-10, 3, 19)
 
+# The shipped batch granularity: K=6, and a warp batch is 32*K codes. Named because it is
+# both the historic charge and the fallback when a kernel's own granularity is unmeasured.
+SHIPPED_TOK_PER_BATCH = 192
+
 
 def flat_root():
     """The payload-only leg, or None. Off by absence, like every other leg here."""
@@ -425,37 +429,93 @@ def frac_le8(c):
 _ONPAIR_SIDECAR = None
 
 
-def onpair_sidecar(ds, col, bits, tok_per_batch=192):
-    """OnPair's stored output-position sidecar for one cell, in bytes.
+def _onpair_sidecar_table():
+    """{(dataset, column, bits, tok_per_batch): bytes}, summed over chunks.
 
-    From the comparator leg's onpair_offset_cost.jsonl, at the shipped granularity. OnPair cells in
-    PAPER_SUITE predate the sidecar_bytes field, so unlike FSST-12 the number is not on the cell.
+    KEYED ON GRANULARITY, because the charge is no longer one number per cell. The sidecar holds
+    one offset per batch of 32*K codes, so its size is a function of the K the kernel reading it
+    was compiled for, and ratio() now charges the K of the kernel whose rate is being reported.
 
-    NOT CHIP-SPECIFIC, and that is not a shortcut. The sidecar is a property of the encoded column --
-    same revision, same training seed, same corpus, same compress_offsets path -- so it is identical
-    whichever GPU later decodes it. The measurement exists on the b300 only and applies to all.
+    Prefers onpair_offset_cost_bygran.jsonl, which covers all nine granularities the kernel sweep
+    actually produces. The comparator leg's onpair_offset_cost.jsonl measured 32, 128 and 192 only
+    and is the fallback for an older results tree; where the two overlap they agree exactly on all
+    90 (cell, granularity) pairs, which is the check that licensed the coarser numbers.
 
-    Deduped on full chunk identity: the ZSTD stage re-encodes through the same path, so the raw file
-    holds each chunk twice and summing it doubles the column.
+    NOT CHIP-SPECIFIC AS A MEASUREMENT: a given (column, K) sidecar is a property of the encoded
+    column, identical whichever GPU later decodes it. What IS chip-specific is which K a chip's
+    fastest kernel uses, and that lives in the caller.
+
+    Deduped on full chunk identity before summing: the ZSTD stage re-encodes through the same path,
+    so the raw file holds each chunk twice and summing it doubles the column.
     """
     global _ONPAIR_SIDECAR
-    if _ONPAIR_SIDECAR is None:
-        _ONPAIR_SIDECAR = {}
-        cr = comparator_root()
-        f = (cr / "b300" / "onpair_offset_cost.jsonl") if cr else None
-        if f and f.exists():
-            seen = {}
-            for line in f.read_text().splitlines():
-                if not line.strip():
-                    continue
-                r = json.loads(line)
-                if r.get("tok_per_batch") != tok_per_batch:
-                    continue
-                seen[(r["dataset"], r["column"], r["bits"], r["chunk"])] = r
-            for r in seen.values():
-                k = (r["dataset"], r["column"], r["bits"])
-                _ONPAIR_SIDECAR[k] = _ONPAIR_SIDECAR.get(k, 0) + r["offset_compressed_bytes"]
-    return _ONPAIR_SIDECAR.get((ds, col, bits), 0)
+    if _ONPAIR_SIDECAR is not None:
+        return _ONPAIR_SIDECAR
+    for root, name in ((flat_root(), "onpair_offset_cost_bygran.jsonl"),
+                       (comparator_root(), "onpair_offset_cost.jsonl")):
+        f = (root / "b300" / name) if root else None
+        if not (f and f.exists()):
+            continue
+        seen = {}
+        for line in f.read_text().splitlines():
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            seen[(r["dataset"], r["column"], r["bits"], r["tok_per_batch"], r["chunk"])] = r
+        acc = {}
+        for r in seen.values():
+            k = (r["dataset"], r["column"], r["bits"], r["tok_per_batch"])
+            acc[k] = acc.get(k, 0) + r["offset_compressed_bytes"]
+        if acc:
+            _ONPAIR_SIDECAR = acc
+            return acc
+    _ONPAIR_SIDECAR = {}
+    return _ONPAIR_SIDECAR
+
+
+def onpair_sidecar(ds, col, bits, tok_per_batch=SHIPPED_TOK_PER_BATCH):
+    """OnPair's stored output-position sidecar for one cell at one granularity, in bytes.
+
+    Returns 0 when the granularity was not measured, which a caller must treat as a gap rather
+    than as free: see kernel_tok_per_batch, which refuses to report an unmeasured one.
+    """
+    return _onpair_sidecar_table().get((ds, col, bits, tok_per_batch), 0)
+
+
+def kernel_tok_per_batch(c, basis="best"):
+    """Codes per batch of the kernel whose rate `basis` reports, or None.
+
+    THE POINT OF THIS FUNCTION. A cell's sidecar is sized for a particular batch granularity, and
+    the kernel sweep varies K, so a rate and a compression ratio only describe one artifact if the
+    ratio is charged at the granularity that rate's kernel was compiled for. Charging a fixed 192
+    while reporting the best kernel over all K -- which is what every figure did until 2026-09-02 --
+    pairs a throughput with a stored representation the kernel does not read.
+
+    `basis` is "best" for best_rate_gb_s (the paper's best-configuration basis) and "shipped" for
+    rate_gb_s (the deployed selector). They differ: on the B300 the selector mostly runs 128 while
+    the best kernel is usually 192.
+
+    Returns None when the cell timed no such kernel or the kernel records no granularity, so a
+    caller can fall back to the shipped charge deliberately instead of silently charging zero.
+    """
+    g = (c or {}).get("gpu") or {}
+    ks = g.get("kernels") or []
+    if basis == "shipped":
+        auto = g.get("auto_kernel")
+        for k in ks:
+            if k.get("kernel") == auto:
+                return k.get("chunk_size")
+        return None
+    best = None
+    for k in ks:
+        if not (k.get("verified") and k.get("applicable")):
+            continue
+        t = k.get("decode_gib_s")
+        if t is None:
+            continue
+        if best is None or t > best[0]:
+            best = (t, k)
+    return best[1].get("chunk_size") if best else None
 
 
 _FSST12_COMPONENTS = None
@@ -494,7 +554,7 @@ def fsst12_components(ds, col):
 _ONPAIR_STORED = None
 
 
-def onpair_stored_bytes(ds, col, bits):
+def onpair_stored_bytes(ds, col, bits, tok_per_batch=SHIPPED_TOK_PER_BATCH):
     """OnPair's stored size under Section 5's rule: what a reader must have to BULK DECOMPRESS.
 
     Section 5: "As decompressing the row offsets array is not necessary for bulk decompression, we
@@ -521,10 +581,16 @@ def onpair_stored_bytes(ds, col, bits):
     if not d:
         return None
     payload = d["codes"] + d["dict"] + d["dict_offsets"]
-    return payload + onpair_sidecar(ds, col, bits)
+    side = onpair_sidecar(ds, col, bits, tok_per_batch)
+    if not side and tok_per_batch != SHIPPED_TOK_PER_BATCH:
+        # An unmeasured granularity must not be charged as zero, which would silently report a
+        # BETTER ratio than the shipped charge. Fall back to the shipped one and let the caller's
+        # own reporting say so.
+        side = onpair_sidecar(ds, col, bits, SHIPPED_TOK_PER_BATCH)
+    return payload + side
 
 
-def ratio(c):
+def ratio(c, tok_per_batch=None):
     """At-rest compression ratio: sample_bytes / on_disk_bytes.
 
     THE DENOMINATOR IS THE .vortex FILE, not gpu.compressed_bytes. Corrected 2026-08-22 after
@@ -554,6 +620,19 @@ def ratio(c):
     and lost when the fifteen-column one replaced it with this codec-agnostic helper. Effect on the
     real columns is 0-10%; on TPC-H l_shipinstruct it is 3.37x to 11.37x.
 
+    CHARGED AT THE GRANULARITY OF THE KERNEL BEING REPORTED, when the caller passes one. The
+    sidecar holds one offset per batch of 32*K codes, so its size follows the K its reader was
+    compiled for; charging a fixed 192 while reporting the best kernel over all K pairs a
+    throughput with a stored representation that kernel does not read. Pass
+    kernel_tok_per_batch(c, basis) matching whichever rate you plot. `tok_per_batch=None` keeps
+    the shipped 192, which is right for a table that pairs the ratio with no rate at all.
+
+    FSST-12 STAYS AT 192 and that is a scope limit, not an oversight. Its sidecar is measured on
+    the cell rather than by granularity, and re-deriving it needs a re-encode from parquet, whose
+    trained dictionary is platform-dependent. Thirteen of its fifteen B300 best kernels are at 192
+    already; the other two are COARSER, so their true sidecar is smaller than charged and the
+    reported ratio is conservative by at most the sidecar's whole share, which is under 1.1%.
+
     THE SIDECAR IS IN THE DENOMINATOR, on both dictionary codecs. It is storage a reader must have
     to position a batch's output without a serial scan over everything before it, so by the rule in
     docs/notes/2026-08-27-stored-size-accounting.md it counts. The byte-oriented baselines have no
@@ -582,13 +661,15 @@ def ratio(c):
         return sb / den if den else None
     # OnPair: the offsets-excluded basis. at_rest_bytes is the WHOLE .vortex file, which also
     # carries codes_offsets and uncompressed_lengths; Section 5 excludes both.
-    stored = onpair_stored_bytes(c.get("dataset_id"), c.get("column"), c.get("bits"))
+    tpb = tok_per_batch or SHIPPED_TOK_PER_BATCH
+    stored = onpair_stored_bytes(
+        c.get("dataset_id"), c.get("column"), c.get("bits"), tpb)
     if stored:
         return sb / stored
     den = at_rest_bytes(c)
     if not den:
         return None
-    den += onpair_sidecar(c.get("dataset_id"), c.get("column"), c.get("bits"))
+    den += onpair_sidecar(c.get("dataset_id"), c.get("column"), c.get("bits"), tpb)
     return sb / den
 
 

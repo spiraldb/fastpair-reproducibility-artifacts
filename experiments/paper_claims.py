@@ -661,7 +661,10 @@ def field_stats():
         out = []
         for cfg, store, bits in (("OnPair-12", op, 12), ("OnPair-16", op, 16), ("FSST-12", fs, 12)):
             c = store.get((ds, col, bits))
-            r, t = S.ratio(c), S.rate_gb_s(c)
+            # SHIPPED granularity, because the rate beside it is the shipped selector's. The
+            # sidecar is sized per batch of 32*K codes and the selector mostly runs K=4, not the
+            # K=6 that used to be charged here regardless.
+            r, t = S.ratio(c, S.kernel_tok_per_batch(c, "shipped")), S.rate_gb_s(c)
             if r and t:
                 out.append((r, t, cfg))
         return out
@@ -895,7 +898,7 @@ def field_stats():
             for cfg, store, bits in (("OnPair-12", cop, 12), ("OnPair-16", cop, 16),
                                      ("FSST-12", cfs, 12)):
                 cell = store.get((ds, col, bits))
-                r, t = S.ratio(cell), S.rate_gb_s(cell)
+                r, t = S.ratio(cell, S.kernel_tok_per_batch(cell, "shipped")), S.rate_gb_s(cell)
                 if not (r and t):
                     continue
                 m += 1

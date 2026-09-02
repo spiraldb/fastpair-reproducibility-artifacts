@@ -383,6 +383,46 @@ Two caveats that must travel with these numbers:
 FSST-12 is pinned to `196a862` rather than the crate or local HEAD because that rev carries
 the training-budget fix; without it the trained table is 88% empty.
 
+## Sidecar cost by batch granularity — `results/suite-flat-20260830/b300/onpair_offset_cost_bygran.jsonl`
+
+**Why it exists.** The compression ratio charges OnPair's output-position sidecar, and the sidecar
+holds one offset per batch of `32*K` codes, so its size is a function of the `K` its reader was
+compiled for. Every figure charged the shipped `K=6` (192 codes) regardless, while the plotted rate
+is the best byte-validated kernel for the column and the kernel sweep varies `K`. Where the winning
+kernel is not `K=6`, a throughput was paired with a stored representation that kernel does not read.
+Raised by a co-author against `fig:perf_real`; the comparator leg had measured 32, 128 and 192 only,
+so the granularities several reported kernels actually use had no measurement at all.
+
+| Field | Value |
+|---|---|
+| Bench | `vortex-bench/src/bin/onpair-offset-cost.rs` → `onpair_sidecar_by_granularity` |
+| Box | **Host-side, no GPU** (Apple Silicon laptop, `cargo build --release`, no `cuda` feature) |
+| Input | `~/data/corpus-bank/ratio-basis-20260826` — the leg's own materialized cells, `rev=876c062b2e7cc69729339e0c1f1829cfdec0fe78`, 15 columns x bits {12,16} |
+| Config | `--tok-per-batch 32,64,96,128,160,192,224,256,512` (every granularity any chip's best or shipped kernel uses) |
+| Reduction | `offset_compressed_bytes` summed over chunks per (dataset, column, bits, tok_per_batch), deduped on chunk identity |
+| Consumed by | `suite._onpair_sidecar_table` → `suite.ratio(c, tok_per_batch)`; `fig:perf_real` at the best kernel's `K`, `paper_claims` at the shipped selector's |
+
+**No re-encoding, and that is the point.** It reads the committed `.vortex` parts back through
+`read_onpair_chunks` and sizes the sidecar over the arrays the leg wrote, so no dictionary is
+retrained. A re-encode would not have been comparable: FSST-12's trained dictionary is
+platform-dependent for exactly this reason (see its own section above).
+
+**Self-validating.** 32, 128 and 192 were measured alongside the coarser ones and diffed against
+the comparator leg's `onpair_offset_cost.jsonl`: **90 overlapping (cell, granularity) pairs, 0
+mismatches** on `offset_compressed_bytes`, `n_batches`, `total_tokens` and `compressed_bytes`. That
+equality is what licenses the six granularities the leg never measured.
+
+**Effect.** 11 of the 30 B300 OnPair marks move, by **-0.24% to +0.27%**. No rendered number in the
+paper changes: `claims.tex` regenerates identically and `tab:datasets` compares 195 cells with 0
+disagreements. The defect was real and its magnitude is under a third of a percent.
+
+**Scope limit — FSST-12 stays at 192.** Its sidecar is measured on the cell rather than by
+granularity, and re-deriving it needs a re-encode from parquet, whose trained dictionary is
+platform-dependent. 13 of its 15 B300 best kernels are at 192 already; the other two are *coarser*,
+so their true sidecar is smaller than charged and the reported ratio is conservative by at most the
+sidecar's whole share, under 1.1%. `tab:datasets` also stays at 192 deliberately: it pairs the ratio
+with no rate, so no kernel's `K` applies.
+
 ## Not in git (too large; on the orchestrating laptop / regenerable)
 - Raw `.ncu-rep` archives → `~/data/onpair-ncu-archive/`, `~/agents/harness/runs/`.
 - Full CPU `perf` text → inside the `cpu-tma/*_raw.tar.gz`.

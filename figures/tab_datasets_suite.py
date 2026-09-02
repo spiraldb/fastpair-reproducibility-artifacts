@@ -56,6 +56,9 @@ def row(label, ds, col, c12, c16, cf):
     cells = [
         fmt_int(S.tokens(c12)), fmt(S.mean_len(c12), ".1f"),
         fmt(S.frac_le8(c12) * 100 if S.frac_le8(c12) is not None else None, ".0f", "\\%"),
+        # NO GRANULARITY PASSED, deliberately: this table pairs the ratio with no decode rate,
+        # so there is no kernel whose K it should follow. It reports the shipped K=6 charge.
+        # fig_perf_real, which does pair the two, charges its plotted kernel's own K.
         fmt(S.ratio(c12), ".1f"),
         "",
         fmt_int(S.tokens(c16)), fmt(S.mean_len(c16), ".1f"),
