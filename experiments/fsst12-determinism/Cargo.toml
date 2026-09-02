@@ -1,0 +1,10 @@
+[package]
+name = "fsstdet"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+fsst12 = { package = "fsst-rs", git = "https://github.com/mprammer/fsst", rev = "196a862112c6ea028b0cc5e95c4fcabbf4088bd2" }
+
+[profile.release]
+debug = false
