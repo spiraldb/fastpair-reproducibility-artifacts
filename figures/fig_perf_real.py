@@ -165,12 +165,26 @@ def collect(root, rows):
     return ours, bases, faded
 
 
-# Fill alpha PER LEVEL, not one constant. The three levels are drawn from the neutral ramp, which
-# has little luminance to divide, and their regions overlap over most of the panel; at a shared
-# alpha they resolved into a single grey slab. Alpha rising with the level spreads them in the
-# one dimension the ramp cannot. The frontier lines carry the identity where the fills still
-# overlap, so they are drawn at full opacity rather than washed like the region.
-ZSTD_FILL_ALPHA = {-10: 0.13, 3: 0.21, 19: 0.30}
+# THE X CAP, shared by both panels. Zstd at level 19 reaches ratio 138 on the real columns, which
+# set the panel's extent to eight times the highest baseline ratio and squeezed every OnPair mark
+# into the left third. Capping both panels at the same 50 also puts them on one x scale, which
+# they never were before.
+XCAP = 50.0
+
+# NO ALPHA ON THE ZONES. Three translucent fills over the same ground sum where they overlap, and
+# the regions overlap over most of the panel, so the level that reaches furthest was rendered as
+# the darkest patch rather than as itself -- the stack, not the data, chose the value. These are
+# opaque tints of each level's own marker colour, painted largest region first so an overlap
+# shows the topmost zone rather than a sum. Nothing can darken, and a zone's tint is the same
+# wherever it is read.
+ZSTD_TINT = 0.70  # fraction of white mixed into the level's marker colour
+
+
+def tint(hex_colour, t=ZSTD_TINT):
+    """Mix a colour toward white. Keeps the level's identity while staying under the marks."""
+    h = hex_colour.lstrip("#")
+    rgb = [int(h[i:i + 2], 16) for i in (0, 2, 4)]
+    return "#%02x%02x%02x" % tuple(int(round(c * (1 - t) + 255 * t)) for c in rgb)
 
 
 def zstd_regions(ax, rows, xlo):
@@ -191,29 +205,62 @@ def zstd_regions(ax, rows, xlo):
 
     Returns the per-level reach for the caller to report, since some of it falls outside xlim.
     """
-    out = []
-    for i, lv in enumerate(S.PAPER_ZSTD_LEVELS):
+    import math
+    zones, out = [], []
+    for lv in S.PAPER_ZSTD_LEVELS:
         pts = []
         for _, ds, col in rows:
             pts += S.zstd_level_points(ds, col, lv)
         if not pts:
             continue
-        colour = CFG["Zstd (%s)" % lv]
+        reach = max(x for x, _ in pts)
         zx, zy = frontier(pts, xlo=xlo)
-        ax.fill_between(zx, 1e-3, zy, step="pre", color=colour,
-                        alpha=ZSTD_FILL_ALPHA.get(lv, 0.2), lw=0, zorder=2)
-        ax.step(zx, zy, where="pre", color=colour, lw=0.9, zorder=2)
-        out.append((lv, len(pts), max(x for x, _ in pts), max(y for _, y in pts)))
+        # CLIPPED AT THE CAP, NOT EXTENDED TO IT. A level whose sweep stops short of XCAP has its
+        # zone stop there too; carrying it to the edge would draw a ratio the level never reached.
+        # A level that runs past the cap gets a step at XCAP so its zone meets the panel edge
+        # rather than ending on whatever sweep point happened to fall inside.
+        cx, cy = [], []
+        for x, y in zip(zx, zy):
+            if x <= XCAP:
+                cx.append(x); cy.append(y)
+        if reach > XCAP:
+            cx.append(XCAP)
+            cy.append(frontier_at(pts, XCAP) or (cy[-1] if cy else 0.0))
+        if not cx:
+            continue
+        # Area under the staircase in LOG x, which is the axis the reader sees, so the paint
+        # order matches apparent size rather than raw ratio units.
+        area = sum((math.log10(cx[i + 1]) - math.log10(cx[i])) * cy[i] for i in range(len(cx) - 1))
+        zones.append((area, lv, cx, cy))
+        out.append((lv, len(pts), reach, max(y for _, y in pts)))
+    # Largest first. On the real panel the levels happen to nest, so this renders as contours;
+    # on the generated panel they only partly overlap, and ordering by area is what keeps the
+    # smaller zone from being buried under the wider one.
+    for _, lv, cx, cy in sorted(zones, key=lambda z: -z[0]):
+        ax.fill_between(cx, 1e-3, cy, step="pre", color=tint(CFG["Zstd (%s)" % lv]),
+                        lw=0, zorder=2)
+    # Every frontier drawn over every fill, so a zone buried by a wider one still reads.
+    for _, lv, cx, cy in sorted(zones, key=lambda z: -z[0]):
+        ax.step(cx, cy, where="pre", color=CFG["Zstd (%s)" % lv], lw=0.9, zorder=2.5)
     return out
 
 
-def panel(ax, root, rows, title):
+def panel_xmin(root, rows):
+    """The left edge one panel needs, before the two are reconciled in main()."""
+    ours, bases, faded = collect(root, rows)
+    allr = ([r for r, _, _, _ in ours] + [r for r, _, _ in bases]
+            + [r for r, _, _ in faded]) or [1.0]
+    return min(allr) * 0.88
+
+
+def panel(ax, root, rows, title, xlim):
     from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
     ours, bases, faded = collect(root, rows)
     bp = [(r, t) for r, t, _ in bases]
-    allr = [r for r, _, _, _ in ours] + [r for r, _ in bp] or [1.0]
-    allr += [r for r, _, _ in faded]
-    xmin, xmax = min(allr) * 0.88, max(allr) * 1.14
+    # ONE X RANGE FOR BOTH PANELS, passed in rather than fitted per panel. They already share y;
+    # fitting x separately meant a ratio sat at a different place on each, so the two halves of
+    # one figure could not be read against each other. The right edge is XCAP on both.
+    xmin, xmax = xlim
     xs, ys = frontier(bp, xlo=xmin)
     if xs:
         # DO NOT CARRY THE LAST STEP TO THE RIGHT EDGE. It used to, back when xmax sat a few
@@ -239,7 +286,7 @@ def panel(ax, root, rows, title):
     # FILTERED TO THE LIMITS, and carried past 20. The list was fixed at a 20x ceiling from when
     # the Zstd tails were clipped off the panel; with them drawn, the right third of the real
     # panel had no label under it.
-    ticks = [t for t in (1, 1.5, 2, 3, 5, 7, 10, 20, 50, 100) if xmin <= t <= xmax]
+    ticks = [t for t in (1, 1.5, 2, 3, 5, 7, 10, 20, 50) if xmin <= t <= xmax]
     ax.xaxis.set_major_locator(FixedLocator(ticks))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.xaxis.set_minor_locator(FixedLocator([]))
@@ -259,8 +306,9 @@ def main():
 
     plt = C.apply_theme()
     fig, (axR, axS) = plt.subplots(1, 2, figsize=(7.0, 2.05), sharey=True)
-    oR, bR = panel(axR, root, S.REAL, "Real-world columns")
-    oS, bS = panel(axS, root, S.GEN, "Generated columns")
+    xlim = (min(panel_xmin(root, S.REAL), panel_xmin(root, S.GEN)), XCAP)
+    oR, bR = panel(axR, root, S.REAL, "Real-world columns", xlim)
+    oS, bS = panel(axS, root, S.GEN, "Generated columns", xlim)
     # GSST reports one number: 191 GB/s on an A100, TPC-H l_comment. That is generated data, so it
     # goes on the synthetic panel, and it is another device, so it is drawn but never enters the
     # baseline frontier or the dominance test.
