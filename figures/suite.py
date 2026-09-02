@@ -638,8 +638,22 @@ def ratio(c, tok_per_batch=None):
     docs/notes/2026-08-27-stored-size-accounting.md it counts. The byte-oriented baselines have no
     equivalent because their decode is serial, and charging ourselves for it is the honest way to
     state that trade -- Section 3 prices the alternative, regenerating it on the device, at 14 to
-    19% slower. It is 0.26 to 0.72% of OnPair's stored column and 0.00 to 1.05% of FSST-12's, and
-    changes no ordering.
+    19% slower.
+
+    ITS SHARE, RE-DERIVED 2026-09-02, and the old figure here was against the wrong denominator.
+    This docstring used to say "0.26 to 0.72% of OnPair's stored column". That range is the
+    sidecar over the WHOLE .vortex file -- which still measures 0.00 to 0.72% -- but the file also
+    carries codes_offsets and uncompressed_lengths, and Section 5 excludes both, so it is not the
+    denominator this function divides by. Against the offsets-excluded stored column that IS the
+    denominator, the shipped K=6 sidecar is 0.00 to 1.63% (median 0.40%) on OnPair and 0.00 to
+    1.46% (median 0.45%) on FSST-12. The maxima are l_shipinstruct, whose denominator the
+    offsets-exclusion shrank by 30%, which is exactly why the share moved when the basis did.
+
+    At the FINEST granularity, the 32-code sidecar that can serve any K, it is 0.00 to 8.11%
+    (median 1.82%). Anyone quoting a sidecar share must say which granularity they mean.
+
+    It changes no ordering: verified, 0 of 15 columns flip OnPair-12 against OnPair-16 when the
+    sidecar is added to or removed from both denominators.
     """
     if not c:
         return None
