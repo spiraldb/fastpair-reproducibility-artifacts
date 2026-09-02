@@ -165,20 +165,68 @@ def collect(root, rows):
     return ours, bases, faded
 
 
+# Fill alpha PER LEVEL, not one constant. The three levels are drawn from the neutral ramp, which
+# has little luminance to divide, and their regions overlap over most of the panel; at a shared
+# alpha they resolved into a single grey slab. Alpha rising with the level spreads them in the
+# one dimension the ramp cannot. The frontier lines carry the identity where the fills still
+# overlap, so they are drawn at full opacity rather than washed like the region.
+ZSTD_FILL_ALPHA = {-10: 0.13, 3: 0.21, 19: 0.30}
+
+
+def zstd_regions(ax, rows, xlo):
+    """Shade what each Zstd level reaches, with that level's own Pareto frontier drawn over it.
+
+    THREE REGIONS, NOT ONE, because the levels do not nest. Level -10 owns the high-rate corner
+    and 19 the high-ratio one, so a single Zstd region would assert a reach no single setting
+    has, and the compression level is the one Zstd knob a user actually sets.
+
+    THE REGION IS THE WHOLE SWEEP, not the pruned faded set: every frame measured at that level
+    goes in, and the staircase over them is the best rate the level reaches at each ratio or
+    better. Drawing the frontier of an already-pruned set would draw the frontier of a previous
+    decision rather than of the measurement.
+
+    POOLED ACROSS THE PANEL'S COLUMNS, exactly like the baseline staircase it sits inside, and
+    for the same reason: this is orientation. A codec's ratio is a property of the data, so the
+    dominance claim is asserted per column in main() and never read off this shading.
+
+    Returns the per-level reach for the caller to report, since some of it falls outside xlim.
+    """
+    out = []
+    for i, lv in enumerate(S.PAPER_ZSTD_LEVELS):
+        pts = []
+        for _, ds, col in rows:
+            pts += S.zstd_level_points(ds, col, lv)
+        if not pts:
+            continue
+        colour = CFG["Zstd (%s)" % lv]
+        zx, zy = frontier(pts, xlo=xlo)
+        ax.fill_between(zx, 1e-3, zy, step="pre", color=colour,
+                        alpha=ZSTD_FILL_ALPHA.get(lv, 0.2), lw=0, zorder=2)
+        ax.step(zx, zy, where="pre", color=colour, lw=0.9, zorder=2)
+        out.append((lv, len(pts), max(x for x, _ in pts), max(y for _, y in pts)))
+    return out
+
+
 def panel(ax, root, rows, title):
     from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
     ours, bases, faded = collect(root, rows)
     bp = [(r, t) for r, t, _ in bases]
     allr = [r for r, _, _, _ in ours] + [r for r, _ in bp] or [1.0]
+    allr += [r for r, _, _ in faded]
     xmin, xmax = min(allr) * 0.88, max(allr) * 1.14
     xs, ys = frontier(bp, xlo=xmin)
     if xs:
-        # Carry the last step out to the right edge so the envelope spans the panel.
-        xs, ys = xs + [xmax], ys + [ys[-1]]
+        # DO NOT CARRY THE LAST STEP TO THE RIGHT EDGE. It used to, back when xmax sat a few
+        # percent past the highest baseline ratio and the carry was a cosmetic gap-filler. With
+        # the Zstd tails on the panel, xmax is 157 against a best baseline ratio of 19, and the
+        # carry drew the envelope flat across eight times the measured range -- reading as the
+        # engine holding 630 GB/s at a ratio it never reaches. The envelope now stops where the
+        # baselines stop.
         ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
         # C.WASH, not a grey at low alpha: the three Zstd levels are drawn from C.NEUTRAL and
         # sit inside this region, so a grey ground swallowed them. See common.WASH.
         ax.fill_between(xs, 1e-3, ys, step="pre", color=C.WASH, lw=0, zorder=1)
+    zstd_regions(ax, rows, xmin)
     ax.set_xlim(xmin, xmax)
     # Faded first, so the vendor default and our marks draw over them rather than under.
     for r, t, cfg in faded:
@@ -188,7 +236,10 @@ def panel(ax, root, rows, title):
     for r, t, cfg, _ in ours:
         mark(ax, r, t, CFG[cfg], marker=MARKER[cfg])
     ax.set_xscale("log")
-    ticks = [1, 1.5, 2, 3, 5, 7, 10, 20]
+    # FILTERED TO THE LIMITS, and carried past 20. The list was fixed at a 20x ceiling from when
+    # the Zstd tails were clipped off the panel; with them drawn, the right third of the real
+    # panel had no label under it.
+    ticks = [t for t in (1, 1.5, 2, 3, 5, 7, 10, 20, 50, 100) if xmin <= t <= xmax]
     ax.xaxis.set_major_locator(FixedLocator(ticks))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.xaxis.set_minor_locator(FixedLocator([]))

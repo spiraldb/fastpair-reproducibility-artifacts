@@ -938,6 +938,19 @@ def zstd_best_points(ds, col):
     return _pareto(pts)
 
 
+def zstd_level_points(ds, col, level):
+    """EVERY frame-sweep cell for one column at one level, dominated ones included.
+
+    zstd_best_points prunes to the non-dominated set and pools the levels, which is what the
+    faded marks want. A per-level REGION wants the opposite: the whole measured set, so the
+    frontier drawn over it is the frontier of what was actually run rather than of what survived
+    an earlier prune.
+    """
+    cells, _ = _zstd_cells(ds, col)
+    return [(e["compression_ratio"], e["decode_gib_s"] * GIB_TO_GB)
+            for e in cells if e["zstd_level"] == level]
+
+
 def zstd_points(zcells, ds, col):
     """The three nvCOMP Zstd levels for one column, from the OnPair-12 cell that carries them.
 
