@@ -180,6 +180,23 @@ XCAP = 50.0
 ZSTD_TINT = 0.70  # fraction of white mixed into the level's marker colour
 
 
+# THE BASELINE ENVELOPE SITS ON TOP OF THE ZSTD ZONES, so it has to be translucent or it erases
+# them. C.WASH is already very pale, and drawing it at alpha over white would wash it out to
+# nothing, so the drawn colour is WASH UN-MIXED from white: composited at WASH_ALPHA over white it
+# reproduces C.WASH exactly, and over a grey zone it tints rather than hides.
+WASH_ALPHA = 0.6
+
+
+def unmix(hex_colour, a, ground=255):
+    """The colour that, drawn at alpha a over `ground`, composites to hex_colour."""
+    h = hex_colour.lstrip("#")
+    out = []
+    for i in (0, 2, 4):
+        c = int(h[i:i + 2], 16)
+        out.append(min(255, max(0, int(round((c - ground * (1 - a)) / a)))))
+    return "#%02x%02x%02x" % tuple(out)
+
+
 def tint(hex_colour, t=ZSTD_TINT):
     """Mix a colour toward white. Keeps the level's identity while staying under the marks."""
     h = hex_colour.lstrip("#")
@@ -262,6 +279,7 @@ def panel(ax, root, rows, title, xlim):
     # one figure could not be read against each other. The right edge is XCAP on both.
     xmin, xmax = xlim
     xs, ys = frontier(bp, xlo=xmin)
+    zstd_regions(ax, rows, xmin)
     if xs:
         # DO NOT CARRY THE LAST STEP TO THE RIGHT EDGE. It used to, back when xmax sat a few
         # percent past the highest baseline ratio and the carry was a cosmetic gap-filler. With
@@ -269,15 +287,17 @@ def panel(ax, root, rows, title, xlim):
         # carry drew the envelope flat across eight times the measured range -- reading as the
         # engine holding 630 GB/s at a ratio it never reaches. The envelope now stops where the
         # baselines stop.
-        ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
-        # C.WASH, not a grey at low alpha: the three Zstd levels are drawn from C.NEUTRAL and
-        # sit inside this region, so a grey ground swallowed them. See common.WASH.
-        ax.fill_between(xs, 1e-3, ys, step="pre", color=C.WASH, lw=0, zorder=1)
-    zstd_regions(ax, rows, xmin)
+        # ABOVE THE ZSTD ZONES, not below them. The zones used to paint over this fill, which
+        # broke the envelope into visible and hidden halves at whatever height a zone reached.
+        ax.fill_between(xs, 1e-3, ys, step="pre", color=unmix(C.WASH, WASH_ALPHA),
+                        alpha=WASH_ALPHA, lw=0, zorder=3)
+        ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3.5)
     ax.set_xlim(xmin, xmax)
-    # Faded first, so the vendor default and our marks draw over them rather than under.
-    for r, t, cfg in faded:
-        mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"), alpha=0.28)
+    # NO FADED SERIES. Every non-dominated (frame, level) used to be drawn at alpha 0.28, which
+    # is the same information the zones now carry as area -- and carry better, since a zone shows
+    # the whole reach rather than the points that survived a prune. What is left on top of the
+    # zones is the vendor default, the one Zstd configuration Section 5 reports as an operating
+    # point.
     for r, t, cfg in bases:
         mark(ax, r, t, CFG[cfg], marker=MARKER.get(cfg, "s"))
     for r, t, cfg, _ in ours:
