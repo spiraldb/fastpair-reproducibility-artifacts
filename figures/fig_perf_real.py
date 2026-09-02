@@ -171,94 +171,58 @@ def collect(root, rows):
 # they never were before.
 XCAP = 50.0
 
-# NO ALPHA ON THE ZONES. Three translucent fills over the same ground sum where they overlap, and
-# the regions overlap over most of the panel, so the level that reaches furthest was rendered as
-# the darkest patch rather than as itself -- the stack, not the data, chose the value. These are
-# opaque tints of each level's own marker colour, painted largest region first so an overlap
-# shows the topmost zone rather than a sum. Nothing can darken, and a zone's tint is the same
-# wherever it is read.
-ZSTD_TINT = 0.70  # fraction of white mixed into the level's marker colour
+def clip_to_cap(pts, xs, ys):
+    """Trim a staircase at XCAP, with a step AT the cap when the data runs past it.
 
-
-# THE BASELINE ENVELOPE SITS ON TOP OF THE ZSTD ZONES, so it has to be translucent or it erases
-# them. C.WASH is already very pale, and drawing it at alpha over white would wash it out to
-# nothing, so the drawn colour is WASH UN-MIXED from white: composited at WASH_ALPHA over white it
-# reproduces C.WASH exactly, and over a grey zone it tints rather than hides.
-WASH_ALPHA = 0.6
-
-
-def unmix(hex_colour, a, ground=255):
-    """The colour that, drawn at alpha a over `ground`, composites to hex_colour."""
-    h = hex_colour.lstrip("#")
-    out = []
-    for i in (0, 2, 4):
-        c = int(h[i:i + 2], 16)
-        out.append(min(255, max(0, int(round((c - ground * (1 - a)) / a)))))
-    return "#%02x%02x%02x" % tuple(out)
-
-
-def tint(hex_colour, t=ZSTD_TINT):
-    """Mix a colour toward white. Keeps the level's identity while staying under the marks."""
-    h = hex_colour.lstrip("#")
-    rgb = [int(h[i:i + 2], 16) for i in (0, 2, 4)]
-    return "#%02x%02x%02x" % tuple(int(round(c * (1 - t) + 255 * t)) for c in rgb)
-
-
-def zstd_regions(ax, rows, xlo):
-    """Shade what each Zstd level reaches, with that level's own Pareto frontier drawn over it.
-
-    THREE REGIONS, NOT ONE, because the levels do not nest. Level -10 owns the high-rate corner
-    and 19 the high-ratio one, so a single Zstd region would assert a reach no single setting
-    has, and the compression level is the one Zstd knob a user actually sets.
-
-    THE REGION IS THE WHOLE SWEEP, not the pruned faded set: every frame measured at that level
-    goes in, and the staircase over them is the best rate the level reaches at each ratio or
-    better. Drawing the frontier of an already-pruned set would draw the frontier of a previous
-    decision rather than of the measurement.
-
-    POOLED ACROSS THE PANEL'S COLUMNS, exactly like the baseline staircase it sits inside, and
-    for the same reason: this is orientation. A codec's ratio is a property of the data, so the
-    dominance claim is asserted per column in main() and never read off this shading.
-
-    Returns the per-level reach for the caller to report, since some of it falls outside xlim.
+    Clipped, never extended: a series whose sweep stops short of XCAP stops there too, because
+    carrying its last step to the edge would draw a ratio nothing in it reached.
     """
-    import math
-    zones, out = [], []
+    cx, cy = [], []
+    for x, y in zip(xs, ys):
+        if x <= XCAP:
+            cx.append(x); cy.append(y)
+    if pts and max(x for x, _ in pts) > XCAP:
+        cx.append(XCAP)
+        cy.append(frontier_at(pts, XCAP) or (cy[-1] if cy else 0.0))
+    return cx, cy
+
+
+def zstd_frontiers(ax, rows, xlo):
+    """Draw each Zstd level's own Pareto frontier across the frame sweep.
+
+    THREE FRONTIERS, NOT ONE, because the levels do not nest. Level -10 owns the high-rate corner
+    and 19 the high-ratio one, so a single Zstd curve would assert a reach no single setting has,
+    and the compression level is the one Zstd knob a user actually sets.
+
+    EACH IS THE WHOLE SWEEP, not the pruned set the faded marks used to draw: every frame measured
+    at that level goes in, and the staircase over them is the best rate the level reaches at each
+    ratio or better. A frontier drawn over an already-pruned set would be the frontier of a
+    previous decision rather than of the measurement.
+
+    LINES, NOT FILLED ZONES. Filling them was the obvious form and it does not work here: past the
+    highest DE ratio the only baseline left is Zstd, so the baseline envelope's top edge IS the
+    pooled Zstd frontier there. A filled zone therefore covered the envelope with a shape
+    identical to it, and the envelope appeared to stop at a ratio it does not stop at. As lines
+    the levels sit inside the envelope and the envelope stays whole.
+
+    POOLED ACROSS THE PANEL'S COLUMNS, exactly like the envelope they sit in, and for the same
+    reason: this is orientation. A codec's ratio is a property of the data, so the dominance claim
+    is asserted per column in main() and never read off these curves.
+
+    Returns each level's reach for the caller to report, since some of it falls beyond XCAP.
+    """
+    out = []
     for lv in S.PAPER_ZSTD_LEVELS:
         pts = []
         for _, ds, col in rows:
             pts += S.zstd_level_points(ds, col, lv)
         if not pts:
             continue
-        reach = max(x for x, _ in pts)
-        zx, zy = frontier(pts, xlo=xlo)
-        # CLIPPED AT THE CAP, NOT EXTENDED TO IT. A level whose sweep stops short of XCAP has its
-        # zone stop there too; carrying it to the edge would draw a ratio the level never reached.
-        # A level that runs past the cap gets a step at XCAP so its zone meets the panel edge
-        # rather than ending on whatever sweep point happened to fall inside.
-        cx, cy = [], []
-        for x, y in zip(zx, zy):
-            if x <= XCAP:
-                cx.append(x); cy.append(y)
-        if reach > XCAP:
-            cx.append(XCAP)
-            cy.append(frontier_at(pts, XCAP) or (cy[-1] if cy else 0.0))
+        cx, cy = clip_to_cap(pts, *frontier(pts, xlo=xlo))
         if not cx:
             continue
-        # Area under the staircase in LOG x, which is the axis the reader sees, so the paint
-        # order matches apparent size rather than raw ratio units.
-        area = sum((math.log10(cx[i + 1]) - math.log10(cx[i])) * cy[i] for i in range(len(cx) - 1))
-        zones.append((area, lv, cx, cy))
-        out.append((lv, len(pts), reach, max(y for _, y in pts)))
-    # Largest first. On the real panel the levels happen to nest, so this renders as contours;
-    # on the generated panel they only partly overlap, and ordering by area is what keeps the
-    # smaller zone from being buried under the wider one.
-    for _, lv, cx, cy in sorted(zones, key=lambda z: -z[0]):
-        ax.fill_between(cx, 1e-3, cy, step="pre", color=tint(CFG["Zstd (%s)" % lv]),
-                        lw=0, zorder=2)
-    # Every frontier drawn over every fill, so a zone buried by a wider one still reads.
-    for _, lv, cx, cy in sorted(zones, key=lambda z: -z[0]):
         ax.step(cx, cy, where="pre", color=CFG["Zstd (%s)" % lv], lw=0.9, zorder=2.5)
+        out.append((lv, len(pts), max(x for x, _ in pts), max(y for _, y in pts)))
     return out
 
 
@@ -278,8 +242,19 @@ def panel(ax, root, rows, title, xlim):
     # fitting x separately meant a ratio sat at a different place on each, so the two halves of
     # one figure could not be read against each other. The right edge is XCAP on both.
     xmin, xmax = xlim
-    xs, ys = frontier(bp, xlo=xmin)
-    zstd_regions(ax, rows, xmin)
+    # THE ENVELOPE INCLUDES THE WHOLE ZSTD FRAME SWEEP, not just the vendor default that is drawn
+    # as a point. bp holds the marks; the sweep is measured baseline data too, and leaving it out
+    # was why the envelope stopped at ratio 19 while the zones ran past 50 -- it looked like the
+    # region was missing its right-hand end because it was. With the sweep in, the envelope
+    # reaches the panel edge because a baseline actually reaches it, rather than by carrying its
+    # last step flat across ratios no baseline attains.
+    env = list(bp)
+    for lv in S.PAPER_ZSTD_LEVELS:
+        for _, ds, col in rows:
+            env += S.zstd_level_points(ds, col, lv)
+    xs, ys = frontier(env, xlo=xmin)
+    xs, ys = clip_to_cap(env, xs, ys)
+    zstd_frontiers(ax, rows, xmin)
     if xs:
         # DO NOT CARRY THE LAST STEP TO THE RIGHT EDGE. It used to, back when xmax sat a few
         # percent past the highest baseline ratio and the carry was a cosmetic gap-filler. With
@@ -287,11 +262,10 @@ def panel(ax, root, rows, title, xlim):
         # carry drew the envelope flat across eight times the measured range -- reading as the
         # engine holding 630 GB/s at a ratio it never reaches. The envelope now stops where the
         # baselines stop.
-        # ABOVE THE ZSTD ZONES, not below them. The zones used to paint over this fill, which
-        # broke the envelope into visible and hidden halves at whatever height a zone reached.
-        ax.fill_between(xs, 1e-3, ys, step="pre", color=unmix(C.WASH, WASH_ALPHA),
-                        alpha=WASH_ALPHA, lw=0, zorder=3)
-        ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3.5)
+        # C.WASH, not a grey at low alpha: the Zstd levels are drawn from C.NEUTRAL and sit
+        # inside this region, so a grey ground swallowed them. See common.WASH.
+        ax.fill_between(xs, 1e-3, ys, step="pre", color=C.WASH, lw=0, zorder=1)
+        ax.step(xs, ys, where="pre", color=C.INK, lw=0.8, alpha=0.55, zorder=3)
     ax.set_xlim(xmin, xmax)
     # NO FADED SERIES. Every non-dominated (frame, level) used to be drawn at alpha 0.28, which
     # is the same information the zones now carry as area -- and carry better, since a zone shows
