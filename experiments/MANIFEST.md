@@ -412,6 +412,16 @@ the comparator leg's `onpair_offset_cost.jsonl`: **90 overlapping (cell, granula
 mismatches** on `offset_compressed_bytes`, `n_batches`, `total_tokens` and `compressed_bytes`. That
 equality is what licenses the six granularities the leg never measured.
 
+**THE PAPER ALREADY DECLARED THIS BASIS; the reducer was out of compliance with it.** Section 5.0:
+"unless stated otherwise, the results in this section report every technique, ours and each
+baseline, at its best configuration on each column", and the paragraph before it defines the ratio
+against that configuration's compressed representation. Charging a fixed K=6 sidecar while
+reporting the best kernel over all K therefore contradicted a stated basis rather than filling a
+gap in one, so no prose change was needed to answer the review comment. This is the SECOND time
+the same paragraph has been declared and not implemented -- the 2026-08-30 offsets-exclusion fix
+has the identical shape ("Section 5.0 states that the row-offsets array is excluded ... The
+reducers did not implement that"). When a basis question comes up, read 5.0 first.
+
 **Effect.** 11 of the 30 B300 OnPair marks move, by **-0.24% to +0.27%**. No rendered number in the
 paper changes: `claims.tex` regenerates identically and `tab:datasets` compares 195 cells with 0
 disagreements. The defect was real and its magnitude is under a third of a percent.
