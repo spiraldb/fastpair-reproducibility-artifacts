@@ -426,12 +426,26 @@ reducers did not implement that"). When a basis question comes up, read 5.0 firs
 paper changes: `claims.tex` regenerates identically and `tab:datasets` compares 195 cells with 0
 disagreements. The defect was real and its magnitude is under a third of a percent.
 
-**Scope limit — FSST-12 stays at 192.** Its sidecar is measured on the cell rather than by
-granularity, and re-deriving it needs a re-encode from parquet, whose trained dictionary is
-platform-dependent. 13 of its 15 B300 best kernels are at 192 already; the other two are *coarser*,
-so their true sidecar is smaller than charged and the reported ratio is conservative by at most the
-sidecar's whole share, under 1.1%. `tab:datasets` also stays at 192 deliberately: it pairs the ratio
-with no rate, so no kernel's `K` applies.
+**FSST-12, closed 2026-09-02 for the two columns it affects.** Its sidecar is recorded on the cell
+at the shipped K=6, and 13 of its 15 B300 best kernels run there, so the cell figure is already the
+right charge for them. The two that do not are `c_address` (K=16) and `o_clerk` (K=8), measured
+host-side into `results/suite-flat-20260830/b300/fsst12_sidecar_bygran.jsonl` by
+`fsst12-stored-rows` from the byte-exact column dumps.
+
+Measuring those two on macOS is legitimate *because they are among the eight columns whose host-side
+split reproduces the committed cell exactly* — the trained dictionary agrees, so a local encode
+describes the same artifact. That is not true of the seven columns that do not reproduce (FSST-12's
+dictionary is platform-dependent on real data; see
+`onpair-gpu-paper/docs/notes/2026-09-02-fsst12-platform-dependence.md`), and those deliberately fall
+back to the cell, which is the correct charge for them anyway since their best kernel is K=6.
+Self-checked: at 192 the measurement reproduces each cell's `sidecar_bytes` exactly (2 188 344 and
+0), and `total_container_matched` reproduces the committed split.
+
+Effect: one mark moves, `c_address` FSST-12 from 1.2639 to 1.2661, +0.175%. `o_clerk`'s sidecar is 0
+at every granularity — fixed 15-character values, so its offsets are perfectly regular.
+
+`tab:datasets` still charges 192 deliberately: it pairs the ratio with no rate, so no kernel's `K`
+applies.
 
 ## Not in git (too large; on the orchestrating laptop / regenerable)
 - Raw `.ncu-rep` archives → `~/data/onpair-ncu-archive/`, `~/agents/harness/runs/`.

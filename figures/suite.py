@@ -521,6 +521,38 @@ def kernel_tok_per_batch(c, basis="best"):
 _FSST12_COMPONENTS = None
 
 
+_FSST12_SIDECAR = None
+
+
+def fsst12_sidecar(ds, col, tok_per_batch, fallback):
+    """FSST-12's stored sidecar at one granularity, or `fallback` when unmeasured.
+
+    MEASURED ONLY WHERE IT CHANGES SOMETHING, and only where a macOS measurement is legitimate.
+    FSST-12's sidecar is recorded on the cell at the shipped K=6, and 13 of its 15 B300 best kernels
+    run there, so the cell figure is already the right charge for them. The two that do not are
+    c_address (K=16) and o_clerk (K=8), and both are among the EIGHT columns whose host-side split
+    reproduces the committed cell exactly -- the trained dictionary agrees, so a local measurement
+    describes the same artifact. On the seven columns that do not reproduce, a macOS sidecar would
+    describe a macOS encode of a Linux-encoded column and is deliberately not used; they fall back
+    to the cell, which is correct for them anyway.
+
+    See docs/notes/2026-09-02-fsst12-platform-dependence.md for why that distinction is load-bearing.
+    """
+    global _FSST12_SIDECAR
+    if _FSST12_SIDECAR is None:
+        _FSST12_SIDECAR = {}
+        fr = flat_root()
+        f = (fr / "b300" / "fsst12_sidecar_bygran.jsonl") if fr else None
+        if f and f.exists():
+            for line in f.read_text().splitlines():
+                if not line.strip():
+                    continue
+                r = json.loads(line)
+                _FSST12_SIDECAR[(r["dataset_id"], r["column"], r["tok_per_batch"])] = r["sidecar"]
+    v = _FSST12_SIDECAR.get((ds, col, tok_per_batch))
+    return fallback if v is None else v
+
+
 def fsst12_components(ds, col):
     """FSST-12's stored footprint by component, or None.
 
@@ -667,11 +699,14 @@ def ratio(c, tok_per_batch=None):
         # the offsets-excluded basis while its nearest prior-art comparator was not -- on
         # l_shipinstruct that alone reads as a 2.2x advantage that is entirely bookkeeping.
         comp = fsst12_components(c.get("dataset_id"), c.get("column"))
+        side = fsst12_sidecar(c.get("dataset_id"), c.get("column"),
+                              tok_per_batch or SHIPPED_TOK_PER_BATCH,
+                              c.get("sidecar_bytes") or 0)
         if comp and comp.get("row_offsets"):
-            den = sb / cm - comp["row_offsets"] + (c.get("sidecar_bytes") or 0)
+            den = sb / cm - comp["row_offsets"] + side
             return sb / den if den > 0 else None
         # FSST-12: recover the container-matched denominator, then add its own measured sidecar.
-        den = sb / cm + (c.get("sidecar_bytes") or 0)
+        den = sb / cm + side
         return sb / den if den else None
     # OnPair: the offsets-excluded basis. at_rest_bytes is the WHOLE .vortex file, which also
     # carries codes_offsets and uncompressed_lengths; Section 5 excludes both.
