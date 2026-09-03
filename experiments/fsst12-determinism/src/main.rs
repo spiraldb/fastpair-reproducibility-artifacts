@@ -70,15 +70,39 @@ fn urlish() -> Vec<Vec<u8>> {
         .collect()
 }
 
+/// Train on a real column dump: [u64 n][(n+1) u32 offsets][payload].
+///
+/// The synthetic cases below train 847 to 1219 symbols. Real columns train close to the 4096 code
+/// space -- ClickBench URL reaches ~3747 -- where candidate ties are far denser, so a tie-order
+/// difference has far more chances to fire. This path exists because the synthetic cases agreeing
+/// did NOT establish that no input diverges.
+fn from_dump(path: &str) -> Vec<Vec<u8>> {
+    let raw = std::fs::read(path).expect("read dump");
+    let n = u64::from_le_bytes(raw[..8].try_into().unwrap()) as usize;
+    let off_end = 8 + 4 * (n + 1);
+    let offs: Vec<u32> = raw[8..off_end]
+        .chunks_exact(4)
+        .map(|c| u32::from_le_bytes(c.try_into().unwrap()))
+        .collect();
+    let payload = &raw[off_end..];
+    (0..n)
+        .map(|i| payload[offs[i] as usize..offs[i + 1] as usize].to_vec())
+        .collect()
+}
+
 fn main() {
     println!("arch={} os={} ptr_width={}",
         std::env::consts::ARCH, std::env::consts::OS, usize::BITS);
-    for (name, rows) in [
-        ("tie_saturated", tie_saturated()),
-        ("tie_sat_sampled", tie_saturated_big()),
-        ("log_like", log_like()),
-        ("urlish", urlish()),
-    ] {
+    let mut cases: Vec<(String, Vec<Vec<u8>>)> = Vec::new();
+    for a in std::env::args().skip(1) {
+        cases.push((format!("dump:{}", a.rsplit('/').next().unwrap_or(&a)), from_dump(&a)));
+    }
+    for (name, rows) in cases.into_iter().chain([
+        ("tie_saturated".to_string(), tie_saturated()),
+        ("tie_sat_sampled".to_string(), tie_saturated_big()),
+        ("log_like".to_string(), log_like()),
+        ("urlish".to_string(), urlish()),
+    ]) {
         let refs: Vec<&[u8]> = rows.iter().map(|r| r.as_slice()).collect();
         let c = Compressor12::train(&refs);
         let table = c.symbol_table();
@@ -93,7 +117,7 @@ fn main() {
         // that differs only in tie ORDER can still compress to the same total.
         let total: usize = rows.iter().map(|r| c.compress(r).len()).sum();
         println!(
-            "{:<14} n_symbols={:<5} table_digest={:016x} lens_digest={:016x} compressed_total={}",
+            "{:<20} n_symbols={:<5} table_digest={:016x} lens_digest={:016x} compressed_total={}",
             name, table.len(), table_digest, lens_digest, total
         );
     }
