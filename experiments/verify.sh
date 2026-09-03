@@ -68,6 +68,16 @@ if ! uv run experiments/check_tab_datasets.py /tmp/tab_datasets.regen; then
   echo "FATAL: tab:datasets in the paper disagrees with what the data produces"; exit 1
 fi
 
+# The abstract cannot use claims.tex macros: it is copied out of the .tex into mail, slides and
+# submission forms, and a macro pasted without a LaTeX engine renders as a stray token. So its
+# numbers are literals, and this checks them from outside the file -- both that each still
+# re-derives from committed results, and that the abstract text still prints it. The declarations
+# are comments AFTER the abstract body, so they never travel with a copy-paste.
+echo "== checking the abstract's literals against the data =="
+if ! uv run experiments/check_abstract.py "$PAPER_DIR/sections/0_abstract.tex"; then
+  echo "FATAL: the abstract's numbers disagree with the data, or the prose stopped printing them"; exit 1
+fi
+
 # Sections 2-4 assert dozens of numbers that were derived in ad-hoc sessions and typed into
 # prose. paper_claims.py re-derives each from committed data and fails on drift, the same
 # contract tab:datasets has. It caught four stale values on its first run, one of them an
