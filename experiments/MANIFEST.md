@@ -383,6 +383,37 @@ Two caveats that must travel with these numbers:
 FSST-12 is pinned to `196a862` rather than the crate or local HEAD because that rev carries
 the training-budget fix; without it the trained table is 88% empty.
 
+## FSST-12 stored split, re-measured on Linux — `results/suite-flat-20260830/b300/fsst12_stored_components.jsonl`
+
+**The split is measured host-side, and the host matters.** Section 5 excludes the row-offsets array
+from every technique's ratio, and the committed FSST-12 cells collapse their components into one
+total, so the split has to be measured separately. It first was, on macOS, and **seven of fifteen
+columns did not reproduce the committed cell totals** (`loghub-spark` -1.13%, the rest within
+0.19%).
+
+The cause is FSST-12's trained dictionary, which is platform-dependent on real data: candidates tied
+on both gain and length are separated by hash iteration order, and hashbrown's probe sequence
+depends on an architecture-specific SIMD group width. Small synthetic inputs do not expose it;
+columns training ~3750 symbols against a 4096 code space do. Everything else was eliminated first —
+not the sample, not nondeterminism, not a revision skew, not rounding.
+
+| Field | Value |
+|---|---|
+| Bench | `vortex-bench/src/bin/fsst12-stored-rows.rs` @ `e12bb0ba9` |
+| Box | `homelab-research`, x86_64 Arch Linux, 16 cores — **CPU only, no GPU** |
+| Input | `~/data/onpair-campaign-cols/*.bin`, the campaign's per-column dumps, byte-exact against every committed cell (row count and payload length match on all fifteen) |
+| Config | `--tok-per-batch 192` |
+| Consumed by | `suite.fsst12_components` → `suite.ratio()`'s row-offsets subtraction |
+
+**Result: all fifteen columns now reproduce the committed cell totals EXACTLY.** The seven that
+differed were re-measured on Linux and each landed on its cell to the byte; the eight that already
+reproduced on macOS are unchanged, and their agreement across both platforms is what licenses
+leaving them. Every row carries `measured_on`.
+
+Corroborating detail worth keeping: the Linux `sidecar` values also reproduce each cell's own
+`sidecar_bytes` exactly, and `loghub-spark`'s `row_offsets` moved 11 912 736 → 11 910 696 — the only
+component of this file that feeds a reported number.
+
 ## Sidecar cost by batch granularity — `results/suite-flat-20260830/b300/onpair_offset_cost_bygran.jsonl`
 
 **Why it exists.** The compression ratio charges OnPair's output-position sidecar, and the sidecar
@@ -404,8 +435,10 @@ so the granularities several reported kernels actually use had no measurement at
 
 **No re-encoding, and that is the point.** It reads the committed `.vortex` parts back through
 `read_onpair_chunks` and sizes the sidecar over the arrays the leg wrote, so no dictionary is
-retrained. A re-encode would not have been comparable: FSST-12's trained dictionary is
-platform-dependent for exactly this reason (see its own section above).
+retrained. That distinction is not academic: FSST-12's trained dictionary IS platform-dependent on
+real data (measured 2026-09-02; see below and
+`onpair-gpu-paper/docs/notes/2026-09-02-fsst12-platform-dependence.md`), and a re-encode on another
+host would not have been comparable with the committed numbers.
 
 **Self-validating.** 32, 128 and 192 were measured alongside the coarser ones and diffed against
 the comparator leg's `onpair_offset_cost.jsonl`: **90 overlapping (cell, granularity) pairs, 0
